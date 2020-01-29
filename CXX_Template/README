@@ -1,0 +1,17 @@
+
+See Examples.cpp (make examples; ./examples to compile it and run) for examples on how to make splines, solve ODEs, etc.
+and the functionality of the stuff supplied with this template
+
+The code runs from Main.cpp. See this file for the order of things to implement.
+
+Compile the code running ( make )
+
+If you want to compile this on your computer you need to install the GSL library first
+You can find it here: ftp://ftp.gnu.org/gnu/gsl/gsl-2.6.tar.gz
+After installing it you need to add the include and library dir to the Makefile
+
+In the last module you will also need a library for Bessel functions (the GSL one often fails for very large inputs), if 
+COMPLEX_BESSEL is defined in the makefile then you will have to have this library installed:
+https://github.com/joeydumont/complex_bessel
+If you don't have this then just comment out the two lines below ( "Add bessel function library" ) in the Makefile
+
