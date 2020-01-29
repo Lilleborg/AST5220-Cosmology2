@@ -3,6 +3,7 @@
 #include <iostream>
 #include <fstream>
 #include "Utils.h"
+//#include "matplotlibcpp.h"
 
 using Vector = std::vector<double>;
 
@@ -22,6 +23,8 @@ class BackgroundCosmology{
     double OmegaNu;                 // Neutrino density today (follows from TCMB and Neff)
     double OmegaK;                  // Curvature density = 1 - OmegaM - OmegaR - OmegaNu - OmegaLambda
     double H0;                      // The Hubble parameter today H0 = 100h km/s/Mpc
+    
+    double Omega_summed;            // The sum of the omegas, should be one
 
     // Start and end of x-integration (can be changed)
     double x_start = Constants.x_start;

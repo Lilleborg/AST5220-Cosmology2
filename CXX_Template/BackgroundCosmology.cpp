@@ -23,10 +23,20 @@ BackgroundCosmology::BackgroundCosmology(
   //=============================================================================
   // TODO: Compute OmegaR, OmegaNu, OmegaK, H0, ...
   //=============================================================================
-  //...
-  //...
-  //...
-  //...
+  // H0:
+  H0 = Constants.H0_over_h * h;
+  //OmegaR:
+  OmegaR = M_PI * M_PI / 15 * pow(Constants.k_b * TCMB,4) / pow(Constants.hbar,3) / pow(Constants.c,5) \
+          * 8 * M_PI * Constants.G / 3 / H0 / H0;
+  //OmegaNu:
+  OmegaNu = 0;
+  //OmegaK:
+  OmegaK = 1 - OmegaR - OmegaNu - OmegaLambda - OmegaB - OmegaCDM;
+  // Check sum of the Omegas today
+  Omega_summed = OmegaB + OmegaCDM + OmegaK + OmegaLambda + OmegaNu + OmegaR;
+  if (Omega_summed != 1.0){ // stricked test for unite, works without tollerance
+  std::cout << "Sum of the present day capital omegas, (should be unity): " << Omega_summed << std::endl;
+  }
 }
 
 //====================================================

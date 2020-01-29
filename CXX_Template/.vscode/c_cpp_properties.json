@@ -5,7 +5,8 @@
             "includePath": [
                 "${workspaceFolder}/**",
                 "${HOME}/c++_stuff/**",
-                "/usr/local/Cellar/armadillo/**"
+                "/usr/local/Cellar/armadillo/**",
+                "/Users/jakobs/miniconda3/include/python3.7m/**"
             ],
             "defines": [],
             "macFrameworkPath": [

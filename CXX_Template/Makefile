@@ -7,7 +7,10 @@ CC = g++ -std=c++11
 
 # Paths to GSL library
 INC  = -I/Users/jakobs/c++_stuff/gsl-2.6/include
+#INC += -I/Users/jakobs/miniconda3/include/python3.7m
+#INC += -I/usr/local/include/python2.7
 LIBS = -L/Users/jakobs/c++_stuff/gsl-2.6/lib -lgsl -lgslcblas
+#LIBS += -L/Users/jakobs/miniconda3/include/python3.7m# -lpython3.7m
 
 #=======================================================
 # Options
