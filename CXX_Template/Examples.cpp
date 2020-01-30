@@ -1,7 +1,26 @@
 #include "Utils.h"
 #include <iomanip>
+#include "writeme.h"
 
   
+void example_write_to_file(){
+  // Testing my own write to file class from FYS3150, still a work in progress...
+
+  const double xmin = 0;
+  const double xmax = 4.0 * M_PI;
+  const int n_pts = 10;
+
+  Vector x = Utils::linspace(xmin,xmax,n_pts);
+  Vector y = cos(x);
+  
+  string mainpath = "./../Milestone1/";
+  writeme writer(mainpath);
+  writer.set_subpath("data/");
+  writer.write_double_vector(y,"cos_x");
+
+}
+
+
 //================================================
 // Example for how to create and use a 1D spline
 //================================================
@@ -328,6 +347,9 @@ void other_stuff(){
 }
 
 int main(int argc, char **argv){
+  std::cout << "\n==============================\n\n";
+  example_write_to_file();
+
   std::cout << "\n==============================\n\n";
   example_make_spline();
   
