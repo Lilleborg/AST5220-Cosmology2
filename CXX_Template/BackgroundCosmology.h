@@ -25,10 +25,12 @@ class BackgroundCosmology{
     double H0;                      // The Hubble parameter today H0 = 100h km/s/Mpc
     
     double Omega_summed;            // The sum of the omegas, should be one
+    double H0_over_H_squared(double x) const; // Used in all get_Omega functions
 
     // Start and end of x-integration (can be changed)
     double x_start = Constants.x_start;
     double x_end   = Constants.x_end;
+    int npts = 10000;
 
     // Splines to be made
     Spline eta_of_x_spline{"eta"};
