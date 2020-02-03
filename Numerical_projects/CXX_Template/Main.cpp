@@ -34,7 +34,7 @@ int main(int argc, char **argv){
   cosmo.info();
   
   // Output background evolution quantities
-  cosmo.output("cosmology.txt");
+  cosmo.output("./../data/cosmology.txt");
 
   // Remove when module is completed
   return 0;
