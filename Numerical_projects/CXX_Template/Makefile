@@ -44,7 +44,7 @@ all: $(TARGETS)
 OBJS = Main.o Utils.o BackgroundCosmology.o RecombinationHistory.o Perturbations.o PowerSpectrum.o Spline.o ODESolver.o writeme.o
 
 # DEPENDENCIES
-Main.o		              : BackgroundCosmology.h RecombinationHistory.h Perturbations.h PowerSpectrum.h
+Main.o		            : BackgroundCosmology.h RecombinationHistory.h Perturbations.h PowerSpectrum.h
 Spline.o                : Spline.h
 ODESolver.o             : ODESolver.h
 Utils.o                 : Utils.h Spline.h ODESolver.h
