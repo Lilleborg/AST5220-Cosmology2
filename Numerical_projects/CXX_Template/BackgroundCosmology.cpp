@@ -49,7 +49,7 @@ void BackgroundCosmology::solve(){
 
   // The ODE for deta/dx
   ODEFunction detadx = [&](double x, const double *eta, double *detadx){
-    detadx[0] = Constants.c/Hp_of_x(x);
+    detadx[0] = Constants.c / Hp_of_x(x);
     return GSL_SUCCESS;
   };
 
@@ -76,8 +76,8 @@ void BackgroundCosmology::solve(){
 double BackgroundCosmology::H_of_x(double x) const{
   // Returns the Hubble parameter as function of x, using Friedmann 1
   double H_temp = H0 * sqrt(
-    (OmegaB+OmegaCDM)*exp(-3*x)
-    + OmegaR*exp(-4*x)
+    (OmegaB+OmegaCDM) * exp(-3 * x)
+    + OmegaR * exp(-4 * x)
     + OmegaLambda);
 
   return H_temp;
@@ -85,7 +85,7 @@ double BackgroundCosmology::H_of_x(double x) const{
 
 double BackgroundCosmology::Hp_of_x(double x) const{
   // Returns Hubble prime as function of x and H_of_x
-  double Hprime_temp = exp(x)*H_of_x(x);
+  double Hprime_temp = exp(x) * H_of_x(x);
 
   return Hprime_temp;
 }
@@ -120,7 +120,7 @@ double BackgroundCosmology::H0_over_H_squared(double x) const{
 double BackgroundCosmology::get_OmegaB(double x) const{ 
   if(x == 0.0) return OmegaB;
 
-  double Omega = H0_over_H_squared(x) * OmegaB * exp(-3*x);
+  double Omega = H0_over_H_squared(x) * OmegaB * exp(-3 * x);
 
   return Omega;
 }
@@ -128,7 +128,7 @@ double BackgroundCosmology::get_OmegaB(double x) const{
 double BackgroundCosmology::get_OmegaR(double x) const{ 
   if(x == 0.0) return OmegaR;
 
-  double Omega = H0_over_H_squared(x) * OmegaR * exp(-4*x);
+  double Omega = H0_over_H_squared(x) * OmegaR * exp(-4 * x);
 
   return Omega;
 }
