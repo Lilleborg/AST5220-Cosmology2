@@ -20,10 +20,9 @@ Mpc = 3.08567758e22                     # [m]
 # H-prime in presentable units [km/s/Mpc]
 Hp_units = Hp_of_x * Mpc/km
 H_units = Hp_units / a_array            # H (not prime)
-eta_units = eta_of_x / (Mpc*1e3)        # conformal time in [Gpc]
+eta_units = eta_of_x / (Mpc*1e3)        # conformal time [Gpc]
 idx_rad_mat_eq = np.argmin(np.abs(OmegaR-(OmegaCDM+OmegaB)))
 idx_mat_lambda_eq = np.argmin(np.abs(OmegaLambda-(OmegaCDM+OmegaB)))
-
 
 # Plotting omegas vs x
 fig, ax = plt.subplots(figsize=(6, 4.5))
@@ -44,7 +43,7 @@ fig.savefig('./figs/omegas_of_x.pdf', bbox_inces='tight')
 fig, axes = plt.subplots(2, 2)
 axes[0, 0].plot(x_array, H_units)
 axes[0, 0].set_xlabel(r'$x = ln(a)$')
-axes[0, 0].set_ylabel(r'$H(x) \left[\frac{\rm{km}}{\rm{s \, Mpc}}\right]$')
+axes[0, 0].set_ylabel(r'$H(x) \left[\rm{km}\,\rm{s^{-1}}\,\rm{Mpc^{-1}}\right]$')
 axes[0, 0].set_xticks(x_array_ticks)
 
 # Plotting Hubble parameter vs z
@@ -55,20 +54,17 @@ axes[0, 1].set_ylabel(r'$H(z) \left[\frac{\rm{km}}{\rm{s \, Mpc}}\right]$')
 axes[0, 1].set_xlim(z_array.max()+z_array.max()*5,
                   z_array.min()+0.0001)
 axes[0, 1].set_xscale('log')
-#axes[0, 1].set_yscale('log')
 
 # Plotting conformal time
 axes[1, 0].plot(x_array, eta_units)
 axes[1, 0].set_xlabel(r'$x = ln(a)$')
-axes[1, 0].set_ylabel(r'$\eta(x) [\rm{m}]$')
-#axes[1, 0].set_yscale('log')
+axes[1, 0].set_ylabel(r'$\eta(x) [\rm{Gpc}]$')
 axes[1, 0].set_xticks(x_array_ticks)
 
 # PLotting H-prime
 axes[1, 1].plot(x_array, Hp_units)
 axes[1, 1].set_xlabel(r'$x = ln(a)$')
 axes[1, 1].set_ylabel(r'$\mathcal{H}(x) \left[\frac{\rm{km}}{\rm{s \, Mpc}}\right]$')
-#axes[1, 1].set_yscale('log')
 axes[1, 1].set_xticks(x_array_ticks)
 
 for i,ax in enumerate(axes.flatten()):
@@ -80,8 +76,11 @@ for i,ax in enumerate(axes.flatten()):
         ax.axvspan(x_array[idx_rad_mat_eq], x_array[idx_mat_lambda_eq], alpha=0.25, color='C1')
         ax.axvspan(x_array[idx_mat_lambda_eq], x_array.max(), alpha=0.25, color='C3')    
     else:
-        ax.axvline(z_array[idx_rad_mat_eq],color='b',linestyle='--')
-        ax.axvline(z_array[idx_mat_lambda_eq],color='r',linestyle='--')
+        # ax.axvline(z_array[idx_rad_mat_eq],color='b',linestyle='--')
+        # ax.axvline(z_array[idx_mat_lambda_eq],color='r',linestyle='--')
+        ax.axvspan(z_array.max(), z_array[idx_rad_mat_eq], alpha=0.25, color='C0')
+        ax.axvspan(z_array[idx_rad_mat_eq], z_array[idx_mat_lambda_eq], alpha=0.25, color='C1')
+        ax.axvspan(z_array[idx_mat_lambda_eq], z_array.min(), alpha=0.25, color='C3')  
 
 fig.savefig('./figs/Hubble_eta_of_x.pdf', bbox_inces='tight')
 plt.show()
