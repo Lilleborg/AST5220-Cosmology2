@@ -75,12 +75,22 @@ void BackgroundCosmology::solve(){
 
 double BackgroundCosmology::H_of_x(double x) const{
   // Returns the Hubble parameter as function of x, using Friedmann 1
+  double a = exp(x);
   double H_temp = H0 * sqrt(
     (OmegaB+OmegaCDM) * exp(-3 * x)
     + OmegaR * exp(-4 * x)
     + OmegaLambda);
 
   return H_temp;
+}
+
+double BackgroundCosmology::dHdx_of_x(double x) const{
+  // Returns the derivative of Hubble parameter wrt x
+  double a = exp(x);
+  // dH_dx = H0^2/(2*H) * (-3(OmegaB+OmegaCDM)*exp(-3x) - 4*OmegaR*exp(-4))
+  double res = H0*H0/(2*H_of_x(x)) * (-3*(OmegaB+OmegaCDM)/a/a/a - 4*OmegaR/a/a/a/a);
+
+  return res;
 }
 
 double BackgroundCosmology::Hp_of_x(double x) const{
@@ -90,15 +100,13 @@ double BackgroundCosmology::Hp_of_x(double x) const{
   return Hprime_temp;
 }
 
+
 double BackgroundCosmology::dHpdx_of_x(double x) const{
+  // Returns derivative of Hubble prime wrt x
+  double a = exp(x);
+  double res = a*dHdx_of_x(x) + H_of_x(x)*a;
 
-  //=============================================================================
-  // TODO: Implement...
-  //=============================================================================
-  //...
-  //...
-
-  return 0.0;
+  return res;
 }
 
 double BackgroundCosmology::ddHpddx_of_x(double x) const{
