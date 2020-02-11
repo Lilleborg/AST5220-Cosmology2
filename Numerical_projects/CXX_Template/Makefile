@@ -67,3 +67,6 @@ cmb: $(OBJS)
 clean:
 	rm -rf $(TARGETS) *.o
 
+run:
+	./cmb
+
