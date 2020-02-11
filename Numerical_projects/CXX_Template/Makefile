@@ -67,6 +67,12 @@ cmb: $(OBJS)
 clean:
 	rm -rf $(TARGETS) *.o
 
-run:
+runcmb:
 	./cmb
+
+plot1:
+	cd ./../Milestone1 && python plotter_Milestone1.py
+
+bench1:
+	cd ./../Milestone1 && python benchmarking_Milestone1.py
 
