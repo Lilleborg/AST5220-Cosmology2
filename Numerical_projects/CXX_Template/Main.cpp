@@ -7,6 +7,7 @@
 //namespace plt = matplotlibcpp;
 
 int main(int argc, char **argv){
+  std::cout << "\n";
   Utils::StartTiming("Everything");
   
   //=========================================================================
@@ -27,7 +28,7 @@ int main(int argc, char **argv){
   //=========================================================================
   // Module I
   //=========================================================================
-
+  Utils::StartTiming("Module I");
   // Set up and solve the background
   BackgroundCosmology cosmo(h, OmegaB, OmegaCDM, OmegaLambda, Neff, TCMB);
   cosmo.solve();
@@ -35,6 +36,8 @@ int main(int argc, char **argv){
   
   // Output background evolution quantities
   cosmo.output("./../data/cosmology.txt");
+  Utils::EndTiming("Module I");
+  std::cout << "\n";
 
   // Remove when module is completed
   return 0;
