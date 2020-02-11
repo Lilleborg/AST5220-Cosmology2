@@ -26,6 +26,7 @@ class BackgroundCosmology{
     
     double Omega_summed;            // The sum of the omegas, should be one
     double H0_over_H_squared(double x) const; // Used in all get_Omega functions
+    double exp3x(double x) const;   // Function for getting the value exp(3x)
 
     // Start and end of x-integration (can be changed)
     double x_start = Constants.x_start;

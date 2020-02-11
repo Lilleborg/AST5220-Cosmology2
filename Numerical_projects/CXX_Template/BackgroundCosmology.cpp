@@ -37,7 +37,7 @@ BackgroundCosmology::BackgroundCosmology(
   Omega_summed = OmegaB + OmegaCDM + OmegaLambda + OmegaR + OmegaK + OmegaNu;
   if (Omega_summed != 1.0) // stricked test for unity
     {
-    std::cout << "Sum of the present day capital omegas, (should be unity): " << Omega_summed << std::endl;
+    std::cout << "Sum of the present day capital omegas, (should be close to unity): " << Omega_summed << std::endl;
     }
 }
 
@@ -70,6 +70,23 @@ void BackgroundCosmology::solve(){
 }
 
 //====================================================
+// Helper methods (private)
+//====================================================
+
+double BackgroundCosmology::H0_over_H_squared(double x) const{
+  // Expression used in all get_Omegas methods, returns (H0/H)^2
+  double H_temp = H_of_x(x);
+  return H0*H0/H_temp/H_temp;
+}
+
+double BackgroundCosmology::exp3x(double x) const{
+  double a = exp(x);
+  double res = a*a*a;
+  return res;
+}
+
+
+//====================================================
 // Get methods
 //====================================================
 
@@ -77,8 +94,8 @@ double BackgroundCosmology::H_of_x(double x) const{
   // Returns the Hubble parameter as function of x, using Friedmann 1
   double a = exp(x);
   double H_temp = H0 * sqrt(
-    (OmegaB+OmegaCDM) * exp(-3 * x)
-    + OmegaR * exp(-4 * x)
+    (OmegaB+OmegaCDM) /a/a/a
+    + OmegaR /a/a/a/a
     + OmegaLambda);
 
   return H_temp;
@@ -120,23 +137,18 @@ double BackgroundCosmology::ddHpddx_of_x(double x) const{
   return 0.0;
 }
 
-double BackgroundCosmology::H0_over_H_squared(double x) const{
-  double H_temp = H_of_x(x);
-  return H0*H0/H_temp/H_temp;
-}
-
 double BackgroundCosmology::get_OmegaB(double x) const{ 
   if(x == 0.0) return OmegaB;
-
-  double Omega = H0_over_H_squared(x) * OmegaB * exp(-3 * x);
+  double a = exp(x);
+  double Omega = H0_over_H_squared(x) * OmegaB /a/a/a;
 
   return Omega;
 }
 
 double BackgroundCosmology::get_OmegaR(double x) const{ 
   if(x == 0.0) return OmegaR;
-
-  double Omega = H0_over_H_squared(x) * OmegaR * exp(-4 * x);
+  double a = exp(x);
+  double Omega = H0_over_H_squared(x) * OmegaR /a/a/a/a;
 
   return Omega;
 }
@@ -148,8 +160,8 @@ double BackgroundCosmology::get_OmegaNu(double x) const{
 
 double BackgroundCosmology::get_OmegaCDM(double x) const{ 
   if(x == 0.0) return OmegaCDM;
-
-  double Omega = H0_over_H_squared(x) * OmegaCDM * exp(-3 * x);
+  double a = exp(x);
+  double Omega = H0_over_H_squared(x) * OmegaCDM /a/a/a;
 
   return Omega;
 }
@@ -219,8 +231,14 @@ void BackgroundCosmology::output(const std::string filename) const{
   auto print_data = [&] (const double x) {
     fp << x                  << " ";
     fp << eta_of_x(x)        << " ";
+
+    fp << H_of_x(x)          << " ";
+    fp << dHdx_of_x(x)       << " ";
+
     fp << Hp_of_x(x)         << " ";
     fp << dHpdx_of_x(x)      << " ";
+    fp << ddHpddx_of_x(x)    << " ";
+
     fp << get_OmegaB(x)      << " ";
     fp << get_OmegaCDM(x)    << " ";
     fp << get_OmegaLambda(x) << " ";
