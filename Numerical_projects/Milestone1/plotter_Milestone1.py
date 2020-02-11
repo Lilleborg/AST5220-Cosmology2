@@ -9,8 +9,8 @@ mpl.rc('text', usetex=False)
 
 # Load data
 # ---------
-x_array, eta_of_x, Hp_of_x, _, OmegaB, OmegaCDM, OmegaLambda, OmegaR, _, _ = np.loadtxt(
-    "../data/cosmology.txt", unpack=True)
+x_array, eta_of_x, H_of_x, dHdx_of_x, Hp_of_x, dHpdx_of_x, ddHpddx_of_x, OmegaB, OmegaCDM, \
+    OmegaLambda, OmegaR, _, _ = np.loadtxt("../data/cosmology.txt", unpack=True)
 
 # Data handling and converting
 # ----------------------------
@@ -29,11 +29,6 @@ Omega_matter = OmegaB + OmegaCDM        # Omega matter combined
 idx_rad_mat_eq = np.argmin(np.abs(OmegaR-Omega_matter))
 idx_mat_lambda_eq = np.argmin(np.abs(OmegaLambda-Omega_matter))
 
-# Benchmarking/testing
-# --------------------
-# H(a_0) = H0
-
-
 # Plotting
 # --------
 # Omegas vs x
@@ -51,7 +46,7 @@ ax.set_xlabel(r'$x = ln(a)$')
 ax.set_ylabel(r'$\Omega_i = \frac{\rho_i}{\rho_c}$')
 ax.set_xticks(x_array_ticks)
 
-#fig.savefig('./figs/omegas_of_x.pdf', bbox_inces='tight')
+fig.savefig('./figs/omegas_of_x.pdf', bbox_inces='tight')
 
 # Plotting Hubble parameter vs x
 fig, axes = plt.subplots(2, 2)
@@ -89,5 +84,5 @@ for i, ax in enumerate(axes.flatten()):
         ax.axvspan(z_array[idx_rad_mat_eq], z_array[idx_mat_lambda_eq], alpha=0.25, color='C1')
         ax.axvspan(z_array[idx_mat_lambda_eq], z_array.min(), alpha=0.25, color='C3')
 
-#fig.savefig('./figs/Hubble_eta_of_x.pdf', bbox_inces='tight')
+fig.savefig('./figs/Hubble_eta_of_x.pdf', bbox_inces='tight')
 plt.show()
