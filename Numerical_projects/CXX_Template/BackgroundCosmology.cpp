@@ -95,12 +95,12 @@ Vector BackgroundCosmology::exp_of_3x_and_4x(double x) const{
 double BackgroundCosmology::H_of_x(double x) const{
   // Returns the Hubble parameter as function of x, using Friedmann 1
   Vector exponentials = exp_of_3x_and_4x(x);
-  double H_temp = H0 * sqrt(
+  double res = H0 * sqrt(
     (OmegaB+OmegaCDM) / exponentials[0]
     + OmegaR / exponentials[1]
     + OmegaLambda);
 
-  return H_temp;
+  return res;
 }
 
 double BackgroundCosmology::dHdx_of_x(double x) const{
@@ -111,11 +111,18 @@ double BackgroundCosmology::dHdx_of_x(double x) const{
   return res;
 }
 
+double BackgroundCosmology::ddHddx_of_x(double x) const{
+  // Returns the double derivative of Hubble parameter wrt x
+  double H = H_of_x(x);
+  Vector exponentials = exp_of_3x_and_4x(x);
+  double res = H0*H0/2 * (1/H * (9*(OmegaB+OmegaCDM)/exponentials[0] + 16*OmegaR/exponentials[1]) - dHdx_of_x(x)/H/H * (-3*(OmegaB+OmegaCDM)/exponentials[0] - 4*OmegaR/exponentials[1]));
+  return res;
+}
 double BackgroundCosmology::Hp_of_x(double x) const{
   // Returns Hubble prime as function of x and H_of_x
-  double Hprime_temp = exp(x) * H_of_x(x);
+  double res = exp(x) * H_of_x(x);
 
-  return Hprime_temp;
+  return res;
 }
 
 
@@ -124,21 +131,26 @@ double BackgroundCosmology::dHpdx_of_x(double x) const{
   double a = exp(x);
   double res = a*dHdx_of_x(x) + H_of_x(x)*a;
 
+  //double alpha = -(OmegaB+OmegaCDM)/a/a - 2*OmegaR/a/a/a + 2*OmegaLambda*a;
+  //double res = H0*H0*alpha/Hp_of_x(x)/2;
+
   return res;
 }
 
 double BackgroundCosmology::ddHpddx_of_x(double x) const{
   // Returns the double derivative of Hubble prime wrt x
   double a = exp(x);
-  Vector exponentials = exp_of_3x_and_4x(x);
+  // Vector exponentials = exp_of_3x_and_4x(x);
   double dHdx = dHdx_of_x(x);
   double H = H_of_x(x);
-  double ddHddx = H0*H0/2/H/H * ( H*(9*(OmegaB+OmegaCDM)/exponentials[0] + 16*OmegaR/exponentials[1])
-    - dHdx*(-3*(OmegaB+OmegaCDM)/exponentials[0] - 4*OmegaR/exponentials[1]) );
+  double ddHddx = ddHddx_of_x(x);
+  // double ddHddx = H0*H0/2/H/H * ( H*(9*(OmegaB+OmegaCDM)/exponentials[0] + 16*OmegaR/exponentials[1])
+  //   - dHdx*(-3*(OmegaB+OmegaCDM)/exponentials[0] - 4*OmegaR/exponentials[1]) );
 
-  double ddHpddx = a*(2*dHdx + H + ddHddx);
-  ddHpddx = dHpdx_of_x(x) + a*dHdx + a*ddHddx;
-  return ddHpddx;
+  double res = a*(2*dHdx + H + ddHddx);
+  // res = dHpdx_of_x(x) + a*dHdx + a*ddHddx;
+
+  return res;
 }
 
 double BackgroundCosmology::get_OmegaB(double x) const{ 
