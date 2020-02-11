@@ -20,6 +20,9 @@ z_non_neg = z_array[z_array > 0]
 a_array = np.exp(x_array)
 km = 1e3                                # [m]
 Mpc = 3.08567758e22                     # [m]
+h = 0.7                                 # unitless hubble
+H0 = 100 * h * km/Mpc                   # Hubble parameter today
+c = 299792458                           # Speed of light [m/s]
 # H-prime in presentable units [km/s/Mpc]:
 Hp_units = Hp_of_x * Mpc/km
 H_units = Hp_units / a_array            # H (not prime)  [km/s/Mpc]
@@ -28,6 +31,12 @@ eta_units = eta_of_x / (Mpc*1e3)        # conformal time [Gpc]
 Omega_matter = OmegaB + OmegaCDM        # Omega matter combined
 idx_rad_mat_eq = np.argmin(np.abs(OmegaR-Omega_matter))
 idx_mat_lambda_eq = np.argmin(np.abs(OmegaLambda-Omega_matter))
+# Analytical etas for each regime:
+aeta_R = c/Hp_of_x/Mpc/km                      # analytical eta in radiation dominated regime
+idx_astar = np.argmax(Omega_matter)
+aeta_M = (eta_of_x[idx_astar] + 2*c*(1/Hp_of_x-1/Hp_of_x[idx_astar]))/Mpc/km
+idx_alamda = np.argmax(OmegaLambda)
+aeta_Lambda = (eta_of_x[idx_alamda] - 3*c*(1/(np.exp(x_array*2)**2*Hp_of_x)-1/(np.exp(x_array*2)[idx_alamda]**2*Hp_of_x[idx_alamda])))/Mpc/km
 
 # Plotting
 # --------
@@ -63,8 +72,11 @@ axes[0, 1].set_xscale('log')
 
 # Plotting conformal time
 axes[1, 0].plot(x_array, eta_units, color='C2')
+axes[1, 0].plot(x_array, aeta_R, color='C0', ls = '-.')
+axes[1, 0].plot(x_array, aeta_M, color='C1', ls = '-.')
+axes[1, 0].plot(x_array, aeta_Lambda, color='C3', ls = '-.')
 axes[1, 0].set_ylabel(r'$\eta(x) [\rm{Gpc}]$')
-axes[1, 0].set_xticks(x_array_ticks)
+#axes[1, 0].set_xticks(x_array_ticks)
 
 # PLotting H-prime
 axes[1, 1].plot(x_array, Hp_units, color='C2')
