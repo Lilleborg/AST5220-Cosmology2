@@ -29,10 +29,10 @@ BackgroundCosmology::BackgroundCosmology(
 
   //OmegaK:
   const double K = 0;
-  OmegaK = K / H0 / H0;
+  OmegaK = - K * Constants.c * Constants.c / H0 / H0;
 
   //OmegaLambda
-  OmegaLambda = 1 - (OmegaR + OmegaNu + OmegaB + OmegaCDM);
+  OmegaLambda = 1 - (OmegaR + OmegaNu + OmegaB + OmegaCDM + OmegaK);
   
   // Check sum of the Omegas today
   Omega_summed = OmegaB + OmegaCDM + OmegaLambda + OmegaR + OmegaK + OmegaNu;

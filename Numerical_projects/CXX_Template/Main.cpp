@@ -18,7 +18,6 @@ int main(int argc, char **argv){
   double h           = 0.7;
   double OmegaB      = 0.046;
   double OmegaCDM    = 0.224;
-  //double OmegaLambda = 0.7;
   double Neff        = 3.046;
   double TCMB        = 2.7255;
 
