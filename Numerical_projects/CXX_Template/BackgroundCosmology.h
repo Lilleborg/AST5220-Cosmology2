@@ -43,8 +43,7 @@ class BackgroundCosmology{
     BackgroundCosmology(
         double h, 
         double OmegaB, 
-        double OmegaCDM, 
-        double OmegaLambda,
+        double OmegaCDM,
         double Neff, 
         double TCMB
         );

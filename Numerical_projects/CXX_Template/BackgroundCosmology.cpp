@@ -7,15 +7,13 @@
 BackgroundCosmology::BackgroundCosmology(
     double h, 
     double OmegaB, 
-    double OmegaCDM, 
-    double OmegaLambda,
+    double OmegaCDM,
     double Neff, 
     double TCMB) :
   // This initializes the class variables h,OmegaB,OmegaCDM... as the value they have where sent into the class
   h(h),
   OmegaB(OmegaB),
   OmegaCDM(OmegaCDM),
-  OmegaLambda(OmegaLambda),
   Neff(Neff), 
   TCMB(TCMB)
 {
@@ -32,13 +30,13 @@ BackgroundCosmology::BackgroundCosmology(
   //OmegaK:
   const double K = 0;
   OmegaK = K / H0 / H0;
+
+  //OmegaLambda
+  OmegaLambda = 1 - (OmegaR + OmegaNu + OmegaB + OmegaCDM);
   
   // Check sum of the Omegas today
   Omega_summed = OmegaB + OmegaCDM + OmegaLambda + OmegaR + OmegaK + OmegaNu;
-  if (Omega_summed != 1.0) // stricked test for unity
-    {
-    std::cout << "Sum of the present day capital omegas, (should be close to unity): " << Omega_summed << std::endl;
-    }
+  std::cout << "Sum of the present day capital omegas: " << Omega_summed << std::endl;
 }
 
 // Solve the background
