@@ -178,9 +178,9 @@ With this input we first find the Hubble parameter today and the remaining nonze
 \begin{alignat}{2}
     H_0 &= 100h\,\si{\km\per\s\per\mega\parsec} &&= \SI{2.26855e-18}{s}\label{eq:H0}
     \\
-    \Omega_R &= \frac{2\pi^2}{30}\frac{\left(k_bT_{CMB}\right)^4}{\hbar^3c^5}\frac{8\pi G}{3H_0^2} &&= \num{5.04688e-5} \label{eq:OmegaR0}
+    \Omega_{R,0} &= \frac{2\pi^2}{30}\frac{\left(k_bT_{CMB}\right)^4}{\hbar^3c^5}\frac{8\pi G}{3H_0^2} &&= \num{5.04688e-5} \label{eq:OmegaR0}
     \\
-    \Omega_\Lambda &= 1 - \sum_{i\neq \Lambda} \Omega_i &&= \num{0.72995} \label{eq:OmegaLambda0}.
+    \Omega_{\Lambda,0} &= 1 - \sum_{i\neq \Lambda} \Omega_i &&= \num{0.72995} \label{eq:OmegaLambda0}.
 \end{alignat}
 %
 \subsection{Get Methods}
@@ -216,27 +216,35 @@ By the chain rule we can rewrite \cref{eq:eta_diff} first into a differential eq
     \\
     \diff{\eta }{x} &= \diff{\eta }{a}\diff{a}{x} \qwhere \diff{a}{x} = a & \qquad \Rightarrow \diff{\eta }{x} &= \frac{c}{\mathcal{H}(x).} \label{eq:eta_diff_of_x}
 \end{alignat}
-With this simple ordinary differential equation (ODE) we used the provided ODEsolver, wrapping GSL's Runge-Kutta 4 algorithm, to solve the system. As we are using the logarithmic scale factor we have some trouble defining our initial condition numerically, which should be $\eta(a=0)=0$. We cannot start our time variable $x$ at $a=0$, which corresponds to $x\to-\infty$, so instead we first used a wide range of x-values, $x\in[-25,3]$, to solve the system with an approximation for the initial condition $\eta(x=-25)=0$. Then we compute a spline of the result, and use this spline to evaluate the solution in a more well behaved range of values, $x\in[-15,2]$. Finally all the results are evaluated in this smaller range of $x$-values using the implemented methods and plotted using "Python".
+With this simple ordinary differential equation (ODE) we used the provided ODEsolver, wrapping GSL's Runge-Kutta 4 algorithm, to solve the system. As we are using the logarithmic scale factor we have some trouble defining our initial condition numerically, which should be $\eta(a=0)=0$. We cannot start our time variable $x$ at $a=0$, which corresponds to $x\to-\infty$, so instead we first used a wide range of x-values, $x\in[-25,3]$, to solve the system with an approximation for the initial condition $\eta(x=-25)=0$. Then we compute a spline of the result, and use this spline to evaluate the solution in a more well behaved range of values, $x\in[-15,2]$.
+
+Finally all the results are evaluated in this smaller range of $x$-values using the implemented methods and plotted using "Python".
 
 \section{Results}
 \label{sec:Results}
-First we present the evolution of the relative energy densities of the Universe, shown in \cref{fig:omegas_of_x}. Here each component is plotted, together with the combined contribution from all matter ($CDM + B$.) We see three distinct regimes where each component is dominating, radiation domination marked with blue, matter domination marked with red and lastly the present day regime dominated by the cosmological constant marked in green. This color coding is used to better visualize these regimes in all the produced plots.
+First we present the evolution of the relative energy densities of the Universe, shown in \cref{fig:omegas_of_x}. Here each component is plotted, together with the combined contribution from all matter ($CDM + B$). We see three distinct regimes where each component is dominating, radiation domination marked with blue, matter domination marked with red and lastly the present day regime dominated by the cosmological constant marked in green. This color coding is used to better visualize these regimes in all the produced plots.
 
-\begin{figure}[ht]
+The main result from this milestone is shown in \cref{fig:hubbe_and_eta}. Here are the Hubble parameter against redshift and $x$ in the two upper panels. Note that the panel with redshift only goes to $z=10^{-2}$, chosen arbitrarily to indicate today. Here we see how the Hubble parameter decreases steeply in the radiation dominated era, before it enters the matter dominated era with a slightly gentler slope. This is also evident in the two lower panels. The conformal time is basically the inverse of the Hubble parameter, while the Hubble prime parameter has an even steeper decrease in the radiation dominated era going over to a less steep decrease in the matter dominated. We note that the Hubble prime starts to increase again going into the last regime, dominated by the dark energy component, which corresponds to an accelerated expansion like we observe today.
+
+Note that the dashed lines in the lower left panel is the analytical solutions to \cref{eq:Friedmann implemented}, solved with only the dominated component in each regime and fitted to the data with a constant.
+
+Solving for the conformal time took in total $\SI{0.00678444}{s}$, while the hole run of everything done in the milestone was done in $\SI{0.0586608}{s}$.
+
+\begin{figure}[t]
     \centering
     \includegraphics[scale=0.5]{../figs/omegas_of_x.pdf}
-    \caption{}
+    \caption{Plot showing relative density parameters against the logarithmic scale factor. The early Universe was dominated by radiation, marked in blue. Following is the matter dominated era is marked in red, where the combined density of the dark matter and baryon components is indicated by the dashed orange line. Lastly we have the present era dominated by the cosmological constant, marked in green.}
     \label{fig:omegas_of_x}
 \end{figure}
 
 \begin{figure}[ht]
     \centering
     \includegraphics[scale=0.5]{../figs/Hubble_eta_of_x.pdf}
-    \caption{Testcaption3}
+    \caption{Plot showing the Hubble parameter against logarithmic scale factor and redshift, in two upper panels, and the conformal time and Hubble prime against $x$ in the two lower panels. Each dominating regime is indicated in blue, red and green color. The dashed lines in the lower left panel is the analytical approximation solutions obtained from solving the Friedmann equation with only one component, one solution for each dominating regime.}
     \label{fig:hubbe_and_eta}
 \end{figure}
 
-\newpage
+\clearpage
 \begin{appendices}
 \appendix
 \section{Expressions for the relative density parameters}
@@ -252,7 +260,40 @@ The expressions for the relative density parameters presented in \cref{tab:densi
 
 \section{Benchmarking the Code}
 \label{asec:Benchmarking}
+Here we quickly include the figures used for benchmarking the code, without much further explanation. This is mostly implemented to be able to check that the code still works as intended in the milestones to come.
 
+First we check that $\frac{\mathcal{H}}{\exp(x)H} =1$ for all $x$, shown in \cref{fig:bench_Hp_over_aH}.
+\begin{figure}[ht]
+    \centering
+    \includegraphics[scale=0.5]{../figs/ratio_Hprime_aH.pdf}
+    \caption{Ratio of Hubble prime over the product of the scale factor and the Hubble parameter, which should equal unity. Note that the oscillations around unity are of order $10^{-5}$.}
+    \label{fig:bench_Hp_over_aH}
+\end{figure}
+
+Last we check the ratio of the second and first derivatives of the Hubble prime over the Hubble prime. The expressions used for the derivatives is derived using the chain rule and expressed in terms of the Hubble parameter and its derivatives, which again is expressed using the methods implemented for the Hubble parameter. This way we can check that the actual implemented methods are correct, even tho it might be possible to express them in a more direct and numerically more efficient way. The ratios end up as follows
+\begin{align*}
+    \frac{\mathcal{H}^\prime}{H} &= 1-\frac{N}{2}
+    \\
+    \frac{\mathcal{H}^{\prime\prime}}{H} &= \left(1-\frac{N}{2}\right)^2
+\end{align*}
+where $N$ is the prefactor for $x$ in the exponentials for each component in \cref{eq:Friedmann implemented}. That is $N={3,\,4\,0}$ for radiation, matter and Cosmological constant respectively. Result shown in \cref{fig:bench_Hp_and_derivatives}.
+\renewcommand{\floatpagefraction}{.99}%
+\renewcommand{\textfraction}{0}
+\begin{figure}[t]
+    \centering
+    \includegraphics[scale=0.5]{../figs/ratio_Hprime_and_derivatives.pdf}
+    \caption{Ratio of Hubble prime and its first and second derivatives.}
+    \label{fig:bench_Hp_and_derivatives}
+\end{figure}
+
+Then we check that the ratio $\frac{\eta \mathcal{H}}{c}$ converges to unity back in time in the radiation dominated regime, shown in \cref{fig:bench_eta_rad_dom_converges}, where the solution of the conformal time is $\eta = \frac{c}{\mathcal{H}}$.
+
+\begin{figure}[b]
+    \centering
+    \includegraphics[scale=0.5]{../figs/ratio_eta_Hp_over_c.pdf}
+    \caption{Check that the ratio of the conformal time and Hubble prime over c converges to unity in the radiation dominated regime.}
+    \label{fig:bench_eta_rad_dom_converges}
+\end{figure}
 
 \end{appendices}
 
