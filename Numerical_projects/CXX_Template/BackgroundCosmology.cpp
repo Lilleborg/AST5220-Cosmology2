@@ -116,7 +116,8 @@ double BackgroundCosmology::dHdx_of_x(double x) const{
 double BackgroundCosmology::ddHddx_of_x(double x) const{
   double H = H_of_x(x);
   Vector exponentials = exp_of_3x_and_4x(x);
-  double res = H0*H0/2 * (1/H * (9*(OmegaB+OmegaCDM)/exponentials[0] + 16*OmegaR/exponentials[1]) - dHdx_of_x(x)/H/H * (-3*(OmegaB+OmegaCDM)/exponentials[0] - 4*OmegaR/exponentials[1]));
+  double res = H0*H0/2 * (1/H * (9*(OmegaB+OmegaCDM)/exponentials[0] + 16*OmegaR/exponentials[1]) 
+    - dHdx_of_x(x)/H/H * (-3*(OmegaB+OmegaCDM)/exponentials[0] - 4*OmegaR/exponentials[1]));
   return res;
 }
   // Returns Hubble prime as function of x and H_of_x
