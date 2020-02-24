@@ -15,7 +15,7 @@ x_array, eta_of_x, H_of_x, dHdx_of_x, Hp_of_x, dHpdx_of_x, ddHpddx_of_x, OmegaB,
 
 # Data handling and converting
 # ----------------------------
-x_array_ticks = np.linspace(x_array.min(), x_array.max(), 5)
+x_array_ticks = np.append(np.linspace(x_array.min(), x_array.max(), 5),0)
 z_array = 1/np.exp(x_array) - 1
 z_non_neg = z_array[z_array > 0]
 a_array = np.exp(x_array)

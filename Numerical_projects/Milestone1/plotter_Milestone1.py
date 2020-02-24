@@ -17,8 +17,7 @@ x_array, eta_of_x, H_of_x, dHdx_of_x, Hp_of_x, dHpdx_of_x, ddHpddx_of_x, OmegaB,
 z_array = 1/np.exp(x_array) - 1
 z_non_neg = z_array[z_array > 0]
 a_array = np.exp(x_array)
-x_array_ticks = np.linspace(x_array.min(), x_array.max(), 5)
-z_array_ticks = np.logspace(np.log10(z_non_neg.min()), np.log10(z_non_neg.max()), 5)
+x_array_ticks = np.append(np.linspace(x_array.min(), x_array.max(), 5),0)
 z_array_ticks = np.logspace(7,-2,4)
 
 km = 1e3                                # [m]
