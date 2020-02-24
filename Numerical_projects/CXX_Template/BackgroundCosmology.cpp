@@ -79,6 +79,9 @@ double BackgroundCosmology::H0_over_H_squared(double x) const{
 
   // Returns a vector with components exp(3*x) and exp(4*x)
 Vector BackgroundCosmology::exp_of_3x_and_4x(double x) const{
+  // From testing this method performs better than calling the exponential functions
+  // with 3*x and 4*x as arguments. For consistent/clean code this method is used each time
+  // one of the quantities are needed (even when only using one of them).
   double a = exp(x);
   double exp3x = a*a*a;
   double exp4x = exp3x*a;
@@ -220,6 +223,7 @@ void BackgroundCosmology::info() const{
   std::cout << "OmegaR:      " << OmegaR      << "\n";
   std::cout << "Neff:        " << Neff        << "\n";
   std::cout << "h:           " << h           << "\n";
+  std::cout << "H0:          " << H0          << "\n";
   std::cout << "TCMB:        " << TCMB        << "\n";
   std::cout << std::endl;
 } 
