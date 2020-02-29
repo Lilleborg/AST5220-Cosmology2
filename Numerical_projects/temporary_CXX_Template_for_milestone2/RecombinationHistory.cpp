@@ -3,7 +3,7 @@
 //====================================================
 // Constructors
 //====================================================
-   
+
 RecombinationHistory::RecombinationHistory(
     BackgroundCosmology *cosmo, 
     double Yp) :
@@ -34,9 +34,10 @@ void RecombinationHistory::solve_number_density_electrons(){
   //=============================================================================
   // TODO: Set up x-array and make arrays to store X_e(x) and n_e(x) on
   //=============================================================================
-  Vector x_array;
-  Vector Xe_arr;
-  Vector ne_arr;
+  Vector x_array = Utils::linspace(x_start,x_end,npts_rec_arrays);
+  Vector Xe_arr(npts_rec_arrays);
+  Vector ne_arr  = Xe_arr;
+
 
   // Calculate recombination history
   bool saha_regime = true;
@@ -116,19 +117,31 @@ std::pair<double,double> RecombinationHistory::electron_fraction_from_saha_equat
   const double H0_over_h   = Constants.H0_over_h;
 
   // Fetch cosmological parameters
-  //const double OmegaB      = cosmo->get_OmegaB();
-  //...
-  //...
+  const double T_B         = cosmo->get_TCMB()/a;  // Baryon temperature approximation
+  const double nb          = get_number_density_baryons(x);
 
   // Electron fraction and number density
   double Xe = 0.0;
   double ne = 0.0;
+
+  // Right hand side of Saha equation
+  const double temporary_factor = m_e*T_B*k_b/(2*M_PI*hbar*hbar);
+  const double F = 1/nb*temporary_factor*sqrt(temporary_factor)*exp(-epsilon_0/k_b/T_B);
+  // Determine if we have to use the Taylor approximation in the second order equation
+  bool use_Taylor = false;
+  if (4/F < 1e-16){
+    use_Taylor = true;
+  }
+
+  // Calculate Xe
+  if (use_Taylor){
+    Xe = 1.0;
+  } else {
+    Xe = (-F + F*sqrt(1+4/F))/2
+  }
   
-  //=============================================================================
-  // TODO: Compute Xe and ne from the Saha equation
-  //=============================================================================
-  //...
-  //...
+  // Calculate ne
+  ne = Xe * nb;
 
   return std::pair<double,double>(Xe, ne);
 }
@@ -214,6 +227,12 @@ void RecombinationHistory::solve_for_optical_depth_tau(){
 //====================================================
 // Get methods
 //====================================================
+
+double RecombinationHistory::get_number_density_baryons(double x) const{
+  double nb = cosmo->get_OmegaB(x)*cosmo->get_rho_crit(x)/Constants.m_H;
+
+  return nb;
+}
 
 double RecombinationHistory::tau_of_x(double x) const{
   return tau_of_x_spline(x);
