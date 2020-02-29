@@ -185,6 +185,15 @@ double BackgroundCosmology::get_OmegaLambda(double x) const{
   return Omega;
 }
 
+double BackgroundCosmology::get_rho_crit(double x) const{
+  if(x == 0.0) return 3*H0*H0/8/M_PI/Constants.G;
+
+  double H_temp = H_of_x(x);
+  double res = 3*H_temp*H_temp/8/M_PI/Constants.G;
+
+  return res;
+}
+
   // Calculating without curvature, so always returning zero
 double BackgroundCosmology::get_OmegaK(double x) const{
   return 0.0;

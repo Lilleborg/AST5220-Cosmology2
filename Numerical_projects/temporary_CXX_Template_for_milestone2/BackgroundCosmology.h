@@ -74,6 +74,7 @@ class BackgroundCosmology{
     double get_OmegaLambda(double x = 0.0) const; 
     double get_OmegaK(double x = 0.0) const; 
     double get_OmegaMnu(double x = 0.0) const; 
+    double get_rho_crit(double x = 0.0) const;
     double get_H0() const;
     double get_h() const;
     double get_Neff() const;
