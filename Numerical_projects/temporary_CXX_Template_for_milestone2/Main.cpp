@@ -22,7 +22,7 @@ int main(int argc, char **argv){
   double TCMB        = 2.7255;
 
   // Recombination parameters
-  double Yp          = 0.24;
+  double Yp          = 0.0;       //Not including Helium, propper value: 0.24;
 
   //=========================================================================
   // Module I
@@ -38,20 +38,18 @@ int main(int argc, char **argv){
   Utils::EndTiming("Module I");
   std::cout << "\n";
 
-  // Remove when module is completed
-  return 0;
-
   //=========================================================================
   // Module II
   //=========================================================================
-  
+  Utils::StartTiming("Module II");
   // Solve the recombination history
   RecombinationHistory rec(&cosmo, Yp);
   rec.info();
 
   // Output recombination quantities
   rec.output("recombination.txt");
-  
+  Utils::EndTiming("Module II");
+  std::cout << "\n";
   // Remove when module is completed
   return 0;
 
