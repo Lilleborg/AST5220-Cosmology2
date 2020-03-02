@@ -1,9 +1,9 @@
 #include"RecombinationHistory.h"
+// #include <algorithm>
 
 //====================================================
 // Constructors
 //====================================================
-
 RecombinationHistory::RecombinationHistory(
     BackgroundCosmology *cosmo, 
     double Yp) :
@@ -14,20 +14,18 @@ RecombinationHistory::RecombinationHistory(
 //====================================================
 // Do all the solving we need to do
 //====================================================
-
 void RecombinationHistory::solve(){
     
   // Compute and spline Xe, ne
   solve_number_density_electrons();
    
   // Compute and spline tau, dtaudx, ddtauddx, g, dgdx, ddgddx, ...
-  //solve_for_optical_depth_tau();
+  solve_for_optical_depth_tau();
 }
 
 //====================================================
 // Solve for X_e and n_e using Saha and Peebles and spline the result
 //====================================================
-
 void RecombinationHistory::solve_number_density_electrons(){
   Utils::StartTiming("Xe");
   
@@ -59,9 +57,9 @@ void RecombinationHistory::solve_number_density_electrons(){
       ne_arr.at(i) = ne_current;
 
     } else {
-      // Get the rest of Xe from Peeble's equation
+      // Get the rest of Xe from Peebles equation
 
-      // The right hand side of Peeble's ODE equation
+      // The right hand side of Peebles ODE equation
       ODEFunction dXedx = [&](double x, const double *Xe, double *dXedx){
         return rhs_peebles_ode(x, Xe, dXedx);
       };
@@ -101,7 +99,7 @@ void RecombinationHistory::solve_number_density_electrons(){
 }
 
 //====================================================
-// Solve the Saha equation to get ne and Xe
+// The Saha equation to get ne and Xe in the first regime
 //====================================================
 std::pair<double,double> RecombinationHistory::electron_fraction_from_saha_equation(double x) const{
   const double a           = exp(x);
@@ -139,7 +137,7 @@ std::pair<double,double> RecombinationHistory::electron_fraction_from_saha_equat
 }
 
 //====================================================
-// The right hand side of the dXedx Peebles ODE
+// The right hand side of the dXedx Peebles ODE to get ne and Xe in the first regime
 //====================================================
 int RecombinationHistory::rhs_peebles_ode(double x, const double *Xe, double *dXedx){
 
@@ -208,20 +206,21 @@ void RecombinationHistory::solve_for_optical_depth_tau(){
   Utils::StartTiming("opticaldepth");
 
   // Set up x-arrays to integrate over. We split into three regions as we need extra points in reionisation
-  const int npts = 1000;
+  const int npts = 1e+4;
   Vector x_array = Utils::linspace(x_start, x_end, npts);
+  Vector tau(npts);
+  Vector dtaudx_arr(npts);
+  Vector dtaudx_arr_analytic(npts);
+  Vector ddtauddx_arr(npts);
+  Vector vis(npts);
+  Vector dvisdx_arr(npts);
+  Vector ddvisddx_arr(npts);
 
   // The ODE system dtau/dx, dtau_noreion/dx and dtau_baryon/dx
   ODEFunction dtaudx = [&](double x, const double *tau, double *dtaudx){
 
-    //=============================================================================
-    // TODO: Write the expression for dtaudx
-    //=============================================================================
-    //...
-    //...
-
-    // Set the derivative for photon optical depth
-    dtaudx[0] = 0.0;
+    
+    dtaudx[0] = - ne_of_x(x)*Constants.sigma_T*Constants.c/cosmo->H_of_x(x);
 
     return GSL_SUCCESS;
   };
@@ -229,13 +228,29 @@ void RecombinationHistory::solve_for_optical_depth_tau(){
   //=============================================================================
   // TODO: Set up and solve the ODE and make tau splines
   //=============================================================================
-  //...
-  //...
+  // Finding index of x = 0
+  std::vector<double>::iterator x_zero_it_low = std::lower_bound(x_array.begin(),x_array.end(),0);
+  int id_x_equal_zero = x_zero_it_low-x_array.begin();
+  std::cout << "found x0? " << id_x_equal_zero << " " << x_array[id_x_equal_zero] << "\n";
+  // std::vector<double>::iterator x_zero_it_high = std::upper_bound(x_array.begin(),x_array.end(),0);
+  // std::cout << "found x0? " << x_zero_it_high-x_array.begin() << " " << x_array[x_zero_it_high-x_array.begin()] << "\n";
+
+  ODESolver tau_ODE;
+  Vector tau_init{1e10};
+  tau_ODE.solve(dtaudx,x_array,tau_init);
+  auto tau_all_data = tau_ODE.get_data();
+  for (int i = 0; i < npts; i++)
+  {
+    tau.at(i) = tau_all_data.at(i)[0] - tau_all_data.at(id_x_equal_zero)[0];
+    dtaudx_arr_analytic.at(i) = - ne_of_x(x_array[i])*Constants.sigma_T*Constants.c/cosmo->H_of_x(x_array[i]);
+  }
+  
+
 
   //=============================================================================
   // TODO: Compute visibility functions and spline everything
   //=============================================================================
-  //...
+  tau_of_x_spline.create(x_array,tau);
   //...
 
   Utils::EndTiming("opticaldepth");
@@ -350,7 +365,7 @@ void RecombinationHistory::output(const std::string filename) const{
     fp << x                    << " ";
     fp << Xe_of_x(x)           << " ";
     fp << ne_of_x(x)           << " ";
-    // fp << tau_of_x(x)          << " ";
+    fp << tau_of_x(x)          << " ";
     // fp << dtaudx_of_x(x)       << " ";
     // fp << ddtauddx_of_x(x)     << " ";
     // fp << g_tilde_of_x(x)      << " ";

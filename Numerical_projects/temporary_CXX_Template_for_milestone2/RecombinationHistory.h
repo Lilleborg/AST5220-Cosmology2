@@ -23,7 +23,7 @@ class RecombinationHistory{
     const double x_end    = Constants.x_end;
     
     // Numbers of points of Xe,ne array (modify as you see fit)
-    const int npts_rec_arrays = 1e+5;//10000;
+    const int npts_rec_arrays = 1e+4;//10000;
   
     // Xe for when to switch between Saha and Peebles
     const double Xe_saha_limit = 0.99;
@@ -38,7 +38,7 @@ class RecombinationHistory{
     // Right hand side of the dXedx Peebles equation
     int rhs_peebles_ode(double x, const double *y, double *dydx);
     
-    // Solve for Xe 
+    // Solve for Xe  using Saha and Peebles
     void solve_number_density_electrons();
     
     //===============================================================
