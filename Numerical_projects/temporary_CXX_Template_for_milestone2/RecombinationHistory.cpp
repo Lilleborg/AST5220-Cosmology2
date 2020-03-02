@@ -208,7 +208,7 @@ void RecombinationHistory::solve_for_optical_depth_tau(){
   // Set up x-arrays to integrate over. We split into three regions as we need extra points in reionisation
   const int npts = 1e+4;
   Vector x_array = Utils::linspace(x_start, x_end, npts);
-  Vector tau(npts);
+  Vector tau_arr(npts);
   Vector dtaudx_arr(npts);
   Vector dtaudx_arr_analytic(npts);
   Vector ddtauddx_arr(npts);
@@ -241,7 +241,7 @@ void RecombinationHistory::solve_for_optical_depth_tau(){
   auto tau_all_data = tau_ODE.get_data();
   for (int i = 0; i < npts; i++)
   {
-    tau.at(i) = tau_all_data.at(i)[0] - tau_all_data.at(id_x_equal_zero)[0];
+    tau_arr.at(i) = tau_all_data.at(i)[0];// - tau_all_data.at(id_x_equal_zero)[0];
     dtaudx_arr_analytic.at(i) = - ne_of_x(x_array[i])*Constants.sigma_T*Constants.c/cosmo->H_of_x(x_array[i]);
   }
   
@@ -250,7 +250,7 @@ void RecombinationHistory::solve_for_optical_depth_tau(){
   //=============================================================================
   // TODO: Compute visibility functions and spline everything
   //=============================================================================
-  tau_of_x_spline.create(x_array,tau);
+  tau_of_x_spline.create(x_array,tau_arr);
   //...
 
   Utils::EndTiming("opticaldepth");
