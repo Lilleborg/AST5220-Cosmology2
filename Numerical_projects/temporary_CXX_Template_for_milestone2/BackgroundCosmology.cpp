@@ -34,9 +34,8 @@ BackgroundCosmology::BackgroundCosmology(
   //OmegaLambda
   OmegaLambda = 1 - (OmegaR + OmegaNu + OmegaB + OmegaCDM + OmegaK);
   
-  // Check sum of the Omegas today
+  // Sum of the Omegas today
   Omega_summed = OmegaB + OmegaCDM + OmegaLambda + OmegaR + OmegaK + OmegaNu;
-  std::cout << "Sum of the present day capital omegas: " << Omega_summed << std::endl;
 }
 
 // Solve the background
@@ -59,7 +58,7 @@ void BackgroundCosmology::solve(){
   // Filling data into array:
   Vector eta_array(x_array.size());
   for (int i = 0; i < eta_all_data.size(); i++){
-    eta_array.at(i) = eta_all_data[i][0];
+    eta_array[i] = eta_all_data[i][0];
   }
 
   // Creating spline:
@@ -225,16 +224,17 @@ double BackgroundCosmology::get_TCMB() const{
 void BackgroundCosmology::info() const{ 
   std::cout << "\n";
   std::cout << "Info about cosmology class:\n";
-  std::cout << "OmegaB:      " << OmegaB      << "\n";
-  std::cout << "OmegaCDM:    " << OmegaCDM    << "\n";
-  std::cout << "OmegaLambda: " << OmegaLambda << "\n";
-  std::cout << "OmegaK:      " << OmegaK      << "\n";
-  std::cout << "OmegaNu:     " << OmegaNu     << "\n";
-  std::cout << "OmegaR:      " << OmegaR      << "\n";
-  std::cout << "Neff:        " << Neff        << "\n";
-  std::cout << "h:           " << h           << "\n";
-  std::cout << "H0:          " << H0          << "\n";
-  std::cout << "TCMB:        " << TCMB        << "\n";
+  std::cout << "OmegaB:      " << OmegaB       << "\n";
+  std::cout << "OmegaCDM:    " << OmegaCDM     << "\n";
+  std::cout << "OmegaLambda: " << OmegaLambda  << "\n";
+  std::cout << "OmegaK:      " << OmegaK       << "\n";
+  std::cout << "OmegaNu:     " << OmegaNu      << "\n";
+  std::cout << "OmegaR:      " << OmegaR       << "\n";
+  std::cout << "Sum Omegas:  " << Omega_summed << "\n";
+  std::cout << "Neff:        " << Neff         << "\n";
+  std::cout << "h:           " << h            << "\n";
+  std::cout << "H0:          " << H0           << "\n";
+  std::cout << "TCMB:        " << TCMB         << "\n";
   std::cout << std::endl;
 } 
 

@@ -76,3 +76,6 @@ plot1:
 bench1:
 	cd ./../Milestone1 && python benchmarking_Milestone1.py
 
+plot2:
+	cd ./../Milestone2 && python plotter_Milestone2.py
+
