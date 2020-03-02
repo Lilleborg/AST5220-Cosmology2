@@ -21,7 +21,7 @@ void RecombinationHistory::solve(){
   solve_number_density_electrons();
    
   // Compute and spline tau, dtaudx, ddtauddx, g, dgdx, ddgddx, ...
-  solve_for_optical_depth_tau();
+  //solve_for_optical_depth_tau();
 }
 
 //====================================================
@@ -38,14 +38,10 @@ void RecombinationHistory::solve_number_density_electrons(){
   Vector Xe_arr(npts_rec_arrays);
   Vector ne_arr  = Xe_arr;
 
-
   // Calculate recombination history
   bool saha_regime = true;
   for(int i = 0; i < npts_rec_arrays; i++){
-
-    //==============================================================
-    // TODO: Get X_e from solving the Saha equation so
-    // implement the function electron_fraction_from_saha_equation
+    // Get X_e from solving the Saha equation
     //==============================================================
     auto Xe_ne_data = electron_fraction_from_saha_equation(x_array[i]);
 
@@ -58,45 +54,48 @@ void RecombinationHistory::solve_number_density_electrons(){
       saha_regime = false;
 
     if(saha_regime){
-      
-      //=============================================================================
-      // TODO: Store the result we got from the Saha equation
-      //=============================================================================
-      //...
-      //...
+      // Store the result from the Saha equation
+      Xe_arr.at(i) = Xe_current;
+      ne_arr.at(i) = ne_current;
 
     } else {
+      // Get the rest of Xe from Peeble's equation
 
-      //==============================================================
-      // TODO: Compute X_e from current time til today by solving 
-      // the Peebles equation (NB: if you solve all in one go remember to
-      // exit the for-loop!)
-      // Implement rhs_peebles_ode
-      //==============================================================
-      //...
-      //...
-
-      // The Peebles ODE equation
-      ODESolver peebles_Xe_ode;
+      // The right hand side of Peeble's ODE equation
       ODEFunction dXedx = [&](double x, const double *Xe, double *dXedx){
         return rhs_peebles_ode(x, Xe, dXedx);
       };
       
-      //=============================================================================
-      // TODO: Set up IC, solve the ODE and fetch the result 
-      //=============================================================================
-      //...
-      //...
-    
+      // array of x-values from current to today used in ODEsolver, 
+      // init with invalid value (large number) to controll that all elements are overwritten correctly in the following loop
+      // there should be no elements with value 100 left in the filled array. (could use linspace here, but this is slightly faster!)
+      Vector peebles_x_array(npts_rec_arrays-i,100);
+      for (int j = 0; j < npts_rec_arrays-i; j++)
+      {
+        peebles_x_array.at(j) = x_array.at(j+i);
+      }
+
+      ODESolver peebles_Xe_ode;
+      Vector peebles_Xe_init{Xe_current};   // Initial condition from the last Xe value found from Saha
+      peebles_Xe_ode.solve(dXedx,peebles_x_array,peebles_Xe_init);
+      auto Xe_all_data = peebles_Xe_ode.get_data();
+
+      // Fetch results
+      for (int j = 0; j < npts_rec_arrays-i; j++)
+      {
+        Xe_arr.at(j+i) = Xe_all_data[j][0];
+        ne_arr.at(j+i) = Xe_arr.at(j+i)*get_number_density_baryons(peebles_x_array.at(j));
+      }
+      // Solving the full equation until today, so breaking loop
+      break;
     }
   }
-
-  //=============================================================================
-  // TODO: Spline the result. Implement and make sure the Xe_of_x, ne_of_x 
-  // functions are working
-  //=============================================================================
-  //...
-  //...
+  
+  // Spline the result. Used in get Xe_of_x and ne_of_x methods
+  Vector log_Xe_arr = log(Xe_arr);
+  Vector log_ne_arr = log(ne_arr);
+  log_Xe_of_x_spline.create(x_array,log_Xe_arr);
+  log_ne_of_x_spline.create(x_array,log_ne_arr);
 
   Utils::EndTiming("Xe");
 }
@@ -109,12 +108,9 @@ std::pair<double,double> RecombinationHistory::electron_fraction_from_saha_equat
  
   // Physical constants
   const double k_b         = Constants.k_b;
-  const double G           = Constants.G;
   const double m_e         = Constants.m_e;
   const double hbar        = Constants.hbar;
-  const double m_H         = Constants.m_H;
   const double epsilon_0   = Constants.epsilon_0;
-  const double H0_over_h   = Constants.H0_over_h;
 
   // Fetch cosmological parameters
   const double T_B         = cosmo->get_TCMB()/a;  // Baryon temperature approximation
@@ -127,17 +123,13 @@ std::pair<double,double> RecombinationHistory::electron_fraction_from_saha_equat
   // Right hand side of Saha equation
   const double temporary_factor = m_e*T_B*k_b/(2*M_PI*hbar*hbar);
   const double F = 1/nb*temporary_factor*sqrt(temporary_factor)*exp(-epsilon_0/k_b/T_B);
-  // Determine if we have to use the Taylor approximation in the second order equation
-  bool use_Taylor = false;
-  if (4/F < 1e-16){
-    use_Taylor = true;
-  }
-
+  
   // Calculate Xe
-  if (use_Taylor){
+  // Determine if we have to use the Taylor approximation in the second order equation
+  if (4.0/F < 1e-9){
     Xe = 1.0;
   } else {
-    Xe = (-F + F*sqrt(1+4/F))/2
+    Xe = (-F + F*sqrt(1+4/F))/2;
   }
   
   // Calculate ne
@@ -157,27 +149,52 @@ int RecombinationHistory::rhs_peebles_ode(double x, const double *Xe, double *dX
 
   // Physical constants in SI units
   const double k_b         = Constants.k_b;
-  const double G           = Constants.G;
   const double c           = Constants.c;
   const double m_e         = Constants.m_e;
   const double hbar        = Constants.hbar;
-  const double m_H         = Constants.m_H;
   const double sigma_T     = Constants.sigma_T;
   const double lambda_2s1s = Constants.lambda_2s1s;
   const double epsilon_0   = Constants.epsilon_0;
-
-  // Cosmological parameters
-  // const double OmegaB      = cosmo->get_OmegaB();
-  // ...
-  // ...
-
-  //=============================================================================
-  // TODO: Write the expression for dXedx
-  //=============================================================================
-  //...
-  //...
   
-  dXedx[0] = 0.0;
+  // Cosmological parameters
+  const double T_B         = cosmo->get_TCMB()/a;  // Baryon temperature approximation
+  const double nb          = get_number_density_baryons(x);
+  const double H           = cosmo->H_of_x(x);
+  
+  // Some constants to save FLOPS
+  const double hbar_square = hbar*hbar;
+  const double TB_k_b = k_b*T_B;
+
+  // Expression needed in dXedx
+  const double phi_2 = 0.448*log(epsilon_0/TB_k_b);
+  const double alpha_2 = 64.0*M_PI/sqrt(27.0*M_PI)*sqrt(epsilon_0/TB_k_b)*phi_2*sigma_T*c*3/(8*M_PI);
+
+  const double beta_factor = m_e*TB_k_b/(2.0*M_PI*hbar_square);
+  const double beta = alpha_2*beta_factor*sqrt(beta_factor)*exp(-epsilon_0/TB_k_b);
+  const double beta_2 = alpha_2*beta_factor*sqrt(beta_factor)*exp(-epsilon_0/(4.0*TB_k_b));
+  // Writing out the full expression for beta into beta_2 to take care of the exponential with possible overflow
+
+  const double n_1s = (1.0-X_e)*nb;
+  const double lambda_alpha = H*27.0*epsilon_0*epsilon_0*epsilon_0/(64.0*M_PI*M_PI*n_1s*hbar_square*hbar*c*c*c);
+  const double C_r = (lambda_2s1s+lambda_alpha)/(lambda_2s1s+lambda_alpha+beta_2);
+  
+  dXedx[0] = C_r/H*(beta*(1-X_e) - nb*alpha_2*X_e*X_e);
+
+  // std::cout << "x            " << x << "\n";
+  // std::cout << "phi_2        " << phi_2 << "\n";
+  // std::cout << "alpha_2      " << alpha_2 << "\n";
+  // std::cout << "Current Xe   " << X_e << "\n";
+  // std::cout << "beta         " << beta << "\n";
+  // std::cout << "beta_2       " << beta_2 << "\n";
+  // std::cout << "lambda 2s    " << lambda_2s1s << "\n";
+  // std::cout << "C_r          " << C_r << "\n";
+  // std::cout << "\n";
+  // std::cout << "nb           " << nb << "\n";
+  // std::cout << "n_1s         " << n_1s << "\n";
+  // std::cout << "lambda alpha " << lambda_alpha << "\n";
+  // std::cout << "H            " << H << "\n";
+
+  // std::cout << "dXedx        " << dXedx[0] << "\n";
 
   return GSL_SUCCESS;
 }
@@ -229,7 +246,9 @@ void RecombinationHistory::solve_for_optical_depth_tau(){
 //====================================================
 
 double RecombinationHistory::get_number_density_baryons(double x) const{
-  double nb = cosmo->get_OmegaB(x)*cosmo->get_rho_crit(x)/Constants.m_H;
+
+  double a = exp(x);
+  double nb = cosmo->get_OmegaB(0.0)*cosmo->get_rho_crit(0.0)/(Constants.m_H*a*a*a);
 
   return nb;
 }
@@ -289,24 +308,18 @@ double RecombinationHistory::ddgddx_tilde_of_x(double x) const{
 
 double RecombinationHistory::Xe_of_x(double x) const{
 
-  //=============================================================================
-  // TODO: Implement
-  //=============================================================================
-  //...
-  //...
+  double log_Xe = log_Xe_of_x_spline(x);
+  double res = exp(log_Xe);
 
-  return 0.0;
+  return res;
 }
 
 double RecombinationHistory::ne_of_x(double x) const{
 
-  //=============================================================================
-  // TODO: Implement
-  //=============================================================================
-  //...
-  //...
+  double log_ne = log_ne_of_x_spline(x);
+  double res = exp(log_ne);
 
-  return 0.0;
+  return res;
 }
 
 double RecombinationHistory::get_Yp() const{
@@ -328,7 +341,7 @@ void RecombinationHistory::info() const{
 //====================================================
 void RecombinationHistory::output(const std::string filename) const{
   std::ofstream fp(filename.c_str());
-  const int npts       = 5000;
+  const int npts       = 10000;
   const double x_min   = x_start;
   const double x_max   = x_end;
 
@@ -337,12 +350,12 @@ void RecombinationHistory::output(const std::string filename) const{
     fp << x                    << " ";
     fp << Xe_of_x(x)           << " ";
     fp << ne_of_x(x)           << " ";
-    fp << tau_of_x(x)          << " ";
-    fp << dtaudx_of_x(x)       << " ";
-    fp << ddtauddx_of_x(x)     << " ";
-    fp << g_tilde_of_x(x)      << " ";
-    fp << dgdx_tilde_of_x(x)   << " ";
-    fp << ddgddx_tilde_of_x(x) << " ";
+    // fp << tau_of_x(x)          << " ";
+    // fp << dtaudx_of_x(x)       << " ";
+    // fp << ddtauddx_of_x(x)     << " ";
+    // fp << g_tilde_of_x(x)      << " ";
+    // fp << dgdx_tilde_of_x(x)   << " ";
+    // fp << ddgddx_tilde_of_x(x) << " ";
     fp << "\n";
   };
   std::for_each(x_array.begin(), x_array.end(), print_data);
