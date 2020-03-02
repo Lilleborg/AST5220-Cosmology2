@@ -45,9 +45,10 @@ int main(int argc, char **argv){
   // Solve the recombination history
   RecombinationHistory rec(&cosmo, Yp);
   rec.info();
+  rec.solve();
 
   // Output recombination quantities
-  rec.output("recombination.txt");
+  rec.output("./../data/recombination.txt");
   Utils::EndTiming("Module II");
   std::cout << "\n";
   // Remove when module is completed
