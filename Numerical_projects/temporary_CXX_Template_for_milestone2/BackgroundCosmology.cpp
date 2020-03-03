@@ -62,7 +62,7 @@ void BackgroundCosmology::solve(){
   }
 
   // Creating spline:
-  eta_of_x_spline.create(x_array,eta_array);
+  eta_of_x_spline.create(x_array,eta_array,"eta");
   Utils::EndTiming("Eta");
 }
 
