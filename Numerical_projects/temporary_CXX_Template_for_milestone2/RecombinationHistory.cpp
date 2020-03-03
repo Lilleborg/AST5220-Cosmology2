@@ -92,8 +92,8 @@ void RecombinationHistory::solve_number_density_electrons(){
   // Spline the result. Used in get Xe_of_x and ne_of_x methods
   Vector log_Xe_arr = log(Xe_arr);
   Vector log_ne_arr = log(ne_arr);
-  log_Xe_of_x_spline.create(x_array,log_Xe_arr);
-  log_ne_of_x_spline.create(x_array,log_ne_arr);
+  log_Xe_of_x_spline.create(x_array,log_Xe_arr,"log Xe");
+  log_ne_of_x_spline.create(x_array,log_ne_arr,"log ne");
 
   Utils::EndTiming("Xe");
 }
@@ -245,8 +245,8 @@ void RecombinationHistory::solve_for_optical_depth_tau(){
   //=============================================================================
   // TODO: Compute visibility functions and spline everything
   //=============================================================================
-  tau_of_x_spline.create(x_array,tau_arr);
-  tau_deriv_of_x_spline.create(x_array,dtaudx_arr);
+  tau_of_x_spline.create(x_array,tau_arr,"tau");
+  tau_deriv_of_x_spline.create(x_array,dtaudx_arr,"tau derivative");
 
   std::cout << "tau_spline(x=0) " << tau_of_x_spline(x_array[id_x_equal_zero]) << "\n";
   
