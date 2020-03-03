@@ -210,7 +210,6 @@ void RecombinationHistory::solve_for_optical_depth_tau(){
   Vector x_array = Utils::linspace(x_start, x_end, npts);
   Vector tau_arr(npts);
   Vector dtaudx_arr(npts);
-  Vector dtaudx_arr_analytic(npts);
   Vector ddtauddx_arr(npts);
   Vector vis(npts);
   Vector dvisdx_arr(npts);
@@ -218,10 +217,7 @@ void RecombinationHistory::solve_for_optical_depth_tau(){
 
   // The ODE system dtau/dx, dtau_noreion/dx and dtau_baryon/dx
   ODEFunction dtaudx = [&](double x, const double *tau, double *dtaudx){
-
-    
     dtaudx[0] = - ne_of_x(x)*Constants.sigma_T*Constants.c/cosmo->H_of_x(x);
-
     return GSL_SUCCESS;
   };
 
@@ -231,28 +227,29 @@ void RecombinationHistory::solve_for_optical_depth_tau(){
   // Finding index of x = 0
   std::vector<double>::iterator x_zero_it_low = std::lower_bound(x_array.begin(),x_array.end(),0);
   int id_x_equal_zero = x_zero_it_low-x_array.begin();
-  std::cout << "found x0? " << id_x_equal_zero << " " << x_array[id_x_equal_zero] << "\n";
-  // std::vector<double>::iterator x_zero_it_high = std::upper_bound(x_array.begin(),x_array.end(),0);
-  // std::cout << "found x0? " << x_zero_it_high-x_array.begin() << " " << x_array[x_zero_it_high-x_array.begin()] << "\n";
+  std::cout << "found x0? idx = " << id_x_equal_zero << " x = " << x_array[id_x_equal_zero] << "\n";
 
   ODESolver tau_ODE;
-  Vector tau_init{1e10};
-  tau_ODE.solve(dtaudx,x_array,tau_init);
+  Vector tau_init{1e3}; // Some initial value, fixed later in loop as we know tau(x=0) = 0
+  tau_ODE.solve(dtaudx,x_array,tau_init,gsl_odeiv2_step_rk2);
   auto tau_all_data = tau_ODE.get_data();
+  auto tau_derivative_data = tau_ODE.get_derivative_data();
   for (int i = 0; i < npts; i++)
   {
-    tau_arr.at(i) = tau_all_data.at(i)[0];// - tau_all_data.at(id_x_equal_zero)[0];
-    dtaudx_arr_analytic.at(i) = - ne_of_x(x_array[i])*Constants.sigma_T*Constants.c/cosmo->H_of_x(x_array[i]);
+    // Fetch tau data, normalise with today value
+    tau_arr.at(i) = tau_all_data.at(i)[0] - tau_all_data.at(id_x_equal_zero)[0];
+    dtaudx_arr.at(i) = tau_derivative_data.at(i)[0];
   }
+  std::cout << "tau_array(x=0) " <<  tau_arr[id_x_equal_zero] << "\n";
   
-
-
   //=============================================================================
   // TODO: Compute visibility functions and spline everything
   //=============================================================================
   tau_of_x_spline.create(x_array,tau_arr);
-  //...
+  tau_deriv_of_x_spline.create(x_array,dtaudx_arr);
 
+  std::cout << "tau_spline(x=0) " << tau_of_x_spline(x_array[id_x_equal_zero]) << "\n";
+  
   Utils::EndTiming("opticaldepth");
 }
 
@@ -273,26 +270,11 @@ double RecombinationHistory::tau_of_x(double x) const{
 }
 
 double RecombinationHistory::dtaudx_of_x(double x) const{
-
-  //=============================================================================
-  // TODO: Implement. Either from the tau-spline tau_of_x_spline.deriv_(x) or 
-  // from a separate spline if you choose to do this
-  //=============================================================================
-  //...
-  //...
-
-  return 0.0;
+  return tau_deriv_of_x_spline(x);
 }
 
 double RecombinationHistory::ddtauddx_of_x(double x) const{
-
-  //=============================================================================
-  // TODO: Implement
-  //=============================================================================
-  //...
-  //...
-
-  return 0.0;
+  return tau_deriv_of_x_spline.deriv_x(x);
 }
 
 double RecombinationHistory::g_tilde_of_x(double x) const{
@@ -357,8 +339,8 @@ void RecombinationHistory::info() const{
 void RecombinationHistory::output(const std::string filename) const{
   std::ofstream fp(filename.c_str());
   const int npts       = 10000;
-  const double x_min   = x_start;
-  const double x_max   = x_end;
+  const double x_min   = x_start+3;
+  const double x_max   = x_end-2;
 
   Vector x_array = Utils::linspace(x_min, x_max, npts);
   auto print_data = [&] (const double x) {
@@ -366,8 +348,8 @@ void RecombinationHistory::output(const std::string filename) const{
     fp << Xe_of_x(x)           << " ";
     fp << ne_of_x(x)           << " ";
     fp << tau_of_x(x)          << " ";
-    // fp << dtaudx_of_x(x)       << " ";
-    // fp << ddtauddx_of_x(x)     << " ";
+    fp << dtaudx_of_x(x)       << " ";
+    fp << ddtauddx_of_x(x)     << " ";
     // fp << g_tilde_of_x(x)      << " ";
     // fp << dgdx_tilde_of_x(x)   << " ";
     // fp << ddgddx_tilde_of_x(x) << " ";
