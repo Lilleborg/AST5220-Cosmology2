@@ -184,7 +184,6 @@ void RecombinationHistory::solve_for_optical_depth_tau(){
   Utils::StartTiming("opticaldepth");
 
   // Set up x-arrays to integrate over and initiate arrays to store values
-  const int npts_tau = 1e+4;
   Vector x_array = Utils::linspace(x_start, x_end, npts_tau);
   Vector tau_arr(npts_tau);
   Vector dtaudx_arr(npts_tau);
