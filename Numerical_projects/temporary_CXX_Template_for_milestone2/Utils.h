@@ -30,12 +30,12 @@ extern struct ConstantsAndUnits {
   const double eV          = 1.60217653e-19 * J;		      // Electronvolt
   
   // Physical constants    
-  const double k_b         = 1.38064852e-23 * J/K;	      // Bolzmanns constant
+  const double k_b         = 1.38064852e-23 * J/K;	      // Boltzmann's constant
   const double m_e         = 9.10938356e-31 * kg;	        // Mass of electron
   const double m_H         = 1.6735575e-27 * kg;	        // Mass of hydrogen atom
   const double c           = 2.99792458e8 * m/s;	        // Speed of light
   const double G           = 6.67430e-11 * N*m*m/(kg*kg);	// Gravitational constant
-  const double hbar        = 1.054571817e-34 * J*s;		    // Reduced Plancks constant
+  const double hbar        = 1.054571817e-34 * J*s;		    // Reduced Planck's constant
   const double sigma_T     = 6.6524587158e-29 * m*m;		  // Thomas scattering cross-section
   const double lambda_2s1s = 8.227 / s;                   // Transition time is
   const double H0_over_h   = 100 * km/s/Mpc;              // H0 / h
@@ -51,7 +51,7 @@ extern struct ConstantsAndUnits {
   const double x_start = -18;
   const double x_end   = 4;
 
-  // Include polarization and/or neutrinos?
+  // Don't include polarization and/or neutrinos
   const bool polarization  = false;
   const bool neutrinos     = false;
 
