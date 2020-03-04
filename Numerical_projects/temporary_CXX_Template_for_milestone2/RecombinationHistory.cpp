@@ -184,13 +184,13 @@ void RecombinationHistory::solve_for_optical_depth_tau(){
   Utils::StartTiming("opticaldepth");
 
   // Set up x-arrays to integrate over and initiate arrays to store values
-  const int npts = 1e+4;
-  Vector x_array = Utils::linspace(x_start, x_end, npts);
-  Vector tau_arr(npts);
-  Vector dtaudx_arr(npts);
-  Vector vis(npts);
-  Vector dvisdx_arr(npts);
-  Vector ddvisddx_arr(npts);
+  const int npts_tau = 1e+4;
+  Vector x_array = Utils::linspace(x_start, x_end, npts_tau);
+  Vector tau_arr(npts_tau);
+  Vector dtaudx_arr(npts_tau);
+  Vector vis(npts_tau);
+  Vector dvisdx_arr(npts_tau);
+  Vector ddvisddx_arr(npts_tau);
 
   // Set up and solve the ODE for tau
   // The ODE system dtau/dx, dtau_noreion/dx and dtau_baryon/dx
@@ -210,7 +210,7 @@ void RecombinationHistory::solve_for_optical_depth_tau(){
   auto tau_derivative_data = tau_ODE.get_derivative_data();
   
   // Fetch and store results in arrays
-  for (int i = 0; i < npts; i++)
+  for (int i = 0; i < npts_tau; i++)
   {
     tau_arr.at(i) = tau_all_data.at(i)[0] - tau_all_data.at(id_x_equal_zero)[0];  // normalise with today value
     dtaudx_arr.at(i) = tau_derivative_data.at(i)[0];                              // tau derivative from ODE data
@@ -297,12 +297,14 @@ void RecombinationHistory::info() const{
 // Output the data computed to file
 //====================================================
 void RecombinationHistory::output(const std::string filename) const{
-  std::ofstream fp(filename.c_str());
+  // Create x_array to write to file using the splines. Choose a narrower interval than 
+  // the one used to solve the equations to avoid boundary problems
   const int npts       = 10000;
   const double x_min   = x_start+3;
   const double x_max   = x_end-2;
-
   Vector x_array = Utils::linspace(x_min, x_max, npts);
+
+  std::ofstream fp(filename.c_str());
   auto print_data = [&] (const double x) {
     fp << x                    << " ";
     fp << Xe_of_x(x)           << " ";
