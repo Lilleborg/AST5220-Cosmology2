@@ -22,30 +22,24 @@ class RecombinationHistory{
     const double x_start  = Constants.x_start;
     const double x_end    = Constants.x_end;
     
-    // Numbers of points of Xe,ne array (modify as you see fit)
-    const int npts_rec_arrays = 1e+5;//10000;
+    // Numbers of points used to solved for recombination (Xe and ne)
+    const int npts_rec_arrays = 1e+5;
+    // Numbers of points used to solved for optical depth (tau)
+    const int npts_tau        = 1e+3;
   
     // Xe for when to switch between Saha and Peebles
     const double Xe_saha_limit = 0.99;
 
-    //===============================================================
-    // [1] Computation of Xe (Saha and Peebles equation)
-    //===============================================================
- 
     // Compute Xe from the Saha equation
     std::pair<double,double> electron_fraction_from_saha_equation(double x) const;
     
     // Right hand side of the dXedx Peebles equation
     int rhs_peebles_ode(double x, const double *y, double *dydx);
     
-    // Solve for Xe  using Saha and Peebles
+    // Solve for Xe using Saha and Peebles
     void solve_number_density_electrons();
     
-    //===============================================================
-    // [2] Compute tau and visibility functions
-    //===============================================================
-
-    // The two things we need to solve: Xe/ne and tau
+    // Solve for optical depth using the ODESolver, compute visibility function
     void solve_for_optical_depth_tau();
 
     // Splines contained in this class
