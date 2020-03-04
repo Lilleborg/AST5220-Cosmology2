@@ -51,7 +51,7 @@ void BackgroundCosmology::solve(){
   };
 
   // Solving the ODE:
-  Vector eta_ini{0.0};
+  Vector eta_ini{Constants.c/Hp_of_x(x_start)};
   ODESolver ode;
   ode.solve(detadx,x_array,eta_ini);
   auto eta_all_data = ode.get_data();
@@ -241,6 +241,8 @@ void BackgroundCosmology::info() const{
 // Output some data to file
 //====================================================
 void BackgroundCosmology::output(const std::string filename) const{
+  // Create x_array to write to file using the splines. Choose a narrower interval than 
+  // the one used to solve the equations to avoid boundary problems
   const double x_min = x_start+3;
   const double x_max = x_end-2;
   const int    n_pts = npts;
