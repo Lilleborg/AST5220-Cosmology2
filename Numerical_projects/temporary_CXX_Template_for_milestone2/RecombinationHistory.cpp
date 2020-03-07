@@ -227,6 +227,20 @@ void RecombinationHistory::solve_for_optical_depth_tau(){
 //====================================================
 // Get methods
 //====================================================
+// Get times for last scattering, in x and z
+Vector RecombinationHistory::get_time_results() const{
+  Vector res(4);
+  // Using the tau spline and binary search for value method to find tau = 1
+  std::pair<double,double> xrange(-10.0,-5.0);  // Range of x-value to search in
+  // x and z value when tau equals one stored
+  res[0] = Utils::binary_search_for_value(tau_of_x_spline,1.0,xrange);
+  res[1] = 1/exp(res[0]) - 1;
+
+  // Using Xe spline to search for Xe = 0.5, the spline is log so search for log(0.5)
+  res[2] = Utils::binary_search_for_value(log_Xe_of_x_spline,log(0.5),xrange);
+  res[3] = 1/exp(res[2]) - 1;
+  return res;
+}
 
 // Get number density of baryons from cosmo object
 double RecombinationHistory::get_number_density_baryons(double x) const{
@@ -291,6 +305,19 @@ void RecombinationHistory::info() const{
   std::cout << "Yp:          " << Yp          << "\n";
   std::cout << std::endl;
 } 
+
+// Print values of x and z for last scattering, using tau(x) = tau(z) = 1;
+void RecombinationHistory::print_time_results() const{
+  Vector times = get_time_results();
+
+  std::cout << "\nTime for last scattering,\ntau(x_star) = tau(z_star) = 1:\n";
+  std::cout << "x_star:      " << times[0] << "\n";
+  std::cout << "z_star:      " << times[1] << "\n";
+  std::cout << "\nTime for half-way recombination,\nXe(x_rec) = Xe(z_rec) = 0.5:\n";
+  std::cout << "x_rec:      " << times[2] << "\n";
+  std::cout << "z_rec:      " << times[3] << "\n";
+  std::cout << std::endl;
+}
 
 //====================================================
 // Output the data computed to file
