@@ -70,6 +70,9 @@ clean:
 runcmb:
 	./cmb
 
+toy2cmb:
+	./cmb Toy-Milestone2
+
 plot1:
 	cd ./../Milestone1 && python plotter_Milestone1.py
 

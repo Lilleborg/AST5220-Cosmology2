@@ -3,8 +3,7 @@
 #include "RecombinationHistory.h"
 #include "Perturbations.h"
 #include "PowerSpectrum.h"
-
-//namespace plt = matplotlibcpp;
+#include <string.h>
 
 int main(int argc, char **argv){
   std::cout << "\n";
@@ -16,10 +15,20 @@ int main(int argc, char **argv){
 
   // Background parameters
   double h           = 0.7;
-  double OmegaB      = 0.05;//0.046;
-  double OmegaCDM    = 0.45;//0.224;
+  double OmegaB      = 0.046;
+  double OmegaCDM    = 0.224;
   double Neff        = 3.046;
   double TCMB        = 2.7255;
+  // Test for input arguments, used when calculating with "toy-cosmologies"
+  if (argc > 1)
+  {
+    // Toy cosmology used for testing in Milestone 2
+    if (strcmp(argv[1],"Toy-Milestone2") == 0)
+    {
+      OmegaB = 0.05;
+      OmegaCDM = 0.45;
+    }
+  }
 
   // Recombination parameters
   double Yp          = 0.0;       //Not including Helium, propper value: 0.24;
@@ -46,6 +55,7 @@ int main(int argc, char **argv){
   RecombinationHistory rec(&cosmo, Yp);
   rec.info();
   rec.solve();
+  rec.print_time_results();
 
   // Output recombination quantities
   rec.output("./../data/recombination.txt");
