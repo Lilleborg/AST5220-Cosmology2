@@ -63,6 +63,9 @@ class RecombinationHistory{
     // Print some useful info about the class
     void info() const;
 
+    // Print results of last scattering from recombination class
+    void print_time_results() const;
+
     // Output some data to file
     void output(const std::string filename) const;
 
@@ -78,6 +81,7 @@ class RecombinationHistory{
     double get_Yp() const;
 
     double get_number_density_baryons(double x) const;
+    Vector get_time_results() const;
 };
 
 #endif
