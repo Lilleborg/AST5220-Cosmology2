@@ -48,7 +48,7 @@ all_axes.extend(Xeax)
 for i in range(2):
     Xeax[i].semilogy(x_array,Xe,label='$Xe$')
     Xeax[i].tick_params(axis='y',labelcolor='C0')
-    Xeax[i].axhline(y=0.5,label=r'$Xe=0.5$',linestyle=(0,(5,10)),color='C6')
+    Xeax[i].axhline(y=0.5,label=r'$Xe=0.5$',linestyle='--',color='C2',linewidth=1)
     
     # ne(x) overplotted
     neax = Xeax[i].twinx()
@@ -104,8 +104,8 @@ for i in range(2):
 for i,ax in enumerate(all_axes):
     color_each_regime(ax,x_array)
     # ax.set_xticks(x_array_ticks)
-    ax.axvline(x=xstar,linestyle=(0,(5,10)),color='k',label=r'$x_{*}$',alpha=0.7,linewidth=1)
-    ax.axvline(x=xrec,linestyle=(0,(5,10,1,10)),color='r',label=r'$x_{rec}$',alpha=0.7,linewidth=1)
+    ax.axvline(x=xstar,linestyle='--',color='C3',label=r'$x_{*}$',linewidth=1)
+    ax.axvline(x=xrec,linestyle=':',color='C4',label=r'$x_{rec}$',linewidth=1)
     ax.margins(x=0)
 
 # Final tweaking and saving
