@@ -90,7 +90,7 @@ if __name__== "__main__":
     ax.set_ylabel(r'$\Omega_i = \frac{\rho_i}{\rho_c}$')
     ax.set_xticks(x_array_ticks)
 
-    fig.savefig('./figs/omegas_of_x.pdf', bbox_inces='tight')
+    fig.savefig('./figs/omegas_of_x.pdf', bbox_inches='tight')
 
     # Plotting Hubble parameter vs x
     fig, axes = plt.subplots(2, 2)
@@ -126,5 +126,5 @@ if __name__== "__main__":
             ax.set_xlabel(r'$x = ln(a)$')
             ax.set_xticks(x_array_ticks)
 
-    fig.savefig('./figs/Hubble_eta_of_x.pdf', bbox_inces='tight')
+    fig.savefig('./figs/Hubble_eta_of_x.pdf', bbox_inches='tight')
     plt.show()
