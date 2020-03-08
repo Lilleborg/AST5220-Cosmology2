@@ -5,6 +5,7 @@ import sys
 sys.path.append('./../Milestone1/')
 from plotter_Milestone1 import color_each_regime
 
+# mpl.rcdefaults()
 # Plot styling
 plt.style.use('bmh')
 mpl.rc('font', family='serif', size=15)
@@ -16,64 +17,93 @@ x_array, Xe, ne, tau, tau_deriv, tau_2deriv, g, g_deriv, g_2deriv =\
      np.loadtxt('../data/recombination.txt', unpack=True)
 
 # Data handling and some numerical testing of g_tilde
+# xstar and xrec taken from print from cmb
+xstar = -6.98608
+xrec  = -7.1649
+
 x_array_ticks = np.append(np.linspace(x_array.min(), x_array.max(), 5),0)
 integrated_g_tilde = np.trapz(g,x_array)
 print('\nDifference between integrated g_tilde and 1:\nlog10(abs(integrated_g - 1)) =',\
      np.log10(np.abs(integrated_g_tilde-1)))
-# g /= g_2deriv.max()
-# g_deriv /=  g_2deriv.max()
-# g_2deriv /= g_2deriv.max()    
-g_deriv  /= (g_deriv.max()/g.max())/2    # Factor used to scale first derivative of g_tilde
-g_2deriv /= (g_2deriv.max()/g.max())/4   # Factor used to scale second derivative of g_tilde
+
+# Factor to scale the square of absolute value of the visibility functions to be PDFs, like the wavefunction in QM
+scalefactor_g        = (np.trapz(np.abs(g)**2       ,x_array))**(1/2)
+scalefactor_g_deriv  = (np.trapz(np.abs(g_deriv)**2 ,x_array))**(1/2)
+scalefactor_g_2deriv = (np.trapz(np.abs(g_2deriv)**2,x_array))**(1/2)
+
+print('\nCheck that the squared absolute value of the visibility functions are PDFs:')
+print('|g|^2:       ',np.trapz(np.abs(g/scalefactor_g)**2,x_array))
+print('|g_deriv|^2: ',np.trapz(np.abs(g_deriv/scalefactor_g_deriv)**2,x_array))
+print('|g_2deriv|^2:',np.trapz(np.abs(g_2deriv/scalefactor_g_2deriv)**2,x_array))
+
 id_g_max = np.argmax(g)
 
 all_axes = []
 # Xe(x)
-fig, Xeax = plt.subplots(figsize=figsize_single)
-Xeax.plot(x_array,Xe)
-Xeax.set_ylabel(r'$Xe = \frac{n_e}{n_b}$')
-Xeax.set_title('Fraction of free electrons')
-Xeax.axvline(x=-7.1649,linestyle='--',color='C4',label=r'$x_{rec}$',alpha=0.5)
-Xeax.axhline(y=0.5,linestyle='-.',color='C5',label=r'$Xe = 0.5$',alpha=0.5)
-Xeax.set_yscale('log')
-all_axes.append(Xeax)
+Xefig, Xeax = plt.subplots(1,2,figsize=(12,4.5))
+all_axes.extend(Xeax)
+for i in range(2):
+    Xeax[i].semilogy(x_array,Xe,label='$Xe$')
+    Xeax[i].tick_params(axis='y',labelcolor='C0')
+    
+    # ne(x) overplotted
+    neax = Xeax[i].twinx()
+    neplot = neax.semilogy(x_array,ne,color='C1',linewidth=1)
+    neax.tick_params(axis='y',labelcolor='C1')
+
+    if i == 0:
+        Xeax[i].set_ylabel(r'$Xe = \frac{n_e}{n_b}$',color='C0')
+    else:
+        neax.set_ylabel(r'$n_e \, [\rm{1/m^{-3}}] $',color='C1')
 
 # tau(x)
-fig, tauax = plt.subplots(figsize=figsize_single)
-tauax.set_title('Optical depth and its derivatives')
-tauax.plot(x_array,tau,label=r'$\tau$')
-tauax.plot(x_array,-tau_deriv,label=r'$-\tau^{\prime}$')
-tauax.plot(x_array,tau_2deriv,label=r'$\tau^{\prime\prime}$')
-tauax.axvline(x=-6.98608,linestyle='--',color='C4',label=r'$x_{*}$',alpha=0.5)
-tauax.set_yscale('log')
-all_axes.append(tauax)
+taufig, tauaxes = plt.subplots(1,2,figsize=(12,4.5))
+all_axes.extend(tauaxes)
+for i in range(2):
+    tauaxes[i].semilogy(x_array,tau,label=r'$\tau$')
+    tauaxes[i].semilogy(x_array,-tau_deriv,label=r'$-\tau^{\prime}$')
+    tauaxes[i].semilogy(x_array,tau_2deriv,label=r'$\tau^{\prime\prime}$')
+
+    # unscaled visibility function overplotted
+    g_tau_ax = tauaxes[i].twinx()
+    g_tau_plot = g_tau_ax.plot(x_array,g,color='C3',alpha=0.7,linewidth=1)
+    g_tau_ax.tick_params(axis='y',labelcolor='C3')
 
 # g_tilde(x)
-fig, gax = plt.subplots(2,figsize=(6,9))
-fig.suptitle('Visibility function and\n its scaled derivatives')
-for i in range(2):
-    gax[i].plot(x_array,g,linewidth=3,alpha=0.7,label=r'$\tilde{g}$')
-    gax[i].plot(x_array,g_deriv,linewidth=3,alpha=0.7,label=r'$\bar{\tilde{g}}^{\prime}$')
-    gax[i].plot(x_array,g_2deriv,linewidth=3,alpha=0.7,label=r'$\bar{\tilde{g}}^{\prime\prime}$')
-    gax[i].axvline(x=-6.98608,linestyle='--',color='C4',label=r'$x_{*}$',alpha=0.7)
-    # gax[i].set_yscale('symlog')
+gfig, gax = plt.subplots(1,2,figsize=(12,4.5))
 all_axes.extend(gax)
+for i in range(2):
+    gax[i].plot(x_array,g/scalefactor_g,alpha=0.7,label=r'$\overline{\tilde{g}}$')
+    gax[i].plot(x_array,g_deriv/scalefactor_g_deriv,alpha=0.7,label=r'$\overline{\tilde{g}^{\prime}}$')
+    gax[i].plot(x_array,g_2deriv/scalefactor_g_2deriv,alpha=0.7,label=r'$\overline{\tilde{g}^{\prime\prime}}$')
 
+# Some common handling of all axes
 for i,ax in enumerate(all_axes):
     color_each_regime(ax,x_array)
-    ax.margins(x=0)
-    ax.legend()
     ax.set_xticks(x_array_ticks)
+    ax.axvline(x=xstar,linestyle='--',color='k',label=r'$x_{*}$',alpha=0.7,linewidth=1)
+    ax.axvline(x=xrec,linestyle='-.',color='k',label=r'$x_{rec}$',alpha=0.7,linewidth=1)
+    ax.margins(x=0)
 
-# # gax[0].set_xlim(x_array[id_g_max]+x_array[id_g_max]*0.85,x_array[id_g_max]-x_array[id_g_max]*0.85)
-gax[1].set_xlim(x_array[id_g_max]+x_array[id_g_max]*0.1,x_array[id_g_max]-x_array[id_g_max]*0.1)
-
-# fig,axes = plt.subplots(2)
-# axes[0].plot(x,g_deriv)
-# axes[0].set_ylabel(r'$\tilde{g}^{\prime}$')
-# axes[1].plot(x,g_2deriv)
-# axes[1].set_ylabel(r'$\tilde{g}^{\prime\prime}$')
-
+# Final tweaking and saving
+# Xe and ne
+Xeax[1].set_xlim(xstar+xstar*0.1, xstar-xstar*0.1)
+handles, labels = Xeax[0].get_legend_handles_labels()
+Xelegend = Xefig.legend(handles+neplot,labels+['\n'+'$n_e$'],bbox_to_anchor=(1.0,0.5),loc='center left')
+Xetitle = Xefig.suptitle('Fraction of free electrons')
+Xefig.savefig('./figs/free_electrons.pdf',bbox_extra_artists=(Xelegend,Xetitle),bbox_inches='tight')
 
 
-plt.show()
+# Tau
+tauaxes[1].set_xlim(xstar+xstar*0.1, xstar-xstar*0.1)
+handles, labels = tauaxes[0].get_legend_handles_labels()
+taulegend = taufig.legend(handles+g_tau_plot,labels+['\n'+r'$\tilde{g}$'],bbox_to_anchor=(1.0,0.5),loc='center left')
+tautitle = taufig.suptitle('Optical depth and its derivatives')
+taufig.savefig('./figs/optical_depth.pdf',bbox_extra_artists=(taulegend,tautitle),bbox_inches='tight')
+
+# g_tilde
+gax[1].set_xlim(xstar+xstar*0.1, xstar-xstar*0.1)
+handles, labels = gax[0].get_legend_handles_labels()
+glegend = gfig.legend(handles,labels,bbox_to_anchor=(1.0,0.5),loc='center left')
+gtitle = gfig.suptitle('Scaled visibility function and its derivatives')
+gfig.savefig('./figs/visibility_functions.pdf',bbox_extra_artists=(glegend,gtitle),bbox_inches='tight')
