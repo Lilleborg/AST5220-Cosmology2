@@ -21,13 +21,13 @@ def color_each_regime(ax,x_array,redshift=[False]):
     idx_rad_mat_eq = np.argmin(np.abs(x_array-x_values[0]))
     idx_mat_lambda_eq = np.argmin(np.abs(x_array-x_values[1]))
     if len(redshift) < 2:
-        ax.axvspan(x_array.min(), x_array[idx_rad_mat_eq], alpha=0.25, color='C0')
-        ax.axvspan(x_array[idx_rad_mat_eq], x_array[idx_mat_lambda_eq], alpha=0.25, color='C1')
-        ax.axvspan(x_array[idx_mat_lambda_eq], x_array.max(), alpha=0.25, color='C3')
+        ax.axvspan(x_array.min(), x_array[idx_rad_mat_eq], alpha=0.2, color='C0')
+        ax.axvspan(x_array[idx_rad_mat_eq], x_array[idx_mat_lambda_eq], alpha=0.2, color='C1')
+        ax.axvspan(x_array[idx_mat_lambda_eq], x_array.max(), alpha=0.2, color='C3')
     else:
-        ax.axvspan(redshift.max(), redshift[idx_rad_mat_eq], alpha=0.25, color='C0')
-        ax.axvspan(redshift[idx_rad_mat_eq], redshift[idx_mat_lambda_eq], alpha=0.25, color='C1')
-        ax.axvspan(redshift[idx_mat_lambda_eq], redshift.min(), alpha=0.25, color='C3')
+        ax.axvspan(redshift.max(), redshift[idx_rad_mat_eq], alpha=0.2, color='C0')
+        ax.axvspan(redshift[idx_rad_mat_eq], redshift[idx_mat_lambda_eq], alpha=0.2, color='C1')
+        ax.axvspan(redshift[idx_mat_lambda_eq], redshift.min(), alpha=0.2, color='C3')
 
 if __name__== "__main__":
     # Plot styling
