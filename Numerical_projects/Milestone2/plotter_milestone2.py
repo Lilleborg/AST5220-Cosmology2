@@ -11,20 +11,25 @@ mpl.rc('font', family='serif', size=15)
 mpl.rc('text', usetex=False)
 
 # Load data
-x_array, Xe, ne, tau, tau_deriv, tau_2deriv, g, g_deriv, g_2deriv =\
+x_array, Xe, Xe_saha, ne, tau, tau_deriv, tau_2deriv, g, g_deriv, g_2deriv =\
      np.loadtxt('../data/recombination.txt', unpack=True)
 
 # Data handling and some numerical testing of g_tilde
 # xstar and xrec taken from print from ./cmb
-xstar = -6.98608
-xrec  = -7.1649
-zoomed_xlim = [xstar+xstar*0.1, xstar-xstar*0.1]
-print(zoomed_xlim)
+xstar      = -6.98608
+xrec       = -7.1649
+xrec_saha  = -7.23022
 
+zoomed_xlim = [xstar+xstar*0.1, xstar-xstar*0.1]
 x_array_ticks = np.append(np.linspace(x_array.min(), x_array.max(), 5),0)
 x_zoomed_ticks = zoomed_xlim
 x_zoomed_ticks.extend([xrec,xstar])
-print(x_zoomed_ticks)
+
+# Cut of the Saha approximation at some small value
+Xe_saha = Xe_saha[Xe_saha>1e-5]
+x_array_saha = x_array[:len(Xe_saha)]
+
+# Check that unscaled g_tilde is a PDF
 integrated_g_tilde = np.trapz(g,x_array)
 print('\nDifference between integrated g_tilde and 1:\nlog10(abs(integrated_g - 1)) =',\
      np.log10(np.abs(integrated_g_tilde-1)))
@@ -35,9 +40,9 @@ scalefactor_g_deriv  = (np.trapz(np.abs(g_deriv)**2 ,x_array))**(1/2)
 scalefactor_g_2deriv = (np.trapz(np.abs(g_2deriv)**2,x_array))**(1/2)
 
 print('\nCheck that the squared absolute value of the visibility functions are PDFs:')
-print('|g|^2:       ',np.trapz(np.abs(g/scalefactor_g)**2,x_array))
-print('|g_deriv|^2: ',np.trapz(np.abs(g_deriv/scalefactor_g_deriv)**2,x_array))
-print('|g_2deriv|^2:',np.trapz(np.abs(g_2deriv/scalefactor_g_2deriv)**2,x_array))
+print('integrated |g|^2:       ',np.trapz(np.abs(g/scalefactor_g)**2,x_array))
+print('integrated |g_deriv|^2: ',np.trapz(np.abs(g_deriv/scalefactor_g_deriv)**2,x_array))
+print('integrated |g_2deriv|^2:',np.trapz(np.abs(g_2deriv/scalefactor_g_2deriv)**2,x_array))
 
 id_g_max = np.argmax(g)
 
@@ -47,8 +52,10 @@ Xefig, Xeax = plt.subplots(1,2,figsize=(12,4.5))
 all_axes.extend(Xeax)
 for i in range(2):
     Xeax[i].semilogy(x_array,Xe,label='$Xe$')
+    Xeax[i].semilogy(x_array_saha,Xe_saha,ls='-.',label='$Xe_{Saha}$',color='C5')
     Xeax[i].tick_params(axis='y',labelcolor='C0')
-    Xeax[i].axhline(y=0.5,label=r'$Xe=0.5$',linestyle='--',color='C2',linewidth=1)
+    Xeax[i].axhline(y=0.5,label=r'$Xe=0.5$',linestyle='-.',color='C2',linewidth=1)
+    Xeax[i].set_ylim(1e-4,1.4)
     
     # ne(x) overplotted
     neax = Xeax[i].twinx()
@@ -60,7 +67,7 @@ for i in range(2):
         Xeax[i].set_xticks(x_array_ticks)
         Xeax[i].set_xticklabels(x_array_ticks,rotation=10)
     else:
-        neax.set_ylabel(r'$n_e \, [\rm{1/m^{-3}}] $',color='C1')
+        neax.set_ylabel(r'$n_e \, [\rm{m^{-3}}] $',color='C1')
         Xeax[i].set_xticks(x_zoomed_ticks)
         Xeax[i].set_xticklabels(['{:.2f}'.format(i) for i in x_zoomed_ticks],rotation=10)
 
@@ -80,6 +87,7 @@ for i in range(2):
     if i == 0:
         tauaxes[i].set_xticks(x_array_ticks)
         tauaxes[i].set_xticklabels(x_array_ticks,rotation=10)
+        tauaxes[i].set_ylabel(r'$\tau$')
     else:
         g_tau_ax.set_ylabel(r'$\tilde{g}$',color='C3')
         tauaxes[i].set_xticks(x_zoomed_ticks)
@@ -113,19 +121,19 @@ for i,ax in enumerate(all_axes):
 Xeax[1].set_xlim(*zoomed_xlim)
 handles, labels = Xeax[0].get_legend_handles_labels()
 Xelegend = Xefig.legend(handles+neplot,labels+['\n'+'$n_e$'],bbox_to_anchor=(1.0,0.5),loc='center left')
-Xetitle = Xefig.suptitle('Fraction of free electrons')
+Xetitle = Xefig.suptitle('Fraction of free electrons and the number density')
 Xefig.savefig('./figs/free_electrons.pdf',bbox_extra_artists=(Xelegend,Xetitle),bbox_inches='tight')
 
 # Tau
 tauaxes[1].set_xlim(*zoomed_xlim)
 handles, labels = tauaxes[0].get_legend_handles_labels()
 taulegend = taufig.legend(handles+g_tau_plot,labels+['\n'+r'$\tilde{g}$'],bbox_to_anchor=(1.0,0.5),loc='center left')
-tautitle = taufig.suptitle('Optical depth and its derivatives')
+tautitle = taufig.suptitle('Optical depth, its derivatives and the visibility function')
 taufig.savefig('./figs/optical_depth.pdf',bbox_extra_artists=(taulegend,tautitle),bbox_inches='tight')
 
 # g_tilde
 gax[1].set_xlim(*zoomed_xlim)
 handles, labels = gax[0].get_legend_handles_labels()
 glegend = gfig.legend(handles,labels,bbox_to_anchor=(1.0,0.5),loc='center left')
-gtitle = gfig.suptitle('Scaled visibility function and its derivatives')
+gtitle = gfig.suptitle('Scaled visibility function and derivatives')
 gfig.savefig('./figs/visibility_functions.pdf',bbox_extra_artists=(glegend,gtitle),bbox_inches='tight')
