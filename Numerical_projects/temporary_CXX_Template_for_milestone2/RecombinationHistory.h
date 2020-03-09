@@ -45,6 +45,7 @@ class RecombinationHistory{
 
     // Splines contained in this class
     Spline log_Xe_of_x_spline{"log_Xe"};
+    Spline log_Xe_of_x_spline_only_Saha{"log_Xe Saha"};
     Spline log_ne_of_x_spline{"log_ne"};
     Spline tau_of_x_spline{"tau"};
     Spline tau_deriv_of_x_spline{"tau_deriv"};
@@ -84,6 +85,7 @@ class RecombinationHistory{
 
     double get_number_density_baryons(double x) const;
     Vector get_time_results() const;
+    double Xe_of_x_Saha_approx(double x) const;
 };
 
 #endif
