@@ -54,12 +54,9 @@ void BackgroundCosmology::solve(){
   Vector eta_ini{Constants.c/Hp_of_x(x_start)};
   ODESolver ode;
   ode.solve(detadx,x_array,eta_ini);
-  auto eta_all_data = ode.get_data();
-  // Filling data into array:
-  Vector eta_array(x_array.size());
-  for (int i = 0; i < eta_all_data.size(); i++){
-    eta_array[i] = eta_all_data[i][0];
-  }
+  
+  // Fetch results
+  auto eta_array = ode.get_data_by_component(0);
 
   // Creating spline:
   eta_of_x_spline.create(x_array,eta_array,"eta");
@@ -76,15 +73,16 @@ double BackgroundCosmology::H0_over_H_squared(double x) const{
   return H0*H0/H_temp/H_temp;
 }
 
-  // Returns a vector with components exp(3*x) and exp(4*x)
-std::pair<double,double> BackgroundCosmology::exp_of_3x_and_4x(double x) const{
+  // Returns a pair with components exp(3*x) and exp(4*x)
+Doublepair BackgroundCosmology::exp_of_3x_and_4x(double x) const{
   // From testing this method performs better than calling the exponential functions
-  // with 3*x and 4*x as arguments. For consistent/clean code this method is used each time
-  // one of the quantities are needed (even when only using one of them).
+  // with 3*x and 4*x as arguments. For consistent code this method is used each time
+  // one of the quantities are needed, even when only using one of them. (This is at most
+  // one floating point operation more than needed in addition to creating the pair).
   double a = exp(x);
   double exp3x = a*a*a;
   double exp4x = exp3x*a;
-  return std::pair<double,double>(exp3x,exp4x);
+  return Doublepair(exp3x,exp4x);
 }
 
 //====================================================
@@ -93,7 +91,7 @@ std::pair<double,double> BackgroundCosmology::exp_of_3x_and_4x(double x) const{
 
   // Returns the Hubble parameter as function of x, using Friedmann 1
 double BackgroundCosmology::H_of_x(double x) const{
-  std::pair<double,double> exponentials = exp_of_3x_and_4x(x);
+  Doublepair exponentials = exp_of_3x_and_4x(x);
   double res = H0 * sqrt(
     (OmegaB+OmegaCDM) / exponentials.first
     + OmegaR / exponentials.second
@@ -104,7 +102,7 @@ double BackgroundCosmology::H_of_x(double x) const{
 
   // Returns the derivative of Hubble parameter wrt x
 double BackgroundCosmology::dHdx_of_x(double x) const{
-  std::pair<double,double> exponentials = exp_of_3x_and_4x(x);
+  Doublepair exponentials = exp_of_3x_and_4x(x);
   double res = H0*H0/(2*H_of_x(x)) * (-3*(OmegaB+OmegaCDM)/exponentials.first - 4*OmegaR/exponentials.second);
 
   return res;
@@ -113,7 +111,7 @@ double BackgroundCosmology::dHdx_of_x(double x) const{
   // Returns the double derivative of Hubble parameter wrt x
 double BackgroundCosmology::ddHddx_of_x(double x) const{
   double H = H_of_x(x);
-  std::pair<double,double> exponentials = exp_of_3x_and_4x(x);
+  Doublepair exponentials = exp_of_3x_and_4x(x);
   double res = H0*H0/2 * (1/H * (9*(OmegaB+OmegaCDM)/exponentials.first + 16*OmegaR/exponentials.second) 
     - dHdx_of_x(x)/H/H * (-3*(OmegaB+OmegaCDM)/exponentials.first - 4*OmegaR/exponentials.second));
   return res;
@@ -148,7 +146,7 @@ double BackgroundCosmology::ddHpddx_of_x(double x) const{
 
 double BackgroundCosmology::get_OmegaB(double x) const{ 
   if(x == 0.0) return OmegaB;
-  std::pair<double,double> exponentials = exp_of_3x_and_4x(x);
+  Doublepair exponentials = exp_of_3x_and_4x(x);
   double Omega = H0_over_H_squared(x) * OmegaB / exponentials.first;
 
   return Omega;
@@ -156,7 +154,7 @@ double BackgroundCosmology::get_OmegaB(double x) const{
 
 double BackgroundCosmology::get_OmegaR(double x) const{ 
   if(x == 0.0) return OmegaR;
-  std::pair<double,double> exponentials = exp_of_3x_and_4x(x);
+  Doublepair exponentials = exp_of_3x_and_4x(x);
   double Omega = H0_over_H_squared(x) * OmegaR / exponentials.second;
 
   return Omega;
@@ -169,7 +167,7 @@ double BackgroundCosmology::get_OmegaNu(double x) const{
 
 double BackgroundCosmology::get_OmegaCDM(double x) const{ 
   if(x == 0.0) return OmegaCDM;
-  std::pair<double,double> exponentials = exp_of_3x_and_4x(x);
+  Doublepair exponentials = exp_of_3x_and_4x(x);
   double Omega = H0_over_H_squared(x) * OmegaCDM / exponentials.first;
 
   return Omega;
