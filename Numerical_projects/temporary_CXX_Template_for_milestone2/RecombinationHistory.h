@@ -8,6 +8,7 @@
 #include "BackgroundCosmology.h"
 
 using Vector = std::vector<double>;
+using Doublepair = std::pair<double,double>;
 
 class RecombinationHistory{
   private:
@@ -31,7 +32,7 @@ class RecombinationHistory{
     const double Xe_saha_limit = 0.99;
 
     // Compute Xe from the Saha equation
-    std::pair<double,double> electron_fraction_from_saha_equation(double x) const;
+    Doublepair electron_fraction_from_saha_equation(double x) const;
     
     // Right hand side of the dXedx Peebles equation
     int rhs_peebles_ode(double x, const double *y, double *dydx);
@@ -48,6 +49,7 @@ class RecombinationHistory{
     Spline tau_of_x_spline{"tau"};
     Spline tau_deriv_of_x_spline{"tau_deriv"};
     Spline g_tilde_of_x_spline{"g"};  
+    Spline g_tilde_deriv_of_x_spline{"g"};  
 
   public:
 

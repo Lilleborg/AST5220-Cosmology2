@@ -50,8 +50,8 @@ void RecombinationHistory::solve_number_density_electrons(){
 
     if(saha_regime){
       // Store the result from the Saha equation
-      Xe_arr.at(i) = Xe_current;
-      ne_arr.at(i) = ne_current;
+      Xe_arr[i] = Xe_current;
+      ne_arr[i] = ne_current;
 
     } else {  // Get the rest of Xe from Peebles equation
       // The right hand side of Peebles ODE equation
@@ -61,23 +61,24 @@ void RecombinationHistory::solve_number_density_electrons(){
       
       // array of x-values from current to today used in ODEsolver, 
       // init with invalid value (large number) to controll that all elements are overwritten correctly in the following loop
-      // there should be no elements with value 100 left in the filled array. (could use linspace here, but this is slightly faster!)
+      // there should be no elements with value 100 left in the filled array.
+      // (could have used linspace here, but this way is slightly faster!)
       Vector peebles_x_array(npts_rec_arrays-i,100);
       for (int j = 0; j < npts_rec_arrays-i; j++)
       {
-        peebles_x_array.at(j) = x_array.at(j+i);
+        peebles_x_array[j] = x_array[j+i];
       }
 
       ODESolver peebles_Xe_ode;
       Vector peebles_Xe_init{Xe_current};   // Initial condition from the last Xe value found from Saha
       peebles_Xe_ode.solve(dXedx,peebles_x_array,peebles_Xe_init);
-      auto Xe_all_data = peebles_Xe_ode.get_data();
+      auto peebles_Xe_solution = peebles_Xe_ode.get_data_by_component(0);
 
-      // Fetch results
+      // Store results
       for (int j = 0; j < npts_rec_arrays-i; j++)
       {
-        Xe_arr.at(j+i) = Xe_all_data[j][0];
-        ne_arr.at(j+i) = Xe_arr.at(j+i)*get_number_density_baryons(peebles_x_array.at(j));
+        Xe_arr[j+i] = peebles_Xe_solution[j];
+        ne_arr[j+i] = Xe_arr[j+i]*get_number_density_baryons(peebles_x_array[j]);
       }
       // Solving the full equation until today, so breaking loop
       break;
@@ -96,7 +97,7 @@ void RecombinationHistory::solve_number_density_electrons(){
 //====================================================
 // The Saha equation to get ne and Xe in the first regime
 //====================================================
-std::pair<double,double> RecombinationHistory::electron_fraction_from_saha_equation(double x) const{
+Doublepair RecombinationHistory::electron_fraction_from_saha_equation(double x) const{
   const double a           = exp(x);
  
   // Physical constants
@@ -118,17 +119,22 @@ std::pair<double,double> RecombinationHistory::electron_fraction_from_saha_equat
   const double F = 1/nb*temporary_factor*sqrt(temporary_factor)*exp(-epsilon_0/(k_b*T_B));
   
   // Calculate Xe
+  // If near endpoint, take care of instability and set solution to zero
+  if (F < 1e-9){
+    Xe = 0.0;
+  }
   // Determine if we have to use the Taylor approximation in the second order equation
-  if (4.0/F < 1e-9){
+  else if (F > 1e+9){
     Xe = 1.0;
-  } else {
+  }
+  else {
     Xe = F*(-1 + sqrt(1.0+4.0/F))/2.0;
   }
   
   // Calculate ne
   ne = Xe * nb;
 
-  return std::pair<double,double>(Xe, ne);
+  return Doublepair(Xe, ne);
 }
 
 //====================================================
@@ -189,7 +195,6 @@ void RecombinationHistory::solve_for_optical_depth_tau(){
   Vector dtaudx_arr(npts_tau);
   Vector vis(npts_tau);
   Vector dvisdx_arr(npts_tau);
-  Vector ddvisddx_arr(npts_tau);
 
   // Set up and solve the ODE for tau
   // The ODE system dtau/dx, dtau_noreion/dx and dtau_baryon/dx
@@ -203,23 +208,34 @@ void RecombinationHistory::solve_for_optical_depth_tau(){
   int id_x_equal_zero = x_zero_it_low-x_array.begin();
 
   ODESolver tau_ODE;
-  Vector tau_init{1e3}; // Some initial value, fixed later in loop as we know tau(x=0) = 0
+  Vector tau_init{1e3}; // Some initial value, normalzed later in loop as we know tau(x=0) = 0
   tau_ODE.solve(dtaudx,x_array,tau_init,gsl_odeiv2_step_rkf45);
-  auto tau_all_data = tau_ODE.get_data();
-  auto tau_derivative_data = tau_ODE.get_derivative_data();
+  auto tau_data = tau_ODE.get_data_by_component(0);
+  auto tau_derivative_data = tau_ODE.get_derivative_data_by_component(0);
   
-  // Fetch and store results in arrays
+  // Store tau results in arrays. Need ddtauddx for dvisdx, so split into two for loops
+  // and use the spine of dtaudx to get ddtauddx in the second loop
   for (int i = 0; i < npts_tau; i++)
   {
-    tau_arr.at(i) = tau_all_data.at(i)[0] - tau_all_data.at(id_x_equal_zero)[0];  // normalise with today value
-    dtaudx_arr.at(i) = tau_derivative_data.at(i)[0];                              // tau derivative from ODE data
-    vis.at(i) = - dtaudx_arr[i]*exp(-tau_arr[i]);                                 // store visibility function
+    tau_arr[i] = tau_data[i] - tau_data[id_x_equal_zero]; // normalise with today value
+    dtaudx_arr[i] = tau_derivative_data[i];                  // tau derivative from ODE data
   }
   
-  // Spline the results
+  // Spline the tau results
   tau_of_x_spline.create(x_array,tau_arr,"tau");
   tau_deriv_of_x_spline.create(x_array,dtaudx_arr,"tau derivative");
+
+  // Store visibility and its first derivative using the tau data and splines
+  // This way the second derivative of visibility func can be obtained from the first derivative spline
+  for (int i = 0; i < npts_tau; i++)
+  {
+    vis[i] = - dtaudx_arr[i]*exp(-tau_arr[i]);                  // store visibility function
+    dvisdx_arr[i] = exp(-tau_arr[i])*(dtaudx_arr[i]*dtaudx_arr[i]-ddtauddx_of_x(x_array[i])); // Store its first derivative
+  }
+  
+  // Spline the visibility resutls
   g_tilde_of_x_spline.create(x_array,vis,"g tilde");
+  g_tilde_deriv_of_x_spline.create(x_array,dvisdx_arr,"g tilde deriv");
 
   Utils::EndTiming("opticaldepth");
 }
@@ -231,7 +247,7 @@ void RecombinationHistory::solve_for_optical_depth_tau(){
 Vector RecombinationHistory::get_time_results() const{
   Vector res(4);
   // Using the tau spline and binary search for value method to find tau = 1
-  std::pair<double,double> xrange(-10.0,-5.0);  // Range of x-value to search in
+  Doublepair xrange(-10.0,-5.0);  // Range of x-value to search in
   // x and z value when tau equals one stored
   res[0] = Utils::binary_search_for_value(tau_of_x_spline,1.0,xrange);
   res[1] = 1/exp(res[0]) - 1;
@@ -270,12 +286,14 @@ double RecombinationHistory::g_tilde_of_x(double x) const{
 
 // Returns the derivative of g using the g_tilde_deriv_spline.deriv_x
 double RecombinationHistory::dgdx_tilde_of_x(double x) const{
-  return g_tilde_of_x_spline.deriv_x(x);
+  // return g_tilde_of_x_spline.deriv_x(x);
+  return g_tilde_deriv_of_x_spline(x);
 }
 
 // Returns the second derivative of g using the g_tilde_deriv_spline.deriv_xx
 double RecombinationHistory::ddgddx_tilde_of_x(double x) const{
-  return g_tilde_of_x_spline.deriv_xx(x);
+  // return g_tilde_of_x_spline.deriv_xx(x);
+  return g_tilde_deriv_of_x_spline.deriv_x(x);
 }
 
 double RecombinationHistory::Xe_of_x(double x) const{
