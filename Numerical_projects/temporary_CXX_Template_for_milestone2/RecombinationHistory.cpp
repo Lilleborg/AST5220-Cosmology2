@@ -41,8 +41,9 @@ void RecombinationHistory::solve_number_density_electrons(){
 
   // Calculate recombination history using Saha approximation all the way
   bool saha_regime = true;
-  for(int i = 0; i < npts_rec_arrays; i++){
-    // Get X_e from solving the Saha equation
+  for(int i = 0; i < npts_rec_arrays; i++)
+  {
+    // Get X_e and ne from solving the Saha equation
     auto Xe_ne_data = electron_fraction_from_saha_equation(x_array[i]);
 
     // Electron fraction and number density
@@ -50,7 +51,8 @@ void RecombinationHistory::solve_number_density_electrons(){
     const double ne_current = Xe_ne_data.second;
 
     // If we enter the Peebles regime for the first time, keep track of index i and value of Xe_current
-    if(Xe_current < Xe_saha_limit && saha_regime == true){
+    if(Xe_current < Xe_saha_limit && saha_regime == true)
+    {
       saha_regime = false;
       idx_Peebles_transition = i;
       Xe_Peebles_transition = Xe_current;
@@ -58,39 +60,8 @@ void RecombinationHistory::solve_number_density_electrons(){
 
     // Store the result from the Saha equation
     Xe_arr[i] = Xe_current; // Keep all solutions, overwrite the ones who are in Peebles regime later
-    Xe_arr_only_Saha[i] = Xe_current; // Keep the solutions obtained by Saha eq only
     ne_arr[i] = ne_current;
-
-    // else {  // Get the rest of Xe from Peebles equation
-    //   // The right hand side of Peebles ODE equation
-    //   ODEFunction dXedx = [&](double x, const double *Xe, double *dXedx){
-    //     return rhs_peebles_ode(x, Xe, dXedx);
-    //   };
-      
-    //   // array of x-values from current to today used in ODEsolver, 
-    //   // init with invalid value (large number) to controll that all elements are overwritten correctly in the following loop
-    //   // there should be no elements with value 100 left in the filled array.
-    //   // (could have used linspace here, but this way is slightly faster!)
-    //   Vector peebles_x_array(npts_rec_arrays-i,100);
-    //   for (int j = 0; j < npts_rec_arrays-i; j++)
-    //   {
-    //     peebles_x_array[j] = x_array[j+i];
-    //   }
-
-    //   ODESolver peebles_Xe_ode;
-    //   Vector peebles_Xe_init{Xe_current};   // Initial condition from the last Xe value found from Saha
-    //   peebles_Xe_ode.solve(dXedx,peebles_x_array,peebles_Xe_init);
-    //   auto peebles_Xe_solution = peebles_Xe_ode.get_data_by_component(0);
-
-    //   // Store results
-    //   for (int j = 0; j < npts_rec_arrays-i; j++)
-    //   {
-    //     Xe_arr[j+i] = peebles_Xe_solution[j];
-    //     ne_arr[j+i] = Xe_arr[j+i]*get_number_density_baryons(peebles_x_array[j]);
-    //   }
-    //   // Solving the full equation until today, so breaking loop
-    //   break;
-    // }
+    Xe_arr_only_Saha[i] = Xe_current; // Keep the solutions obtained by Saha eq only
   }
   
   ODEFunction dXedx = [&](double x, const double *Xe, double *dXedx){
@@ -118,6 +89,7 @@ void RecombinationHistory::solve_number_density_electrons(){
   // Store results
   for (int j = 0; j < npts_rec_arrays-i; j++)
   {
+    // Overwrite the solutions found using Saha, with the proper Peebles solution
     Xe_arr[j+i] = peebles_Xe_solution[j];
     ne_arr[j+i] = Xe_arr[j+i]*get_number_density_baryons(peebles_x_array[j]);
   }
@@ -157,16 +129,13 @@ Doublepair RecombinationHistory::electron_fraction_from_saha_equation(double x) 
   
   // Calculate Xe
   // If near endpoint, take care of instability and set solution to basically zero (splines the log so cant put it to zero)
-  if (F < 1e-20){
+  if (F < 1e-20)
     Xe = 1e-20;
-  }
   // Determine if we have to use the Taylor approximation in the second order equation
-  else if (F > 1e+9){
+  else if (F > 1e+9)
     Xe = 1.0;
-  }
-  else {
+  else
     Xe = F*(-1 + sqrt(1.0+4.0/F))/2.0;
-  }
   
   // Calculate ne
   ne = Xe * nb;
@@ -236,7 +205,7 @@ void RecombinationHistory::solve_for_optical_depth_tau(){
   Vector dvisdx_arr(npts_tau);
 
   // Set up and solve the ODE for tau
-  // The ODE system dtau/dx, dtau_noreion/dx and dtau_baryon/dx
+  // The ODE right hand side of dtaudx
   ODEFunction dtaudx = [&](double x, const double *tau, double *dtaudx){
     dtaudx[0] = - ne_of_x(x)*Constants.sigma_T*Constants.c/cosmo->H_of_x(x);
     return GSL_SUCCESS;
