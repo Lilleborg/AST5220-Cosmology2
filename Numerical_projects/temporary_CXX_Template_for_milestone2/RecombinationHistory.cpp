@@ -73,8 +73,6 @@ void RecombinationHistory::solve_number_density_electrons(){
   // there should be no elements with value 100 left in the filled array.
   // (could have used linspace here, but this way is slightly faster!)
   int i = idx_Peebles_transition;
-  std::cout << "Peebles \n";
-  std::cout << i << " " << Xe_Peebles_transition <<"\n";
   Vector peebles_x_array(npts_rec_arrays-i,100);
   for (int j = 0; j < npts_rec_arrays-i; j++)
   {

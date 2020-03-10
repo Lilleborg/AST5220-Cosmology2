@@ -44,8 +44,6 @@ print('integrated |g|^2:       ',np.trapz(np.abs(g/scalefactor_g)**2,x_array))
 print('integrated |g_deriv|^2: ',np.trapz(np.abs(g_deriv/scalefactor_g_deriv)**2,x_array))
 print('integrated |g_2deriv|^2:',np.trapz(np.abs(g_2deriv/scalefactor_g_2deriv)**2,x_array))
 
-id_g_max = np.argmax(g)
-
 all_axes = []
 # Xe(x)
 Xefig, Xeax = plt.subplots(1,2,figsize=(12,4.5))
@@ -54,7 +52,7 @@ for i in range(2):
     Xeax[i].semilogy(x_array,Xe,label='$Xe$')
     Xeax[i].semilogy(x_array_saha,Xe_saha,ls='-.',label='$Xe_{Saha}$',color='C5')
     Xeax[i].tick_params(axis='y',labelcolor='C0')
-    Xeax[i].axhline(y=0.5,label=r'$Xe=0.5$',linestyle='-.',color='C2',linewidth=1)
+    Xeax[i].axhline(y=0.5,label=r'$Xe=0.5$',linestyle='-.',color='C0',linewidth=1)
     Xeax[i].set_ylim(1e-4,1.4)
     
     # ne(x) overplotted
@@ -111,7 +109,6 @@ for i in range(2):
 # Some common handling of all axes
 for i,ax in enumerate(all_axes):
     color_each_regime(ax,x_array)
-    # ax.set_xticks(x_array_ticks)
     ax.axvline(x=xstar,linestyle='--',color='C3',label=r'$x_{*}$',linewidth=1)
     ax.axvline(x=xrec,linestyle=':',color='C4',label=r'$x_{rec}$',linewidth=1)
     ax.margins(x=0)
