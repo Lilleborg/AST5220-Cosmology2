@@ -93,11 +93,9 @@ void RecombinationHistory::solve_number_density_electrons(){
   }
 
   // Spline the result. Used in get Xe_of_x and ne_of_x methods
-  Vector log_Xe_arr = log(Xe_arr);
-  Vector log_Xe_arr_only_Saha = log(Xe_arr_only_Saha);
   Vector log_ne_arr = log(ne_arr);
-  log_Xe_of_x_spline.create(x_array,log_Xe_arr,"log Xe");
-  log_Xe_of_x_spline_only_Saha.create(x_array,log_Xe_arr_only_Saha,"log Xe Saha");
+  Xe_of_x_spline.create(x_array,Xe_arr,"Xe");
+  Xe_of_x_spline_only_Saha.create(x_array,Xe_arr_only_Saha,"Xe Saha");
   log_ne_of_x_spline.create(x_array,log_ne_arr,"log ne");
 }
 
@@ -126,9 +124,9 @@ Doublepair RecombinationHistory::electron_fraction_from_saha_equation(double x) 
   const double F = 1/nb*temporary_factor*sqrt(temporary_factor)*exp(-epsilon_0/(k_b*T_B));
   
   // Calculate Xe
-  // If near endpoint, take care of instability and set solution to basically zero (splines the log so cant put it to zero)
+  // If near endpoint, take care of instability and set solution to basically zero
   if (F < 1e-20)
-    Xe = 1e-20;
+    Xe = 0;
   // Determine if we have to use the Taylor approximation in the second order equation
   else if (F > 1e+9)
     Xe = 1.0;
@@ -166,8 +164,6 @@ int RecombinationHistory::rhs_peebles_ode(double x, const double *Xe, double *dX
   
   // Some constants to save FLOPS
   const double hbar_square = hbar*hbar;
-  // const double hbar_cube = hbar_square*hbar;
-  // const double ccc = c*c*c;
   const double TB_k_b = k_b*T_B;
 
   // Expression needed in dXedx
@@ -254,12 +250,12 @@ Vector RecombinationHistory::get_time_results() const{
   res[0] = Utils::binary_search_for_value(tau_of_x_spline,1.0,xrange);
   res[1] = 1/exp(res[0]) - 1;
 
-  // Using Xe spline to search for Xe = 0.5, the spline is log so search for log(0.5)
-  res[2] = Utils::binary_search_for_value(log_Xe_of_x_spline,log(0.5),xrange);
+  // Using Xe spline to search for Xe = 0.5
+  res[2] = Utils::binary_search_for_value(Xe_of_x_spline,0.5,xrange);
   res[3] = 1/exp(res[2]) - 1;
 
-  // Using Xe_saha_only spline to search for Xe = 0.5, the spline is log so search for log(0.5)
-  res[4] = Utils::binary_search_for_value(log_Xe_of_x_spline_only_Saha,log(0.5),xrange);
+  // Using Xe_saha_only spline to search for Xe = 0.5
+  res[4] = Utils::binary_search_for_value(Xe_of_x_spline_only_Saha,0.5,xrange);
   res[5] = 1/exp(res[2]) - 1;
   return res;
 }
@@ -303,17 +299,11 @@ double RecombinationHistory::ddgddx_tilde_of_x(double x) const{
 }
 
 double RecombinationHistory::Xe_of_x(double x) const{
-  double log_Xe = log_Xe_of_x_spline(x);
-  double res = exp(log_Xe);
-
-  return res;
+  return Xe_of_x_spline(x);
 }
 
 double RecombinationHistory::Xe_of_x_Saha_approx(double x) const{
-  double log_Xe = log_Xe_of_x_spline_only_Saha(x);
-  double res = exp(log_Xe);
-
-  return res;
+  return Xe_of_x_spline_only_Saha(x);
 }
 
 double RecombinationHistory::ne_of_x(double x) const{
@@ -359,11 +349,9 @@ void RecombinationHistory::print_time_results() const{
 // Output the data computed to file
 //====================================================
 void RecombinationHistory::output(const std::string filename) const{
-  // Create x_array to write to file using the splines. Choose a narrower interval than 
-  // the one used to solve the equations to avoid boundary problems
   const int npts       = 1e+4;
-  const double x_min   = x_start+3;
-  const double x_max   = x_end-2;
+  const double x_min   = x_start;
+  const double x_max   = x_end;
   Vector x_array = Utils::linspace(x_min, x_max, npts);
 
   std::ofstream fp(filename.c_str());
