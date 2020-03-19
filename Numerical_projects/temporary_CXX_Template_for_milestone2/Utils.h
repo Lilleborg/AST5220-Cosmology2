@@ -48,8 +48,10 @@ extern struct ConstantsAndUnits {
   const double k_max = 0.3     / Mpc;
   
   // Min and max x-value
-  const double x_start = -18;
-  const double x_end   = 4;
+  const double x_start_cosmo = -20; // Value used in milestone1 to deal with boundary
+  const double x_end_cosmo   = 4;   // Value used in milestone1 to deal with boundary
+  const double x_start = -12;
+  const double x_end   = 2;
 
   // Don't include polarization and/or neutrinos
   const bool polarization  = false;
