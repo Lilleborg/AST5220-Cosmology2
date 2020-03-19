@@ -29,8 +29,8 @@ class BackgroundCosmology{
     Doublepair exp_of_3x_and_4x(double x) const;   // Function for getting the exponential values value exp(3x) and exp(4x)
 
     // Start and end of x-integration (can be changed)
-    double x_start = Constants.x_start;
-    double x_end   = Constants.x_end;
+    double x_start = Constants.x_start_cosmo;
+    double x_end   = Constants.x_end_cosmo;
     int npts = 10000;
 
     // Splines to be made
