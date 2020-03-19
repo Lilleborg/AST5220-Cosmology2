@@ -81,7 +81,7 @@ void RecombinationHistory::solve_number_density_electrons(){
 
   ODESolver peebles_Xe_ode;
   Vector peebles_Xe_init{Xe_Peebles_transition};   // Initial condition from the last Xe value found from Saha
-  peebles_Xe_ode.solve(dXedx,peebles_x_array,peebles_Xe_init);
+  peebles_Xe_ode.solve(dXedx,peebles_x_array,peebles_Xe_init,gsl_odeiv2_step_rkf45);
   auto peebles_Xe_solution = peebles_Xe_ode.get_data_by_component(0);
 
   // Store results
