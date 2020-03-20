@@ -288,15 +288,13 @@ double RecombinationHistory::g_tilde_of_x(double x) const{
   return g_tilde_of_x_spline(x);
 }
 
-// Returns the derivative of g using the g_tilde_deriv_spline.deriv_x
+// Returns the derivative of g using the g_tilde_deriv_spline
 double RecombinationHistory::dgdx_tilde_of_x(double x) const{
-  // return g_tilde_of_x_spline.deriv_x(x);
   return g_tilde_deriv_of_x_spline(x);
 }
 
-// Returns the second derivative of g using the g_tilde_deriv_spline.deriv_xx
+// Returns the second derivative of g using the g_tilde_deriv_spline.deriv_x
 double RecombinationHistory::ddgddx_tilde_of_x(double x) const{
-  // return g_tilde_of_x_spline.deriv_xx(x);
   return g_tilde_deriv_of_x_spline.deriv_x(x);
 }
 
@@ -342,8 +340,8 @@ void RecombinationHistory::print_time_results() const{
   std::cout << "z_rec:      " << times[3] << "\n";
   
   std::cout << "\nTime for half-way recombination using only Saha approximation:\n";
-  std::cout << "x_rec_Saha:      " << times[4] << "\n";
-  std::cout << "z_rec_Saha:      " << times[5] << "\n";
+  std::cout << "x_rec_Saha: " << times[4] << "\n";
+  std::cout << "z_rec_Saha: " << times[5] << "\n";
   std::cout << std::endl;
 }
 
