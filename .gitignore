@@ -37,3 +37,9 @@
 Numerical_projects/CXX_Template/cmb
 
 Numerical_projects/temporary_CXX_Template_for_milestone2/cmb
+
+Numerical_projects/Milestone1/__pycache__/
+
+*.gz
+
+Numerical_projects/.vscode/settings.json
