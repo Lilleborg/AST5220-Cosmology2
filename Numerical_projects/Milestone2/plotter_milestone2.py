@@ -46,7 +46,7 @@ print('integrated |g_2deriv|^2:',np.trapz(np.abs(g_2deriv/scalefactor_g_2deriv)*
 
 all_axes = []
 # Xe(x)
-Xefig, Xeax = plt.subplots(1,2,figsize=(12,4.5))
+Xefig, Xeax = plt.subplots(1,2,figsize=(12,4.5),sharey=True)
 all_axes.extend(Xeax)
 for i in range(2):
     Xeax[i].semilogy(x_array,Xe,label='$Xe$')
@@ -64,13 +64,14 @@ for i in range(2):
         Xeax[i].set_ylabel(r'$Xe = \frac{n_e}{n_b}$',color='C0')
         Xeax[i].set_xticks(x_array_ticks)
         Xeax[i].set_xticklabels(x_array_ticks,rotation=10)
+        neax.set_yticklabels([])
     else:
         neax.set_ylabel(r'$n_e \, [\rm{m^{-3}}] $',color='C1')
         Xeax[i].set_xticks(x_zoomed_ticks)
         Xeax[i].set_xticklabels(['{:.2f}'.format(i) for i in x_zoomed_ticks],rotation=10)
 
 # tau(x)
-taufig, tauaxes = plt.subplots(1,2,figsize=(12,4.5))
+taufig, tauaxes = plt.subplots(1,2,figsize=(12,4.5),sharey=True)
 all_axes.extend(tauaxes)
 for i in range(2):
     tauaxes[i].semilogy(x_array,tau,label=r'$\tau$')
@@ -85,14 +86,15 @@ for i in range(2):
     if i == 0:
         tauaxes[i].set_xticks(x_array_ticks)
         tauaxes[i].set_xticklabels(x_array_ticks,rotation=10)
-        tauaxes[i].set_ylabel(r'$\tau$')
+        tauaxes[i].set_ylabel(r'$\tau$',labelpad=15)
+        g_tau_ax.set_yticklabels([])
     else:
-        g_tau_ax.set_ylabel(r'$\tilde{g}$',color='C3')
+        g_tau_ax.set_ylabel(r'$\tilde{g}$',color='C3',labelpad=20)
         tauaxes[i].set_xticks(x_zoomed_ticks)
         tauaxes[i].set_xticklabels(['{:.2f}'.format(i) for i in x_zoomed_ticks],rotation=10)
 
 # g_tilde(x)
-gfig, gax = plt.subplots(1,2,figsize=(12,4.5))
+gfig, gax = plt.subplots(1,2,figsize=(12,4.5),sharey=True)
 all_axes.extend(gax)
 for i in range(2):
     gax[i].plot(x_array,g/scalefactor_g,alpha=0.7,label=r'$\overline{\tilde{g}}$')
@@ -100,9 +102,13 @@ for i in range(2):
     gax[i].plot(x_array,g_2deriv/scalefactor_g_2deriv,alpha=0.7,label=r'$\overline{\tilde{g}^{\prime\prime}}$')
     
     if i == 0:
+        gax[i].set_ylabel(' ',labelpad=20)
         gax[i].set_xticks(x_array_ticks)
         gax[i].set_xticklabels(x_array_ticks,rotation=10)
     else:
+        twin = gax[i].twinx()
+        twin.set_ylabel(' ',labelpad=25)
+        twin.set_yticklabels([],labelpad=10)
         gax[i].set_xticks(x_zoomed_ticks)
         gax[i].set_xticklabels(['{:.2f}'.format(i) for i in x_zoomed_ticks],rotation=10)
 
@@ -112,6 +118,7 @@ for i,ax in enumerate(all_axes):
     ax.axvline(x=xstar,linestyle='--',color='C3',label=r'$x_{*}$',linewidth=1)
     ax.axvline(x=xrec,linestyle=':',color='C4',label=r'$x_{rec}$',linewidth=1)
     ax.margins(x=0)
+    ax.set_xlabel(r'$x = \ln(a)$')
 
 # Final tweaking and saving
 # Xe and ne
