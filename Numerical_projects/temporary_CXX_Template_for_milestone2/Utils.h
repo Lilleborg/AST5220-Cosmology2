@@ -53,7 +53,7 @@ extern struct ConstantsAndUnits {
   const double x_start = -12;
   const double x_end   = 2;
 
-  // Don't include polarization and/or neutrinos
+  // Don't include polarization and/or neutrinos so set these to false
   const bool polarization  = false;
   const bool neutrinos     = false;
 
