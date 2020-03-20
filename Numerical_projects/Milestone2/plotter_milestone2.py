@@ -35,24 +35,24 @@ print('\nDifference between integrated g_tilde and 1:\nlog10(abs(integrated_g - 
      np.log10(np.abs(integrated_g_tilde-1)))
 
 # Factor to scale the square of absolute value of the visibility functions to be PDFs, like the wavefunction in QM
-scalefactor_g        = (np.trapz(np.abs(g)**2       ,x_array))**(1/2)
-scalefactor_g_deriv  = (np.trapz(np.abs(g_deriv)**2 ,x_array))**(1/2)
-scalefactor_g_2deriv = (np.trapz(np.abs(g_2deriv)**2,x_array))**(1/2)
+scalefactor_g        = (np.trapz(np.abs(g)       ,x_array))
+scalefactor_g_deriv  = (np.trapz(np.abs(g_deriv) ,x_array))
+scalefactor_g_2deriv = (np.trapz(np.abs(g_2deriv),x_array))
 
 print('\nCheck that the squared absolute value of the visibility functions are PDFs:')
-print('integrated |g|^2:       ',np.trapz(np.abs(g/scalefactor_g)**2,x_array))
-print('integrated |g_deriv|^2: ',np.trapz(np.abs(g_deriv/scalefactor_g_deriv)**2,x_array))
-print('integrated |g_2deriv|^2:',np.trapz(np.abs(g_2deriv/scalefactor_g_2deriv)**2,x_array))
+print('integrated |g|^2:       ',np.trapz(np.abs(g/scalefactor_g),x_array))
+print('integrated |g_deriv|^2: ',np.trapz(np.abs(g_deriv/scalefactor_g_deriv),x_array))
+print('integrated |g_2deriv|^2:',np.trapz(np.abs(g_2deriv/scalefactor_g_2deriv),x_array))
 
 all_axes = []
 # Xe(x)
 Xefig, Xeax = plt.subplots(1,2,figsize=(12,4.5),sharey=True)
 all_axes.extend(Xeax)
 for i in range(2):
-    Xeax[i].semilogy(x_array,Xe,label='$Xe$')
-    Xeax[i].semilogy(x_array_saha,Xe_saha,ls='-.',label='$Xe_{Saha}$',color='C5')
+    Xeax[i].semilogy(x_array,Xe,label=r'$X_e$')
+    Xeax[i].semilogy(x_array_saha,Xe_saha,ls='-.',label=r'$X_{e,\rm{Saha}}$',color='C5')
     Xeax[i].tick_params(axis='y',labelcolor='C0')
-    Xeax[i].axhline(y=0.5,label=r'$Xe=0.5$',linestyle='-.',color='C0',linewidth=1)
+    Xeax[i].axhline(y=0.5,label=r'$X_e=0.5$',linestyle='-.',color='C0',linewidth=1)
     Xeax[i].set_ylim(1e-4,1.4)
     
     # ne(x) overplotted
@@ -61,7 +61,7 @@ for i in range(2):
     neax.tick_params(axis='y',labelcolor='C1')
 
     if i == 0:
-        Xeax[i].set_ylabel(r'$Xe = \frac{n_e}{n_b}$',color='C0')
+        Xeax[i].set_ylabel(r'$X_e = \frac{n_e}{n_b}$',color='C0')
         Xeax[i].set_xticks(x_array_ticks)
         Xeax[i].set_xticklabels(x_array_ticks,rotation=10)
         neax.set_yticklabels([])
