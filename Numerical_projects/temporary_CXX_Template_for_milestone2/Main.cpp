@@ -56,6 +56,7 @@ int main(int argc, char **argv){
   rec.info();
   rec.solve();
   rec.print_time_results();
+  rec.save_time_results();
 
   // Output recombination quantities
   rec.output("./../data/recombination.txt");

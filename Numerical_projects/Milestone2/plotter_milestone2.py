@@ -15,15 +15,17 @@ x_array, Xe, Xe_saha, ne, tau, tau_deriv, tau_2deriv, g, g_deriv, g_2deriv =\
      np.loadtxt('../data/recombination.txt', unpack=True)
 
 # Data handling and some numerical testing of g_tilde
-# xstar and xrec taken from print from ./cmb
-xstar      = -6.98608
-xrec       = -7.1649
-xrec_saha  = -7.23022
+# xstar and xrec taken read from file
+x_times,z_times = np.loadtxt('../data/recombination_times.txt', unpack=True,usecols=(1,3))
+xstar      = x_times[0]
+xrec       = x_times[1]
+xrec_saha  = x_times[2]
+x_Peebles  = x_times[3]
 
 zoomed_xlim = [xstar+xstar*0.1, xstar-xstar*0.1]
 x_array_ticks = np.append(np.linspace(x_array.min(), x_array.max(), 5),0)
-x_zoomed_ticks = zoomed_xlim
-x_zoomed_ticks.extend([xrec,xstar])
+x_zoomed_ticks = zoomed_xlim[:]
+x_zoomed_ticks.extend([xrec,xstar ,x_Peebles])
 
 # Cut of the Saha approximation at some small value
 Xe_saha = Xe_saha[Xe_saha>1e-5]
@@ -117,6 +119,7 @@ for i,ax in enumerate(all_axes):
     color_each_regime(ax,x_array)
     ax.axvline(x=xstar,linestyle='--',color='C3',label=r'$x_{*}$',linewidth=1)
     ax.axvline(x=xrec,linestyle=':',color='C4',label=r'$x_{rec}$',linewidth=1)
+    ax.axvline(x=x_Peebles,linestyle='-.',color='C5',label=r'$x_{Peebles}$',linewidth=1)
     ax.margins(x=0)
     ax.set_xlabel(r'$x = \ln(a)$')
 

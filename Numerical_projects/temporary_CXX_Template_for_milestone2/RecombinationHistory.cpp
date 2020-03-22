@@ -56,6 +56,7 @@ void RecombinationHistory::solve_number_density_electrons(){
       saha_regime = false;
       idx_Peebles_transition = i;
       Xe_Peebles_transition = Xe_current;
+      x_Saha_to_Peebles = x_array[i];
     }
 
     // Store the result from the Saha equation
@@ -248,7 +249,7 @@ Vector RecombinationHistory::get_time_results() const{
   Vector res(6);
   // Using the tau spline and binary search for value method to find tau = 1
   Doublepair xrange(-10.0,-5.0);  // Range of x-value to search in
-  // x and z value when tau equals one stored
+  // x and z value when tau equals one, x_star and z_star
   res[0] = Utils::binary_search_for_value(tau_of_x_spline,1.0,xrange);
   res[1] = 1/exp(res[0]) - 1;
 
@@ -258,7 +259,7 @@ Vector RecombinationHistory::get_time_results() const{
 
   // Using Xe_saha_only spline to search for Xe = 0.5, the spline is log so search for log(0.5)
   res[4] = Utils::binary_search_for_value(log_Xe_of_x_spline_only_Saha,log(0.5),xrange);
-  res[5] = 1/exp(res[2]) - 1;
+  res[5] = 1/exp(res[4]) - 1;
   return res;
 }
 
@@ -342,9 +343,31 @@ void RecombinationHistory::print_time_results() const{
   std::cout << "\nTime for half-way recombination using only Saha approximation:\n";
   std::cout << "x_rec_Saha: " << times[4] << "\n";
   std::cout << "z_rec_Saha: " << times[5] << "\n";
+
+  std::cout << "\nTime for transition between Saha and Peebles regime:\n";
+  std::cout << "x_Peebles:  " << x_Saha_to_Peebles << "\n";
   std::cout << std::endl;
 }
 
+// Save values of x and z for last scattering to file
+void RecombinationHistory::save_time_results() const{
+  Vector times = get_time_results();
+
+  std::ofstream fp("./../data/recombination_times.txt");
+  fp << std::setprecision(10);
+  fp << "x_star:     " << times[0] << " ";
+  fp << "z_star:     " << times[1] << "\n";
+  
+  fp << "x_rec:      " << times[2] << " ";
+  fp << "z_rec:      " << times[3] << "\n";
+  
+  fp << "x_rec_Saha: " << times[4] << " ";
+  fp << "z_rec_Saha: " << times[5] << "\n";
+
+  fp << "x_Peebles:  " << x_Saha_to_Peebles << " ";
+  fp << "z_Peebles:  " << 1/exp(x_Saha_to_Peebles) - 1;
+  fp.close();
+}
 //====================================================
 // Output the data computed to file
 //====================================================

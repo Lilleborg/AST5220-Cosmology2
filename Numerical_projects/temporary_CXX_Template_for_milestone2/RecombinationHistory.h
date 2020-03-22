@@ -30,6 +30,7 @@ class RecombinationHistory{
   
     // Xe for when to switch between Saha and Peebles
     const double Xe_saha_limit = 0.99;
+    double x_Saha_to_Peebles = 0; // Store the x-value in transition between regimes
 
     // Compute Xe from the Saha equation
     Doublepair electron_fraction_from_saha_equation(double x) const;
@@ -71,6 +72,7 @@ class RecombinationHistory{
 
     // Output some data to file
     void output(const std::string filename) const;
+    void save_time_results() const;
 
     // Get functions that we must implement
     double tau_of_x(double x) const;
