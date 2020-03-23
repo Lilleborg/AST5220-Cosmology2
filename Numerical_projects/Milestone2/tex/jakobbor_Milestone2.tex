@@ -72,7 +72,7 @@
 \section{Brief Introduction}
 The goal of this second milestone\footnote{Second of four milestones.} is to compute what happens during and after the short period of the early universe called recombination. In this period the primordial plasma of free electrons and protons combined into neutral hydrogen. We also want to compute how rapidly this transition happened. To achieve this we will solve the Boltzmann equation for the number density of electrons, using the Saha approximation and Peebles equation.
 
-The main results from these calculations are the optical depth and its first and second derivatives, as well as the visibility function and its derivatives, as functions of the logarithmic scale factor $x$. Using these expressions we will be able to find the time when the cosmic microwave background (CMB) was released from the opaque primordial plasma, defining the so called surface of last scattering where the Universe became transparent.
+The main results from these calculations are the optical depth and its first and second derivatives, as well as the visibility function and its derivatives, as functions of the logarithmic scale factor $x$. Using these expressions we will be able to find the time when the cosmic microwave background (CMB) was released from the opaque primordial plasma, defining the so called last scattering surface (LSS) where the Universe became transparent.
 
 %The final Because we want to study the CMB.
 
@@ -207,6 +207,15 @@ With the optical depth we can also define the visibility function
 \end{equation}
 where we have used the $\tau^\prime$ notation for the derivative with respect to the logarithmic scale factor. We will continue to use this through the report where it is convenient. \Cref{eq:visibility function} is a probability distribution, in the sense that $\int_{-\infty}^0 \tilde{g}\dd x = 1$. We interpret this function as the probability that a photon last scattered at time $x$, going backwards in time from today.
 
+\subsubsection{The Last Scattering Surface}
+\label{subsubsec:Theory/last scattering surface}
+We can now define the last scattering surface (LSS). This is describing a spherical shell at distance $x_\star$ centered around us where the recombination period happened. The "thickness" of the shell will correspond to the rapidity of the period. At this point in time the Universe went from being opaque to transparent, and the CMB photons scattered one last time before they where released from the chain of scattering. We can now use our definition of the optical depth transition from opaque to transparent, or alternatively the peak in the visibility function, to determine when this happened, defined as $x_\star$
+\begin{align*}
+    \tau(x_\star) &\equiv 1 \label{eq:tau equiv 1}
+    \\
+    \tilde{g}(x_\star) &\equiv \max \{\tilde{g}(x)\}.
+\end{align*}
+
 %%%%%%%%
 % Method
 %%%%%%%%
@@ -276,33 +285,57 @@ where $\tilde{g}_i^\prime$ is the first derivative of the visibility function wi
 
 In the end, we create splines of $\tau$, $\tilde{g}$ and $\tilde{g}^\prime$. As mentioned, the second derivative of $\tau$ is obtained through the spline of $\tau^\prime$. Likewise for the second derivative of the visibility function, it is obtained through the spline of $\tilde{g}^\prime$. All the splines are then implemented into convenient get methods in the class.
 
-The last thing we want to compute is the specific times where we 
+\subsection{Some Specific Times of Interest}
+\label{subsec:Method/Times of interest}
+Lastly we implement some convenient methods to fetch, print and write to file some specific time points. First is the time of the LSS from \cref{subsubsec:Theory/last scattering surface}, which we find from $\tau(x_\star)=1$. We also want the time when recombination is half-way done, that is $X_e(x_{\rm{rec}}) = 0.5$. We also find this for the solution using only the Saha equation, as mentioned in \cref{subsec:Method/Solving Xe}, so we can compare the two solutions. All of the mentioned times are found using the implemented splines and a \textit{binary search for value} algorithm, and also converted to redshift according to
+\begin{equation*}
+    z = \frac{1}{\exp(x)}-1.
+\end{equation*}
+
+We also find the specific time for the transition between the two regimes solved using the Saha and Peebles equation. This is done easily using the approach we have for solving both the Saha equation alone and the combination of Saha and Peebles equation.
 
 %%%%%%%%
 %Results
 %%%%%%%%
 \section{Results}
 \label{sec:Results}
+\subsection{Common Results in all Figures}
+\label{subsec:Results/Common in figs}
+The results from all calculations are combined in \cref{fig:Xe and ne,fig:tau,fig:g}, with a few things in common between all the figures. First, as we did in milestone1\citep{milestone1}, the background of the figures are coloured according the to dominating energy contributor to the given time period. Blue marks the radiation dominated regime, red marks the matter\footnote{Baryons and dark matter.} dominated regime and the green marks the regime dominated by dark energy in the form of the cosmological constant.
 
+The \cref{subsec:Method/Times of interest} results are shown in each plot as vertical lines, except the times obtained for the Saha equation solution only. Here we found
+\begin{align*}
+    & \text{Half-way recombination:} && x_{\rm{rec}} &&= \num{-7.1649} && z_{\rm{rec}} &&= \num{1292.23} 
+    \\
+    & \text{Half-way recombination, only Saha:} && x_{\rm{rec,Saha}} &&= \num{-7.23022} && z_{\rm{rec,Saha}} &&= \num{1379.53}
+    \\
+    & \text{Transition from Saha to Peebles regime:} && x_{\rm{Peebles}} &&= \num{-7.37029} && &
+    \\
+    & \text{Last scattering surface:} && x_{\star} &&= \num{-6.98608} && z_{\star} &&= \num{1080.48}
+\end{align*}
+
+\subsection{The Electron Density}
+\label{subsec:Results/Electron density}
+The evolution of the free electron fraction and the electron number density as functions of $x$ are shown in \cref{fig:Xe and ne}. The left y-axis show the value of $X_e$, and the right show $n_e$ overplotted. Here both solutions are shown, the one using only the Saha equation in dash-dotted pink and subscript $\rm{Saha}$, as well as the full solution using the Peebles equation in blue. 
 
 \begin{figure}[ht]
     \centering
     \includegraphics[scale=0.5]{../figs/free_electrons.pdf}
-    \caption{Plot showing the free electron fraction $X_e$, left y-axis, and electron number density $n_e$, right y-axis. The solution obtained using only Saha equation is included in the pink dash-dotted line, $X_{e,\rm{Saha}}$, which drops off exponentially to zero once the solution deviates from equilibrium. The horizontal blue dashed line at $X_e=0.5$ indicate where recombination is half-way done, at $x\approx-7.16\equiv x_{\rm{rec}}$. The surface of last scattering is indicated at $x\approx-6.99\equiv x_{\rm{\star}}$. The left panel zoom in centered on $x_{\star}$, showing a $\SI{10}{\%}$ buffer in $x$ on both sides.}
+    \caption{Plot showing the free electron fraction $X_e$, left y-axis, and electron number density $n_e$, right y-axis. The solution obtained using only Saha equation is included in the pink dash-dotted line, $X_{e,\rm{Saha}}$, which drops off exponentially to zero once the solution deviates from equilibrium. The transition between the Saha and Peebles regime is marked at $x\approx-7.37 \equiv x_{\rm{Peebles}}$. The horizontal blue dashed line at $X_e=0.5$ indicate where recombination is half-way done, at $x\approx-7.16\equiv x_{\rm{rec}}$. The LSS is indicated at $x\approx-6.99\equiv x_{\rm{\star}}$. The left panel zoom in centered on $x_{\star}$, showing a $\SI{10}{\%}$ buffer in $x$ on both sides.}
     \label{fig:Xe and ne}
 \end{figure}
 
 \begin{figure}[ht]
     \centering
     \includegraphics[scale=0.5]{../figs/optical_depth.pdf}
-    \caption{Plot showing the optical depth and its two first derivatives, left y-axis, and the visibility function, right y-axis. $x\approx-7.16\equiv x_{\rm{rec}}$ indicate where recombination is half-way done. The surface of last scattering is indicated at $x\approx-6.99\equiv x_{\rm{\star}}$, located at the peak in $\tilde{g}$ and where $\tau=1$. The left panel zoom in centered on $x_{\star}$, showing a $\SI{10}{\%}$ buffer in $x$ on both sides.}
+    \caption{Plot showing the optical depth and its two first derivatives, left y-axis, and the visibility function, right y-axis. $x\approx-7.16\equiv x_{\rm{rec}}$ indicate where recombination is half-way done. The LSS is indicated at $x\approx-6.99\equiv x_{\rm{\star}}$, located at the peak in $\tilde{g}$ and where $\tau=1$. The transition between the Saha and Peebles regime is marked at $x\approx-7.37 \equiv x_{\rm{Peebles}}$. The left panel zoom in centered on $x_{\star}$, showing a $\SI{10}{\%}$ buffer in $x$ on both sides.}
     \label{fig:tau}
 \end{figure}
 
 \begin{figure}[ht]
     \centering
     \includegraphics[scale=0.5]{../figs/visibility_functions.pdf}
-    \caption{Plot showing the visibility function and its two first derivatives, all scaled}
+    \caption{Plot showing the visibility function and its two first derivatives, all scaled. The transition between the Saha and Peebles regime is marked at $x\approx-7.37 \equiv x_{\rm{Peebles}}$.}
     \label{fig:g}
 \end{figure}
 
