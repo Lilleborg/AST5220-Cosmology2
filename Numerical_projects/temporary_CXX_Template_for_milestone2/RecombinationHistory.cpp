@@ -41,6 +41,7 @@ void RecombinationHistory::solve_number_density_electrons(){
 
   // Calculate recombination history using Saha approximation all the way
   bool saha_regime = true;
+  bool break_Saha_solution = false;     // Used later if we want to not compute the solution using Saha all the way in later milestones
   for(int i = 0; i < npts_rec_arrays; i++)
   {
     // Get X_e and ne from solving the Saha equation
@@ -57,6 +58,11 @@ void RecombinationHistory::solve_number_density_electrons(){
       idx_Peebles_transition = i;
       Xe_Peebles_transition = Xe_current;
       x_Saha_to_Peebles = x_array[i];
+      if (break_Saha_solution == true)
+      {
+        break;
+      }
+      
     }
 
     // Store the result from the Saha equation
@@ -72,7 +78,7 @@ void RecombinationHistory::solve_number_density_electrons(){
   // array of x-values from current to today used in ODEsolver, 
   // init with invalid value (large number) to controll that all elements are overwritten correctly in the following loop
   // there should be no elements with value 100 left in the filled array.
-  // (could have used linspace here, but this way is slightly faster!)
+  // (could have used linspace here, but this way is slightly faster as we dont need to recalculate dx etc!)
   int i = idx_Peebles_transition;
   Vector peebles_x_array(npts_rec_arrays-i,100);
   for (int j = 0; j < npts_rec_arrays-i; j++)
@@ -100,6 +106,7 @@ void RecombinationHistory::solve_number_density_electrons(){
   log_Xe_of_x_spline.create(x_array,log_Xe_arr,"log Xe");
   log_Xe_of_x_spline_only_Saha.create(x_array,log_Xe_arr_only_Saha,"log Xe Saha");
   log_ne_of_x_spline.create(x_array,log_ne_arr,"log ne");
+  Utils::EndTiming("Xe");
 }
 
 //====================================================
