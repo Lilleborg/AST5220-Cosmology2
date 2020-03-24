@@ -15,8 +15,8 @@
 \renewcommand{\headrulewidth}{0pt}
 
 % Footnotes at bottom of page
-\usepackage[bottom]{footmisc}
-
+\usepackage[bottom,marginal]{footmisc}
+% \setlength{\footnotemargin}{1.8em}
 
 % Maths
 \usepackage{physics}
@@ -91,7 +91,7 @@ As mentioned this is part two of four in this overarching project. We will there
 %%%%%%%%%
 \subsection{The Model In Use}
 \label{subsec:Theory/Model}
-As mentioned, the main results we are interested in are the optical depth and the visibility function (...). In our cosmological model the main source absorbing and disrupting photons are Thompson scattering with free electrons. We will model the optical depth simply according to this kind of scattering alone. Therefore, to calculate these quantities, we need the electron number density.
+As mentioned, the main results we are interested in are the optical depth and the visibility function discussed in \cref{subsec:Theory/tau and g}. In our cosmological model the main source absorbing and disrupting photons are Thompson scattering with free electrons. We will model the optical depth simply according to this kind of scattering alone. Therefore, to calculate these quantities, we need the electron number density.
 
 We are modeling the early Universe as a hot, relativistic primordial plasma with photons, and free electrons and free protons as its only ordinary matter components. That is we exclude helium and any other heavier elements, as well as neutrinos\footnote{To be clear, neutrinos are not  considered a matter component, but is also excluded from our model.}.
 After the recombination process we assume we are left in a cool Universe with only hydrogen and photons, and a tiny amount of free electrons left. The interactions between particle species governing this transition, and hence their distributions, are described with the Boltzmann equation, which will be discussed next in \cref{subsec:Theory/Boltzmann eq}.
@@ -116,17 +116,17 @@ Here $n_i$ and $\left(n_i\right)_{\rm{EQ}}$ are the mentioned number densities a
 where the processes taking place are as follows. On the left side we have free electrons and protons combining into neutral hydrogen and a photon. On the right side a high energy photon interacts through Compton scattering with a bound electron in a hydrogen atom, ionizing the atom and producing a free electron and proton.
 
 %Under a set of assumptions, described in the following, 
-The Boltzmann equation can be rewritten, again following \cite{Dodelson}, into the Saha equation and Peebles equation described in the following (...), which we will use to compute how the number density of free electrons evolve. First we set up some of the more straight forward assumptions. The photons of course stay relativistic always, and so we can approximate their number density by the equilibrium solution $n_\gamma \approx n_\gamma^{\rm{EQ}}$. We also assume that the Universe is neutral, so that $n_e = n_p$. 
+The Boltzmann equation can be rewritten, again following \cite{Dodelson}, into the Saha equation and Peebles equation described in the following \cref{subsec:Theory/Saha approximation and equation,subsec:Theory/Peebles equation}, which we will use to compute how the number density of free electrons evolve. First we set up some of the more straight forward assumptions. The photons of course stay relativistic always, and so we can approximate their number density by the equilibrium solution $n_\gamma \approx n_\gamma^{\rm{EQ}}$. We also assume that the Universe is neutral, so that $n_e = n_p$. 
 
 \subsubsection{Natural Units}
 \label{subsubsec:Theory/natural units}
-We have to mention that all the equations listed in \cite{Dodelson} are given in so called natural units, where the familiar constants $\hbar = c = k_b \equiv 1$. These constants are therefore neglected in the equations in the book. In all our calculations we use SI-units, and we must therefore rewrite the equations into proper form with the constants included. This is done through dimensional analyses. This is straight forward, but a bit tedious, and we therefore does not included all the analysis for all the equations to follow. Instead we present one example of how this is done in \cref{asec:Dimensional analysis}.
+We have to mention that all the equations listed in \cite{Dodelson} are given in so called natural units, where the familiar constants $\hbar = c = k_b \equiv 1$. These constants are therefore neglected in the equations in the book. In all our calculations we use SI-units, and we must therefore rewrite the equations into proper form with the constants included. This is done through dimensional analyses. This is straight forward, but a bit tedious, and we therefore does not included the analyses for all the equations to follow. Instead we present one example of how this is done in \cref{asec:Dimensional analysis}.
 
 %Approaching recombination the temperature drops below the non relativistic limit, $m_i >> T$, so we can use the non relativistic solutions for the equilibrium number densities \citep{Dodelson}
 
 
 \subsection{The Saha Approximation and Equation}
-\label{subsubsec:THeory/Saha approximation and equation}
+\label{subsec:Theory/Saha approximation and equation}
 In the early radiation dominated Universe, the plasma was dense and hot with high interaction rates so all the species $i$ are considered to be in EQ
 \begin{equation*}
     \diff{a^3n_i}{t} = 0 \quad \Rightarrow \quad \frac{n_e n_p}{n_H n_\gamma} = \left(\frac{n_e n_p}{n_H n_\gamma}\right)_{\rm{EQ}}.
@@ -146,7 +146,7 @@ when the species are very close to following their equilibrium distributions. De
     \\
     \text{and} \quad \epsilon_0 &= \left(m_e + m_p - m_h\right)c^2 = \SI{13.6}{eV} \quad \text{is the binding energy of hydrogen.} \notag
 \end{align}
-\footnotetext{known from milestone 1.}%
+\footnotetext{Known from milestone 1.}%
 \Cref{eq:Saha equation} is valid for as long as the Saha approximation holds, quantitatively for as long as $X_e \approx 1$\footnote{Note that the free electron fraction of course starts at $X_e=1$ in the primordial plasma.}. The temperature involved is specifically the temperature of the baryons. Here we employ another approximation, which is reasonable to a large degree considering all our other approximations, that the baryon temperature follow the radiation temperature
 \begin{equation}
     T_b(x) = T_r(x) = T_{\rm{CMB}}(x=0)\exp(-x)
@@ -155,7 +155,7 @@ where the temperature of the CMB today is $T_{\rm{CMB}}(x=0) = \SI{2.725}{K}$. W
 
 \subsection{The Peebles Equation}
 \label{subsec:Theory/Peebles equation}
-Going beyond the equilibrium solutions we can no longer assume the species to follow the Saha approximation, \cref{eq:Saha approximation}. The Saha equation, \cref{eq:Saha equation}, predicts the outset of recombination pretty accurately, but fails miserably for the evolution of the electron density as the system goes out of equilibrium. We will here employ the Peebles equation, describing the free electron fraction according to the Boltzmann equation with the relevant interactions included in our model. These are combinations of free electrons and protons into hydrogen in its first or higher order excited states. Recombinations into the ground state is not included as this will also produce a photon with high enough energy to ionize another hydrogen atom in its ground state, resulting in a zero net change in the number densities. The Peebles equation goes as follows 
+Going beyond the equilibrium solutions we can no longer assume the species to follow the Saha approximation, \cref{eq:Saha approximation}. The Saha equation, \cref{eq:Saha equation}, predicts the outset of recombination pretty accurately, but fails for the evolution of the electron density as the system goes out of equilibrium. We will here employ the Peebles equation, describing the free electron fraction according to the Boltzmann equation with the relevant interactions included in our model. These are combinations of free electrons and protons into hydrogen in its first excited state\footnote{It is a bit unclear if the higher order excited states are included too, as \cite{Dodelson} includes all excited states in his description on p. 71. Nevertheless the first excited state will contribute the most, and is what we have assumed in the lectures.}. Recombination into the ground state is not included as this will also produce a photon with high enough energy to ionize another hydrogen atom in its ground state, resulting in a zero net change in the number densities. The Peebles equation goes as follows 
 
 
 \begin{equation}
@@ -193,12 +193,12 @@ and $H(x)$ is the Hubble parameter, discussed in detail in \cite{milestone1}.
 
 \subsection{The Optical Depth and Visibility Function}
 \label{subsec:Theory/tau and g}
-The optical depth describes how much the intensity of incident light that moves a distance $x$ through a medium will be reduced by absorption, quantitatively as $I(x) = I_0 \exp(-\tau)$ where $I_0$ is the intensity emitted at the source. As mentioned, in our model we look at absorption through Thompson scattering alone. The optical depth is then defined as
+The optical depth describes how much the intensity of incident light that moves a distance $x$ through a medium will be reduced\footnote{By absorption, scattering or other means.}, quantitatively as $I(x) = I_0 \exp(-\tau)$ where $I_0$ is the intensity emitted at the source. As mentioned, in our model we look at absorption through Thompson scattering alone. The optical depth is then defined as
 \begin{equation}
     \tau(x) = \int_x^{x_{\rm{Today}=0}} \frac{\sigma_T n_e c}{H(x)}\dd{x}
     \label{eq:tau integration}
 \end{equation}
-where $\sigma_T$ is the Thompson cross section defined in \cref{eq:sigma T}. The electron number density can be obtained using the free electron fraction from the Saha and Peebles equations multiplied by the baryon number density. There are two interesting regimes governed by the optical depth. If $\tau \gg 1$ we say the medium is optically thick, and thus the intensity $I(x)$ will be approximately zero. The other way around, if $\tau \ll 1$ the medium is optically thin, and $I(x) \approx I_0$. When $\tau  = 1$ is usually used to define the transition between these two regimes, and can be thought of as when the medium goes from opaque to transparent.
+where $\sigma_T$ is the Thompson cross section defined in \cref{eq:sigma T}. The electron number density can be obtained using the free electron fraction from the Saha and Peebles equations multiplied by the baryon number density following \cref{eq:Free electron fraction}. There are two interesting regimes governed by the optical depth. If $\tau \gg 1$ we say the medium is optically thick, and thus the observed intensity $I(x)$ will be approximately zero. The other way around, if $\tau \ll 1$ the medium is optically thin, and $I(x) \approx I_0$. When $\tau  = 1$ defines the transition between these two regimes, and can be thought of as when the medium goes from opaque to transparent.
 
 With the optical depth we can also define the visibility function
 \begin{equation}
@@ -221,7 +221,7 @@ We can now define the last scattering surface (LSS). This is describing a spheri
 %%%%%%%%
 \section{Method}
 \label{sec:Method}
-As mentioned, this milestone builds upon the work done in milestone 1\citep{milestone1}, calculating everything we need for the background cosmology. These calculations are performed by the class \textit{BackgroundCosmology}. The work in this milestone is carried out by the class \textit{RecombinationHistory}, which takes as input an instance of the mentioned \textit{BackgroundCosmology} class with all the required calculations already done\footnote{The class also takes as input the helium fraction, but this is set to zero and does not contribute anything.}.
+As mentioned, this milestone builds upon the work done in milestone 1\citep{milestone1}, calculating everything we need for the background cosmology. These calculations are performed by the class \textit{BackgroundCosmology}. The work in this milestone was carried out by the class \textit{RecombinationHistory}, which takes as input an instance of the mentioned \textit{BackgroundCosmology} class with all the required calculations already done\footnote{The class also takes as input the helium fraction, but this is set to zero and does not contribute anything.}.
 
 With the equations we need defined in \cref{sec:Theory} we can now describe our approach step for step to solve for the optical depth and the visibility functions and their derivatives.
 
@@ -229,7 +229,7 @@ With the equations we need defined in \cref{sec:Theory} we can now describe our 
 \label{subsec:Method/Solving Xe}
 First we implemented a method to get the baryon number density at time $x$, using \cref{eq:baryon number density}. This is used in both \cref{eq:Saha equation,eq:Peebles equation}, as well as solving for the electron number density once we have the free electron fraction.
 
-Next we solve for the free electron fraction using \cref{eq:Saha equation,eq:Peebles equation} in an x-interval from $-12$ to $2$ with $\num{1e5}$ points. Here we have to consider multiple numerical stability issues. First we must define a transition between the two regimes for when the Saha equation is no longer valid, due to the Saha approximation being validated, and define this as when $X_e < 0.99$. Looking at \cref{eq:Saha equation}, this is a simple quadratic equation in $X_e$, which we solve as follows
+Next we solve for the free electron fraction using \cref{eq:Saha equation,eq:Peebles equation} in an $x$-interval from $-12$ to $2$ with $\num{1e5}$ points. Here we have to consider multiple numerical stability issues. First we must define a transition between the two regimes for when the Saha equation is no longer valid, due to the Saha approximation being validated, and define this as when $X_e < 0.99$. Looking at \cref{eq:Saha equation}, this is a simple quadratic equation in $X_e$, which we solve as follows
 \begin{align*}
     \text{let} \quad  F &\equiv \frac{1}{n_b}\left(\frac{m_e k_b T_b}{2\pi \hbar^2}\right)^{3/2} \exp(-\frac{\epsilon_0}{k_b T_b})
     \\
@@ -269,9 +269,9 @@ We solve for the optical depth and visibility function in the same time interval
     \diff{\tau }{x} = -\frac{\sigma_t n_e c}{H(x)}
     \label{eq: tau ODE}
 \end{equation}
-and solve it with the same algorithm as we did for the Peebles equation. We don't know the initial condition for this equation, but we do know the numerical value of it today\footnote{Or in other words at our location, distance $x=0$ away.} at $x=0$. We therefore chose one arbitrary and large initial value, $\tau_{\rm{init}} = \num{1e3}$, and then normalized the result in the end by subtracting the computed value of $\tau(x=0)$ from every grid point. To do this we find the index where $x=0$ dynamically, call it $x_{\rm{zero}}$.
+and solve it with the same algorithm as we did for the Peebles equation. We don't know the initial condition for this equation, but we do know the numerical value of it today\footnote{Or in other words at our location, distance $x=0$ away.} at $x=0$. We therefore chose one arbitrary and large initial value, $\tau_{\rm{init}} = \num{1e3}$, and then normalized the result in the end by subtracting the computed value of $\tau(x=0)$ from every grid point. To do this we find the index where $x=0$ dynamically, call it $x_{\rm{zero}}$, using the \textit{lower bound} functionality from the standard library.
 
-The first derivative of $\tau$ is obtained directly through the ODESolver, and before we normalize the optical depth we create the spline for this derivative. Using this spline we can fetch the second derivative too. This way we can use the spline to compute the first derivative of the visibility function, all in the same loop as we are normalizing the optical depth and computing the visibility function it self. To do this we use the chain rule on \cref{eq:visibility function} to express it analytically, and compute the quantities according to this scheme
+The first derivative of $\tau$ is obtained directly through the ODESolver, and before we normalize the optical depth we create the spline for this derivative. Using this spline we can compute the second derivative too using the \textit{deriv\_x\(\)} method of the spline. This way we can use the spline to compute the first derivative of the visibility function, all in the same loop as we are normalizing the optical depth and computing the visibility function it self. To do this we use the chain rule on \cref{eq:visibility function} to express its derivative analytically, and compute the quantities according to this scheme
 \begin{align*}
     \text{for } i \in &[0,n-1]:
     \\
@@ -303,52 +303,88 @@ We also find the specific time for the transition between the two regimes solved
 \label{subsec:Results/Common in figs}
 The results from all calculations are combined in \cref{fig:Xe and ne,fig:tau,fig:g}, with a few things in common between all the figures. First, as we did in milestone1\citep{milestone1}, the background of the figures are coloured according the to dominating energy contributor to the given time period. Blue marks the radiation dominated regime, red marks the matter\footnote{Baryons and dark matter.} dominated regime and the green marks the regime dominated by dark energy in the form of the cosmological constant.
 
-The \cref{subsec:Method/Times of interest} results are shown in each plot as vertical lines, except the times obtained for the Saha equation solution only. Here we found
-\begin{align*}
-    & \text{Half-way recombination:} && x_{\rm{rec}} &&= \num{-7.1649} && z_{\rm{rec}} &&= \num{1292.23} 
+The results from \cref{subsec:Method/Times of interest} are shown in each plot as vertical lines, except the times obtained for the Saha equation only solution. Here we found
+\begin{alignat*}{3}
+    & \text{Half-way recombination, only Saha:}      &\quad x_{\rm{rec,Saha}} &= \num{-7.23022} &\quad z_{\rm{rec,Saha}} &= \num{1379.53}
     \\
-    & \text{Half-way recombination, only Saha:} && x_{\rm{rec,Saha}} &&= \num{-7.23022} && z_{\rm{rec,Saha}} &&= \num{1379.53}
+    & \text{Half-way recombination:}                 &\quad x_{\rm{rec}}      &= \num{-7.1649}  &\quad z_{\rm{rec}}      &= \num{1292.23} 
     \\
-    & \text{Transition from Saha to Peebles regime:} && x_{\rm{Peebles}} &&= \num{-7.37029} && &
+    & \text{Transition from Saha to Peebles regime:} &\quad x_{\rm{Peebles}}  &= \num{-7.37029} &\quad                   &
     \\
-    & \text{Last scattering surface:} && x_{\star} &&= \num{-6.98608} && z_{\star} &&= \num{1080.48}
-\end{align*}
+    & \text{Last scattering surface:}                &\quad x_{\star}         &= \num{-6.98608} &\quad z_{\star}         &= \num{1080.48}.
+\end{alignat*}%
+
+All figures are plotted using "Python".
 
 \subsection{The Electron Density}
 \label{subsec:Results/Electron density}
-The evolution of the free electron fraction and the electron number density as functions of $x$ are shown in \cref{fig:Xe and ne}. The left y-axis show the value of $X_e$, and the right show $n_e$ overplotted. Here both solutions are shown, the one using only the Saha equation in dash-dotted pink and subscript $\rm{Saha}$, as well as the full solution using the Peebles equation in blue. 
-
+The evolution of the free electron fraction and the electron number density are shown in \cref{fig:Xe and ne}. The left y-axis show the value of $X_e$, and the right show $n_e$ overplotted. Both solutions are shown, the one using only the Saha equation in dash-dotted pink and subscript $\rm{Saha}$, as well as the full solution using the Peebles equation in blue.
 \begin{figure}[ht]
     \centering
     \includegraphics[scale=0.5]{../figs/free_electrons.pdf}
-    \caption{Plot showing the free electron fraction $X_e$, left y-axis, and electron number density $n_e$, right y-axis. The solution obtained using only Saha equation is included in the pink dash-dotted line, $X_{e,\rm{Saha}}$, which drops off exponentially to zero once the solution deviates from equilibrium. The transition between the Saha and Peebles regime is marked at $x\approx-7.37 \equiv x_{\rm{Peebles}}$. The horizontal blue dashed line at $X_e=0.5$ indicate where recombination is half-way done, at $x\approx-7.16\equiv x_{\rm{rec}}$. The LSS is indicated at $x\approx-6.99\equiv x_{\rm{\star}}$. The left panel zoom in centered on $x_{\star}$, showing a $\SI{10}{\%}$ buffer in $x$ on both sides.}
+    \caption{Plot showing the free electron fraction $X_e$, left y-axis, and electron number density $n_e$, right y-axis. The solution obtained using only Saha equation is included in the pink dash-dotted line, $X_{e,\rm{Saha}}$, which drops off exponentially to zero once the solution deviates from equilibrium. The transition between the Saha and Peebles regime is marked at $x_{\rm{Peebles}}\approx-7.37$. The horizontal blue dashed line at $X_e=0.5$ indicate where recombination is half-way done, at $x_{\rm{rec}}\approx-7.16$. The LSS is indicated at $x_{\rm{\star}}\approx-6.99 $. The left panel zoom in centered on $x_{\star}$, showing a $\SI{10}{\%}$ buffer in $x$ on both sides.}
     \label{fig:Xe and ne}
 \end{figure}
 
+Here we see how the free electron fraction stay constant at $1$ in the early Universe, before recombination happens, while the electron number density drops in a linear way\footnote{This is of course in logarithmic axes.} proportional to the expansion $a^{-3}$.
+Then at $x_{\rm{Peebles}} \approx \num{-7.37}$ we enter the Peebles regime, and shortly after we can see the free electron fraction start to evolve quite rapidly, along with a dramatic drop in the electron number density of several orders of magnitude. Here the temperature of the Universe has dropped significantly so that the free electrons and protons can start to form neutral hydrogen as discussed. Already at $x_{\rm{rec}} = -7.16$ the recombination is half-way done, using the full solution, while the Saha only solution predicts it happening already at $x_{\rm{rec,Saha}} = \num{-7.23022}$. This is as we know too early, and it makes sense as the Saha equation assumes the solution is close to EQ at all times which is not the case during recombination. \Cref{eq:Saha equation} has a exponential drop of which we can recognize in the figure, the $X_{e,\rm{Saha}}$ solution drops off to zero with decreasing temperature.
+The full solution\footnote{Just called <<the solution>> from now on, the Saha only solution is neglected.} does not fall off exponentially, and instead flattens out to a stable value of $X_e(x=0) \approx \num{1.91083e-04}$. This flattening can be described by two phases. First the free electrons decouple from the rest of the Universe as their interaction rate with the free protons drops below the expansion rate of the Universe. Second the free electrons freeze out, where the free electron fraction stops evolving and becomes more or less constant. 
+
+After the recombination period we see that the electron number density goes back to evolving with the expansion as it did before recombination. If we neglect the recombination period and the time for freeze out to happen, we see that the free electron fraction stays constant as the electron number density only evolves with the expansion. Note also that at LSS the free electron fraction has dropped to $\sim 10^{-1}$.
+
+The full computation of solving for $X_e$, computing both solutions, was done in $\sim \SI{0.0717426}{s}$.
+
+\subsection{The Optical Depth}
+\label{subsec:Results/tau}
+In \cref{fig:tau} the optical depth and its derivatives are plotted on the left y-axis, with the visibility function overplotted on the right y-axis in green to easily see how they are related. The horizontal dash-dotted blue line indicate the $\tau = 1$ transition.
 \begin{figure}[ht]
     \centering
     \includegraphics[scale=0.5]{../figs/optical_depth.pdf}
-    \caption{Plot showing the optical depth and its two first derivatives, left y-axis, and the visibility function, right y-axis. $x\approx-7.16\equiv x_{\rm{rec}}$ indicate where recombination is half-way done. The LSS is indicated at $x\approx-6.99\equiv x_{\rm{\star}}$, located at the peak in $\tilde{g}$ and where $\tau=1$. The transition between the Saha and Peebles regime is marked at $x\approx-7.37 \equiv x_{\rm{Peebles}}$. The left panel zoom in centered on $x_{\star}$, showing a $\SI{10}{\%}$ buffer in $x$ on both sides.}
+    \caption{Plot showing the optical depth and its two first derivatives, left y-axis, and the visibility function, right y-axis. $x_{\rm{rec}}\approx-7.16$ indicate where recombination is half-way done. The LSS is indicated at $x_{\rm{\star}}\approx-6.99$, located at the peak in $\tilde{g}$ and where $\tau=1$. The transition between the Saha and Peebles regime is marked at $x_{\rm{Peebles}}\approx-7.37 $. The left panel zoom in centered on $x_{\star}$, showing a $\SI{10}{\%}$ buffer in $x$ on both sides.}
     \label{fig:tau}
 \end{figure}
 
+In the dense primordial Universe the mean free path of photons was really low due to rapid Thompson scattering on the abundant free electrons. This is reflected in the high optical depth, and high free electron fraction. Here $\tau \gg 1$ and the Universe was highly opaque. From \cref{eq: tau ODE} we see that the change in optical depth is proportional to the ratio of the Thompson scattering interaction rate, $\sigma_T n_e$, and the expansion rate, $H(x)$. From \cite{milestone1} we know that the expansion rate evolves in a linear way\footnote{Again in logarithmic plots.} following $H^2(x) \propto \exp(-4x)$ in the radiation dominated period, so we can focus our attention for now to $n_e$. As we saw in \cref{subsec:Results/Electron density} this just evolves with the expansion before recombination. This reflects the linear evolution in the optical depth and its derivatives in this period. Here the optical <<thickness>> of the Universe is only decreasing along with the expansion.
+
+Then when recombination starts and $n_e$ and $X_e$ drops dramatically, it follows with a huge drop in the optical depth and its derivatives. This is consistent with less free electrons, less Thompson scattering and longer mean free path. Now the optical <<thickness>> of the Universe is changed dramatically due to the change in the constituents of the Universe, not only the expansion. At $x_{\rm{rec}}$ the optical depth has decreased to $\sim 10$, and at $x_\star$, $\tau=1$, we have the LSS. As mentioned in \cref{subsec:Theory/tau and g} this is where the Universe transitions from opaque to transparent, and corresponds to the peak in the visibility function. Note also the point where $\tau^\prime = 1$. We will come back to this and the visibility function in \cref{subsec:Results/g}.
+
+After recombination, and the free electron fraction freezes out, the optical depth goes back to decreasing with the expansion. Now we are in the matter dominated regime, and the expansion is proportional to $H^2(x) \propto \exp(-3x)$. Hence we see the optical depth goes back to decreasing linearly in the logarithmic plot, now slightly faster than before recombination, before we approach the todays value, where $\tau = 0$ by definition.
+
+\subsection{The Visibility Function}
+\label{subsec:Results/g}
+\Cref{fig:g} shows the visibility function and its scaled derivatives. The derivatives are scaled to fit into the same plot, with the first and second derivative having much larger values than the visibility function it self. $\tilde{g}$ is as mentioned a probability function, while the derivatives have negative values. Our choice of scaling is making the absolute value of the scaled first and second derivatives probability distributions as well, following
+\begin{align*}
+    \overline{\tilde{g}^\prime} &= \frac{\tilde{g}^\prime}{\int_{-\infty}^\infty \abs{\tilde{g}^\prime} \dd{x}}
+    \\
+    \overline{\tilde{g}^{\prime\prime}} &= \frac{\tilde{g}^{\prime\prime}}{\int_{-\infty}^\infty \abs{\tilde{g}^{\prime\prime}} \dd{x}}.
+\end{align*}
 \begin{figure}[ht]
     \centering
     \includegraphics[scale=0.5]{../figs/visibility_functions.pdf}
-    \caption{Plot showing the visibility function and its two first derivatives, all scaled. The transition between the Saha and Peebles regime is marked at $x\approx-7.37 \equiv x_{\rm{Peebles}}$.}
+    \caption{Plot showing the visibility function and its scaled two first derivatives. The transition between the Saha and Peebles regime is marked at $x_{\rm{Peebles}}\approx-7.37$, the half-way recombination point is marked at $x_{\rm{rex}}\approx -7.16$. The LSS surface is at $x_\star \approx -6.99$, which corresponds to the peak in the visibility function and where $\tau=1$. The left panel zoom in centered on $x_{\star}$, showing a $\SI{10}{\%}$ buffer in $x$ on both sides.}
     \label{fig:g}
 \end{figure}
+As discussed in \cref{subsec:Theory/tau and g}, the visibility function describes the probability that a observed photon was last scattered at time $x$, going backwards in time from today. From the left panel in \cref{fig:g}, also maybe better visible in \cref{fig:tau}, this probability is more or less zero both before and after recombination. We can understand this as follows. Before recombination the Universe was dense and opaque, and photons scattered all the time, and thus the probability of a photon observed today scattered \textit{last time} before recombination is minuscule. After recombination the Universe is transparent, huge and <<empty>>. Here the Thompson interaction rate is lower than the expansion rate, as $\tau^\prime < 1$, and so the chance for scattering is really low.
 
-% \section{Notes}
-% Derivative of tau corresponds to interaction rate relative to the expansion rate.
-\pagebreak
+But as we see, at $x_\star$ the visibility function has its maximum, in accordance with $\tau = 1$ at this same point as we saw in \cref{fig:tau}. As discussed this corresponds to the LSS, and from the sharp peak in the visibility function we understand that this surface, or shell around us, is really thin. We also see from the first derivative that the probability for last scattering starts to increase approximately at our defined $x_{\rm{rec}}$, where the recombination is half-way done. The visibility function it self has a more sharply defined curve in the transition into recombination, and a less sharp curve in the transition out of recombination. We can understand this by looking at the sharp drop in $X_e$ when recombination starts, and the more soft freeze out after recombination. This is also evident in $\tau^\prime$, which drops below 1 slightly after recombination. As discussed this corresponds to the time where the Thompson scattering interaction rate drops below the expansion rate. As this happens slightly after recombination the probability of scattering \textit{one more time} after $x_\star$ is slightly higher and the curve goes to zero in a more soft fashion. Note that as $\tau^\prime < 1$ the visibility function is approximately back down to zero. These effects are also evident mathematically in the derivatives, while the physical interpretation of the derivatives are more unclear.
+
+The total time for solving for both optical depth and the visibility function is done in $\sim \SI{0.0867354}{s}$. The full run of everything in this milestone was done in $\sim \SI{0.233127}{s}$.
+
+%\pagebreak
 \bibliographystyle{plainnat}
 \bibliography{ref_milestone2}
 
 \clearpage
 \begin{appendices}
     \appendix
+    \section{Testing our Results}
+    In this milestone we do not have the same amount of good test of our implementation as we did in milestone 1. The best we can do is summarized here.
 
+    First we check that the results obtained for the visibility function actually is a probability distribution, by numerically integrating the results in "Python" using the simple trapezoidal method from \textit{numpy}.
+
+    Second we test our results against the given results in the project description\citep{project_description}, with a <<toy-cosmology>>. To run the full calculations using this toy cosmology give the command line argument \textit{Toy-Milestone2} when running the code, or the \textit{toy2cmb} rule when running the makefile.
+
+    As a last line of checks, we compare our results to those of \cite{Calin}.
     \section{Dimensional Analysis of the Saha Equation}
     \label{asec:Dimensional analysis}
     Here follows an example of how to perform the dimensional analysis to rewrite the Saha equation as listed in \cite[p. 70]{Dodelson} in natural units into the form of \cref{eq:Saha equation}. First we do one simplifying step. As we neglect the helium atoms and assume a neutral universe we can write the sum of electron and hydrogen number densities as the baryon density, $n_e + n_H = n_p + n_H = n_b$.
