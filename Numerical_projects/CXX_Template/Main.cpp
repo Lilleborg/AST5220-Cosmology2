@@ -19,14 +19,19 @@ int main(int argc, char **argv){
   double OmegaCDM    = 0.224;
   double Neff        = 3.046;
   double TCMB        = 2.7255;
+
+  // Path for data files
+  std::string data_path ("./../data/");
+
   // Test for input arguments, used when calculating with "toy-cosmologies"
   if (argc > 1)
   {
-    // Toy cosmology used for testing in Milestone 2
-    if (strcmp(argv[1],"Toy-Milestone2") == 0)
+    // Toy cosmology used for testing
+    if (strcmp(argv[1],"toy-cosmo") == 0)
     {
       OmegaB = 0.05;
       OmegaCDM = 0.45;
+      data_path = "./../data_toy/";
     }
   }
 
@@ -43,7 +48,7 @@ int main(int argc, char **argv){
   cosmo.info();
   
   // Output background evolution quantities
-  cosmo.output("./../data/cosmology.txt");
+  cosmo.output(data_path + "cosmology.txt");
   Utils::EndTiming("Module I");
   std::cout << "\n";
 
@@ -56,14 +61,12 @@ int main(int argc, char **argv){
   rec.info();
   rec.solve();
   rec.print_time_results();
-  rec.save_time_results();
+  rec.save_time_results(data_path + "recombination_times.txt");
 
   // Output recombination quantities
-  rec.output("./../data/recombination.txt");
+  rec.output(data_path + "recombination.txt");
   Utils::EndTiming("Module II");
   std::cout << "\n";
-  // Remove when module is completed
-  return 0;
 
   //=========================================================================
   // Module III
@@ -75,7 +78,7 @@ int main(int argc, char **argv){
   
   // Output perturbation quantities
   double kvalue = 0.01 * Constants.Mpc;
-  pert.output(kvalue, "perturbations_k0.01.txt");
+  pert.output(kvalue, data_path + "perturbations_k0.01.txt");
   
   // Remove when module is completed
   return 0;
