@@ -3,9 +3,9 @@
 #include <iostream>
 #include <fstream>
 #include "Utils.h"
-//#include "matplotlibcpp.h"
 
 using Vector = std::vector<double>;
+using Doublepair = std::pair<double,double>;
 
 class BackgroundCosmology{
   private:
@@ -26,11 +26,11 @@ class BackgroundCosmology{
     
     double Omega_summed;            // The sum of the omegas, should be one
     double H0_over_H_squared(double x) const; // Used in all get_Omega functions
-    Vector exp_of_3x_and_4x(double x) const;   // Function for getting the exponential values value exp(3x) and exp(4x)
+    Doublepair exp_of_3x_and_4x(double x) const;   // Function for getting the exponential values value exp(3x) and exp(4x)
 
     // Start and end of x-integration (can be changed)
-    double x_start = Constants.x_start;
-    double x_end   = Constants.x_end;
+    double x_start = Constants.x_start_cosmo;
+    double x_end   = Constants.x_end_cosmo;
     int npts = 10000;
 
     // Splines to be made
@@ -74,6 +74,7 @@ class BackgroundCosmology{
     double get_OmegaLambda(double x = 0.0) const; 
     double get_OmegaK(double x = 0.0) const; 
     double get_OmegaMnu(double x = 0.0) const; 
+    double get_rho_crit(double x = 0.0) const;
     double get_H0() const;
     double get_h() const;
     double get_Neff() const;

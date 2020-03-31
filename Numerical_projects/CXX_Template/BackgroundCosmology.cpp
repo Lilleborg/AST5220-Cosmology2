@@ -34,9 +34,8 @@ BackgroundCosmology::BackgroundCosmology(
   //OmegaLambda
   OmegaLambda = 1 - (OmegaR + OmegaNu + OmegaB + OmegaCDM + OmegaK);
   
-  // Check sum of the Omegas today
+  // Sum of the Omegas today
   Omega_summed = OmegaB + OmegaCDM + OmegaLambda + OmegaR + OmegaK + OmegaNu;
-  std::cout << "Sum of the present day capital omegas: " << Omega_summed << std::endl;
 }
 
 // Solve the background
@@ -52,18 +51,15 @@ void BackgroundCosmology::solve(){
   };
 
   // Solving the ODE:
-  Vector eta_ini{0.0};
+  Vector eta_ini{Constants.c/Hp_of_x(x_start)};
   ODESolver ode;
   ode.solve(detadx,x_array,eta_ini);
-  auto eta_all_data = ode.get_data();
-  // Filling data into array:
-  Vector eta_array(x_array.size());
-  for (int i = 0; i < eta_all_data.size(); i++){
-    eta_array.at(i) = eta_all_data[i][0];
-  }
+  
+  // Fetch results
+  auto eta_array = ode.get_data_by_component(0);
 
   // Creating spline:
-  eta_of_x_spline.create(x_array,eta_array);
+  eta_of_x_spline.create(x_array,eta_array,"eta");
   Utils::EndTiming("Eta");
 }
 
@@ -77,16 +73,16 @@ double BackgroundCosmology::H0_over_H_squared(double x) const{
   return H0*H0/H_temp/H_temp;
 }
 
-  // Returns a vector with components exp(3*x) and exp(4*x)
-Vector BackgroundCosmology::exp_of_3x_and_4x(double x) const{
+  // Returns a pair with components exp(3*x) and exp(4*x)
+Doublepair BackgroundCosmology::exp_of_3x_and_4x(double x) const{
   // From testing this method performs better than calling the exponential functions
-  // with 3*x and 4*x as arguments. For consistent/clean code this method is used each time
-  // one of the quantities are needed (even when only using one of them).
+  // with 3*x and 4*x as arguments. For consistent code this method is used each time
+  // one of the quantities are needed, even when only using one of them. (This is at most
+  // one floating point operation more than needed in addition to creating the pair).
   double a = exp(x);
   double exp3x = a*a*a;
   double exp4x = exp3x*a;
-  Vector res{exp3x,exp4x};
-  return res;
+  return Doublepair(exp3x,exp4x);
 }
 
 //====================================================
@@ -95,10 +91,10 @@ Vector BackgroundCosmology::exp_of_3x_and_4x(double x) const{
 
   // Returns the Hubble parameter as function of x, using Friedmann 1
 double BackgroundCosmology::H_of_x(double x) const{
-  Vector exponentials = exp_of_3x_and_4x(x);
+  Doublepair exponentials = exp_of_3x_and_4x(x);
   double res = H0 * sqrt(
-    (OmegaB+OmegaCDM) / exponentials[0]
-    + OmegaR / exponentials[1]
+    (OmegaB+OmegaCDM) / exponentials.first
+    + OmegaR / exponentials.second
     + OmegaLambda);
 
   return res;
@@ -106,8 +102,8 @@ double BackgroundCosmology::H_of_x(double x) const{
 
   // Returns the derivative of Hubble parameter wrt x
 double BackgroundCosmology::dHdx_of_x(double x) const{
-  Vector exponentials = exp_of_3x_and_4x(x);
-  double res = H0*H0/(2*H_of_x(x)) * (-3*(OmegaB+OmegaCDM)/exponentials[0] - 4*OmegaR/exponentials[1]);
+  Doublepair exponentials = exp_of_3x_and_4x(x);
+  double res = H0*H0/(2*H_of_x(x)) * (-3*(OmegaB+OmegaCDM)/exponentials.first - 4*OmegaR/exponentials.second);
 
   return res;
 }
@@ -115,9 +111,9 @@ double BackgroundCosmology::dHdx_of_x(double x) const{
   // Returns the double derivative of Hubble parameter wrt x
 double BackgroundCosmology::ddHddx_of_x(double x) const{
   double H = H_of_x(x);
-  Vector exponentials = exp_of_3x_and_4x(x);
-  double res = H0*H0/2 * (1/H * (9*(OmegaB+OmegaCDM)/exponentials[0] + 16*OmegaR/exponentials[1]) 
-    - dHdx_of_x(x)/H/H * (-3*(OmegaB+OmegaCDM)/exponentials[0] - 4*OmegaR/exponentials[1]));
+  Doublepair exponentials = exp_of_3x_and_4x(x);
+  double res = H0*H0/2 * (1/H * (9*(OmegaB+OmegaCDM)/exponentials.first + 16*OmegaR/exponentials.second) 
+    - dHdx_of_x(x)/H/H * (-3*(OmegaB+OmegaCDM)/exponentials.first - 4*OmegaR/exponentials.second));
   return res;
 }
   // Returns Hubble prime as function of x and H_of_x
@@ -150,16 +146,16 @@ double BackgroundCosmology::ddHpddx_of_x(double x) const{
 
 double BackgroundCosmology::get_OmegaB(double x) const{ 
   if(x == 0.0) return OmegaB;
-  Vector exponentials = exp_of_3x_and_4x(x);
-  double Omega = H0_over_H_squared(x) * OmegaB / exponentials[0];
+  Doublepair exponentials = exp_of_3x_and_4x(x);
+  double Omega = H0_over_H_squared(x) * OmegaB / exponentials.first;
 
   return Omega;
 }
 
 double BackgroundCosmology::get_OmegaR(double x) const{ 
   if(x == 0.0) return OmegaR;
-  Vector exponentials = exp_of_3x_and_4x(x);
-  double Omega = H0_over_H_squared(x) * OmegaR / exponentials[1];
+  Doublepair exponentials = exp_of_3x_and_4x(x);
+  double Omega = H0_over_H_squared(x) * OmegaR / exponentials.second;
 
   return Omega;
 }
@@ -171,8 +167,8 @@ double BackgroundCosmology::get_OmegaNu(double x) const{
 
 double BackgroundCosmology::get_OmegaCDM(double x) const{ 
   if(x == 0.0) return OmegaCDM;
-  Vector exponentials = exp_of_3x_and_4x(x);
-  double Omega = H0_over_H_squared(x) * OmegaCDM / exponentials[0];
+  Doublepair exponentials = exp_of_3x_and_4x(x);
+  double Omega = H0_over_H_squared(x) * OmegaCDM / exponentials.first;
 
   return Omega;
 }
@@ -183,6 +179,15 @@ double BackgroundCosmology::get_OmegaLambda(double x) const{
   double Omega = H0_over_H_squared(x) * OmegaLambda;
 
   return Omega;
+}
+
+double BackgroundCosmology::get_rho_crit(double x) const{
+  if(x == 0.0) return 3*H0*H0/8/M_PI/Constants.G;
+
+  double H_temp = H_of_x(x);
+  double res = 3*H_temp*H_temp/8/M_PI/Constants.G;
+
+  return res;
 }
 
   // Calculating without curvature, so always returning zero
@@ -216,16 +221,17 @@ double BackgroundCosmology::get_TCMB() const{
 void BackgroundCosmology::info() const{ 
   std::cout << "\n";
   std::cout << "Info about cosmology class:\n";
-  std::cout << "OmegaB:      " << OmegaB      << "\n";
-  std::cout << "OmegaCDM:    " << OmegaCDM    << "\n";
-  std::cout << "OmegaLambda: " << OmegaLambda << "\n";
-  std::cout << "OmegaK:      " << OmegaK      << "\n";
-  std::cout << "OmegaNu:     " << OmegaNu     << "\n";
-  std::cout << "OmegaR:      " << OmegaR      << "\n";
-  std::cout << "Neff:        " << Neff        << "\n";
-  std::cout << "h:           " << h           << "\n";
-  std::cout << "H0:          " << H0          << "\n";
-  std::cout << "TCMB:        " << TCMB        << "\n";
+  std::cout << "OmegaB:      " << OmegaB       << "\n";
+  std::cout << "OmegaCDM:    " << OmegaCDM     << "\n";
+  std::cout << "OmegaLambda: " << OmegaLambda  << "\n";
+  std::cout << "OmegaK:      " << OmegaK       << "\n";
+  std::cout << "OmegaNu:     " << OmegaNu      << "\n";
+  std::cout << "OmegaR:      " << OmegaR       << "\n";
+  std::cout << "Sum Omegas:  " << Omega_summed << "\n";
+  std::cout << "Neff:        " << Neff         << "\n";
+  std::cout << "h:           " << h            << "\n";
+  std::cout << "H0:          " << H0           << "\n";
+  std::cout << "TCMB:        " << TCMB         << "\n";
   std::cout << std::endl;
 } 
 
@@ -233,8 +239,10 @@ void BackgroundCosmology::info() const{
 // Output some data to file
 //====================================================
 void BackgroundCosmology::output(const std::string filename) const{
-  const double x_min = -15;
-  const double x_max = 2.0;
+  // Create x_array to write to file using the splines. Choose a narrower interval than 
+  // the one used to solve the equations to avoid boundary problems
+  const double x_min = x_start+3;
+  const double x_max = x_end-2;
   const int    n_pts = npts;
   
   Vector x_array = Utils::linspace(x_min, x_max, n_pts);

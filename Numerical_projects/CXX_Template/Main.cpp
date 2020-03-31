@@ -3,8 +3,7 @@
 #include "RecombinationHistory.h"
 #include "Perturbations.h"
 #include "PowerSpectrum.h"
-
-//namespace plt = matplotlibcpp;
+#include <string.h>
 
 int main(int argc, char **argv){
   std::cout << "\n";
@@ -20,9 +19,19 @@ int main(int argc, char **argv){
   double OmegaCDM    = 0.224;
   double Neff        = 3.046;
   double TCMB        = 2.7255;
+  // Test for input arguments, used when calculating with "toy-cosmologies"
+  if (argc > 1)
+  {
+    // Toy cosmology used for testing in Milestone 2
+    if (strcmp(argv[1],"Toy-Milestone2") == 0)
+    {
+      OmegaB = 0.05;
+      OmegaCDM = 0.45;
+    }
+  }
 
   // Recombination parameters
-  double Yp          = 0.24;
+  double Yp          = 0.0;       //Not including Helium, propper value: 0.24;
 
   //=========================================================================
   // Module I
@@ -38,20 +47,21 @@ int main(int argc, char **argv){
   Utils::EndTiming("Module I");
   std::cout << "\n";
 
-  // Remove when module is completed
-  return 0;
-
   //=========================================================================
   // Module II
   //=========================================================================
-  
+  Utils::StartTiming("Module II");
   // Solve the recombination history
   RecombinationHistory rec(&cosmo, Yp);
   rec.info();
+  rec.solve();
+  rec.print_time_results();
+  rec.save_time_results();
 
   // Output recombination quantities
-  rec.output("recombination.txt");
-  
+  rec.output("./../data/recombination.txt");
+  Utils::EndTiming("Module II");
+  std::cout << "\n";
   // Remove when module is completed
   return 0;
 

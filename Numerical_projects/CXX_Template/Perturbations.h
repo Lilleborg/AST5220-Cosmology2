@@ -59,10 +59,10 @@ class Perturbations{
         const double x, 
         const double k) const;
     
-    // Right hand side of the ODE in the tight coupling regime
+    // Right hand side of the ODE in the tight coupling regime  (A vector from slides, only few multipoles of theta)
     int rhs_tight_coupling_ode(double x, double k, const double *y, double *dydx);
     
-    // Compute the time when tight coupling ends
+    // Compute the time when tight coupling ends  (what x does tight coupling end for each k)
     double get_tight_coupling_time(const double k) const;
     
     //==========================================================
@@ -75,7 +75,7 @@ class Perturbations{
         const double x, 
         const double k) const;
 
-    // Right hand side of the ODE in the full regime
+    // Right hand side of the ODE in the full regime (A vector from slides, all multiploles of theta)
     int rhs_full_ode(double x, double k, const double *y, double *dydx);
     
     //==========================================================
