@@ -74,11 +74,11 @@ toy2cmb:
 	./cmb Toy-Milestone2
 
 plot1:
-	cd ./../Milestone1 && python plotter_Milestone1.py
+	cd ./../Milestone1/python && python plotter_Milestone1.py
 
 bench1:
-	cd ./../Milestone1 && python benchmarking_Milestone1.py
+	cd ./../Milestone1/python && python benchmarking_Milestone1.py
 
 plot2:
-	cd ./../Milestone2 && python plotter_Milestone2.py
+	cd ./../Milestone2/python && python plotter_Milestone2.py
 

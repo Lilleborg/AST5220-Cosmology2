@@ -11,7 +11,7 @@ mpl.rc('text', usetex=False)
 # Load data
 # ---------
 x_array, eta_of_x, H_of_x, dHdx_of_x, Hp_of_x, dHpdx_of_x, ddHpddx_of_x, OmegaB, OmegaCDM, \
-    OmegaLambda, OmegaR, _, _ = np.loadtxt("../data/cosmology.txt", unpack=True)
+    OmegaLambda, OmegaR, _, _ = np.loadtxt("../../data/cosmology.txt", unpack=True)
 
 # Data handling and converting
 # ----------------------------
@@ -53,7 +53,8 @@ ax.set_ylabel(r'$\mathcal{H}/(aH)$')
 ax.tick_params(axis='y', labelrotation=45)
 ax.set_xticks(x_array_ticks)
 
-fig.savefig('./figs/ratio_Hprime_aH.pdf')
+print('Saving ./../figs/ratio_Hprime_aH.pdf')
+fig.savefig('./../figs/ratio_Hprime_aH.pdf')
 
 # Ratio of Hp and its derivatives in each regime
 fig, axes = plt.subplots(2, figsize=(6, 9))
@@ -81,7 +82,8 @@ for ax in axes.flatten():
     ax.margins(x=0)
     ax.legend()
 
-fig.savefig('./figs/ratio_Hprime_and_derivatives.pdf')
+print('Saving ./../figs/ratio_Hprime_and_derivatives.pdf')
+fig.savefig('./../figs/ratio_Hprime_and_derivatives.pdf')
 
 # Ratio eta*Hp/c = 1 back in time
 fig, ax = plt.subplots(figsize=(6, 4.5))
@@ -92,6 +94,7 @@ ax.set_xlabel(r'$x = ln(a)$')
 ax.set_yscale('log')
 ax.legend()
 
-fig.savefig('./figs/ratio_eta_Hp_over_c.pdf')
+print('Saving ./../figs/ratio_eta_Hp_over_c.pdf')
+fig.savefig('./../figs/ratio_eta_Hp_over_c.pdf')
 
 plt.show()

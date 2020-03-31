@@ -17,7 +17,7 @@ def color_each_regime(ax,x_array,redshift=[False]):
     # is read each time which is not very efficient, but not so concerned about speed in the plotters.
     # Timed for 100 calls, which is way more than I ever expect to use it, which takes about 1.9 seconds.
     # 18.7 seconds for 1000 calls.
-    x_values = np.loadtxt("../data/x_values_rad_mat_lambda_eq.txt")
+    x_values = np.loadtxt("../../data/x_values_rad_mat_lambda_eq.txt")
     idx_rad_mat_eq = np.argmin(np.abs(x_array-x_values[0]))
     idx_mat_lambda_eq = np.argmin(np.abs(x_array-x_values[1]))
     if len(redshift) < 2:
@@ -38,7 +38,7 @@ if __name__== "__main__":
     # Load data
     # ---------
     x_array, eta_of_x, H_of_x, dHdx_of_x, Hp_of_x, dHpdx_of_x, ddHpddx_of_x, OmegaB, OmegaCDM, \
-        OmegaLambda, OmegaR, _, _ = np.loadtxt("../data/cosmology.txt", unpack=True)
+        OmegaLambda, OmegaR, _, _ = np.loadtxt("../../data/cosmology.txt", unpack=True)
 
     # Data handling and converting
     # ----------------------------
@@ -53,7 +53,7 @@ if __name__== "__main__":
     idx_rad_mat_eq = np.argmin(np.abs(OmegaR-Omega_matter))
     idx_mat_lambda_eq = np.argmin(np.abs(OmegaLambda-Omega_matter))
     # Saving value of x in these indices to file to be used in plotting in later Milestones
-    np.savetxt("../data/x_values_rad_mat_lambda_eq.txt",[x_array[idx_rad_mat_eq],x_array[idx_mat_lambda_eq]])
+    np.savetxt("../../data/x_values_rad_mat_lambda_eq.txt",[x_array[idx_rad_mat_eq],x_array[idx_mat_lambda_eq]])
 
     # Some units
     km = 1e3                                # [m]
@@ -90,7 +90,8 @@ if __name__== "__main__":
     ax.set_ylabel(r'$\Omega_i = \frac{\rho_i}{\rho_c}$')
     ax.set_xticks(x_array_ticks)
 
-    fig.savefig('./figs/omegas_of_x.pdf', bbox_inches='tight')
+    print('Saving ./../figs/omegas_of_x.pdf')
+    fig.savefig('./../figs/omegas_of_x.pdf', bbox_inches='tight')
 
     # Plotting Hubble parameter vs x
     fig, axes = plt.subplots(2, 2)
@@ -125,6 +126,6 @@ if __name__== "__main__":
             color_each_regime(ax,x_array)
             ax.set_xlabel(r'$x = ln(a)$')
             ax.set_xticks(x_array_ticks)
-
-    fig.savefig('./figs/Hubble_eta_of_x.pdf', bbox_inches='tight')
+    print('Saving ./../figs/Hubble_eta_of_x.pdf')
+    fig.savefig('./../figs/Hubble_eta_of_x.pdf', bbox_inches='tight')
     plt.show()
