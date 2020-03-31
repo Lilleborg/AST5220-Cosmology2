@@ -72,7 +72,7 @@ class RecombinationHistory{
 
     // Output some data to file
     void output(const std::string filename) const;
-    void save_time_results() const;
+    void save_time_results(const std::string filename) const;
 
     // Get functions that we must implement
     double tau_of_x(double x) const;

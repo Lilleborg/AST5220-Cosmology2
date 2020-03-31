@@ -357,10 +357,10 @@ void RecombinationHistory::print_time_results() const{
 }
 
 // Save values of x and z for last scattering to file
-void RecombinationHistory::save_time_results() const{
+void RecombinationHistory::save_time_results(const std::string filename) const{
   Vector times = get_time_results();
 
-  std::ofstream fp("./../data/recombination_times.txt");
+  std::ofstream fp(filename.c_str());
   fp << std::setprecision(10);
   fp << "x_star:     " << times[0] << " ";
   fp << "z_star:     " << times[1] << "\n";
