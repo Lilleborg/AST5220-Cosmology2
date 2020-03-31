@@ -8,6 +8,7 @@
 #include "BackgroundCosmology.h"
 
 using Vector = std::vector<double>;
+using Doublepair = std::pair<double,double>;
 
 class RecombinationHistory{
   private:
@@ -22,36 +23,35 @@ class RecombinationHistory{
     const double x_start  = Constants.x_start;
     const double x_end    = Constants.x_end;
     
-    // Numbers of points of Xe,ne array (modify as you see fit)
-    const int npts_rec_arrays = 4000;
+    // Numbers of points used to solved for recombination (Xe and ne)
+    const int npts_rec_arrays = 1e+5;
+    // Numbers of points used to solved for optical depth (tau)
+    const int npts_tau        = 1e+5;
   
     // Xe for when to switch between Saha and Peebles
     const double Xe_saha_limit = 0.99;
+    double x_Saha_to_Peebles = 0; // Store the x-value in transition between regimes
 
-    //===============================================================
-    // [1] Computation of Xe (Saha and Peebles equation)
-    //===============================================================
- 
     // Compute Xe from the Saha equation
-    std::pair<double,double> electron_fraction_from_saha_equation(double x) const;
+    Doublepair electron_fraction_from_saha_equation(double x) const;
     
     // Right hand side of the dXedx Peebles equation
     int rhs_peebles_ode(double x, const double *y, double *dydx);
     
-    // Solve for Xe 
+    // Solve for Xe using Saha and Peebles
     void solve_number_density_electrons();
     
-    //===============================================================
-    // [2] Compute tau and visibility functions
-    //===============================================================
-
-    // The two things we need to solve: Xe/ne and tau
+    // Solve for optical depth using the ODESolver, compute visibility function
     void solve_for_optical_depth_tau();
 
     // Splines contained in this class
-    Spline log_Xe_of_x_spline{"Xe"};
-    Spline tau_of_x_spline{"tau"}; 
+    Spline log_Xe_of_x_spline{"log Xe"};
+    Spline log_Xe_of_x_spline_only_Saha{"log Xe Saha"};
+    Spline log_ne_of_x_spline{"log_ne"};
+    Spline tau_of_x_spline{"tau"};
+    Spline tau_deriv_of_x_spline{"tau_deriv"};
     Spline g_tilde_of_x_spline{"g"};  
+    Spline g_tilde_deriv_of_x_spline{"g"};  
 
   public:
 
@@ -67,8 +67,12 @@ class RecombinationHistory{
     // Print some useful info about the class
     void info() const;
 
+    // Print results of last scattering from recombination class
+    void print_time_results() const;
+
     // Output some data to file
     void output(const std::string filename) const;
+    void save_time_results() const;
 
     // Get functions that we must implement
     double tau_of_x(double x) const;
@@ -80,6 +84,10 @@ class RecombinationHistory{
     double Xe_of_x(double x) const;
     double ne_of_x(double x) const;
     double get_Yp() const;
+
+    double get_number_density_baryons(double x) const;
+    Vector get_time_results() const;
+    double Xe_of_x_Saha_approx(double x) const;
 };
 
 #endif
