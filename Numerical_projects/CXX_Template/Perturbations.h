@@ -20,7 +20,7 @@ class Perturbations{
     RecombinationHistory *rec  = nullptr;
    
     // The scales we integrate over
-    const int n_k        = 100;
+    const int n_k        = 1; //use only one k-value to begin with   was: 100;
     const double k_min   = Constants.k_min;
     const double k_max   = Constants.k_max;
     

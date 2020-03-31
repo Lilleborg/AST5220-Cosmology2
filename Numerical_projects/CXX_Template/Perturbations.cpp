@@ -282,7 +282,7 @@ double Perturbations::get_tight_coupling_time(const double k) const{
 }
 
 //====================================================
-// After integrsating the perturbation compute the
+// After integrating the perturbation compute the
 // source function(s)
 //====================================================
 void Perturbations::compute_source_functions(){
@@ -525,10 +525,10 @@ void Perturbations::info() const{
   std::cout << "Info about perturbations class:\n";
   std::cout << "x_start:       " << x_start                << "\n";
   std::cout << "x_end:         " << x_end                  << "\n";
-  std::cout << "n_x:     " << n_x              << "\n";
+  std::cout << "n_x:           " << n_x                    << "\n";
   std::cout << "k_min (1/Mpc): " << k_min * Constants.Mpc  << "\n";
   std::cout << "k_max (1/Mpc): " << k_max * Constants.Mpc  << "\n";
-  std::cout << "n_k:     " << n_k              << "\n";
+  std::cout << "n_k:           " << n_k              << "\n";
   if(Constants.polarization)
     std::cout << "We include polarization\n";
   else
