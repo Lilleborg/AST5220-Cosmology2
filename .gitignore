@@ -43,3 +43,7 @@ Numerical_projects/temporary_CXX_Template_for_milestone2/cmb
 *.gz
 
 Numerical_projects/.vscode/settings.json
+
+Numerical_projects/data_toy/
+
+Numerical_projects/data/
