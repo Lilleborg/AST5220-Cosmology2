@@ -107,6 +107,9 @@ namespace Utils {
   
   // Generate an array with n equispaced points from xmin to xmax
   std::vector<double> linspace(double xmin, double xmax, int num);
+
+  // Generate an array with n logspaced points from xmin to xmax, default base e
+  std::vector<double> logspace(double xmin, double xmax, int num, double base = exp(1));
   
   // Take the derivative of a function (simple 2pt stencil)
   std::vector<double> derivative(std::vector<double> &x, std::vector<double> &f);

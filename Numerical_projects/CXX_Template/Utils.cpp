@@ -147,6 +147,17 @@ namespace Utils{
     return res;
   }
 
+  // Function to generate a logspace with default base e
+  std::vector<double> logspace(double min_exponent, double max_exponent, int num, double base){
+    std::vector<double> res(num);
+    std::vector<double> exponents = linspace(min_exponent,max_exponent,num);
+    for (int i = 0; i < num; i++)
+    {
+      res[i] = pow(base,exponents[i]);
+    }
+    return res;
+  }
+
   // Function to get the spherical Bessel function j_n(x)
   double j_ell(const int n, const double x){
     if(x==0.0) return n == 0 ? 1.0 : 0.0;
