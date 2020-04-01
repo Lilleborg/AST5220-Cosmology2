@@ -75,6 +75,7 @@ int main(int argc, char **argv){
   // Solve the perturbations
   Perturbations pert(&cosmo, &rec);
   pert.info();
+  pert.solve();
   
   // Output perturbation quantities
   double kvalue = 0.01 * Constants.Mpc;

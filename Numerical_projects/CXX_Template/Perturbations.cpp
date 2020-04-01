@@ -21,7 +21,7 @@ void Perturbations::solve(){
   integrate_perturbations();
 
   // Compute source functions and spline the result
-  compute_source_functions();
+  // compute_source_functions();
 }
 
 //====================================================
@@ -32,19 +32,26 @@ void Perturbations::solve(){
 void Perturbations::integrate_perturbations(){
   Utils::StartTiming("integrateperturbation");
 
-  //===================================================================
-  // TODO: Set up the k-array for the k's we are going to integrate over
-  // Start at k_min end at k_max with n_k points with either a
-  // quadratic or a logarithmic spacing
-  //===================================================================
-  Vector k_array(n_k);
-
+  // Set up logarithmic (base e) spaced k-values using own logspace from Utils
+  Vector k_array= Utils::logspace(log(k_min),log(k_max),n_k);
+  
+  // Test logspace, to be removed
+  // std::ofstream fp("./test_logspace.txt");
+  // fp << std::scientific << std::setprecision(14);
+  // for (int ik = 0; ik < n_k; ik++)
+  // {
+  //   fp << k_array[ik] << "\n";
+  // }
+  // fp.close();
+  
   // Loop over all wavenumbers
   for(int ik = 0; ik < n_k; ik++){
+    std::cout << ik << "\n";
 
     // Progress bar...
-    if( (10*ik) / n_k != (10*ik+10) / n_k ) {
-      std::cout << (100*ik+100)/n_k << "% " << std::flush;
+    if( (10*ik) / n_k != (10*ik+10) / n_k )
+    {
+      std::cout << "Progress pert integration: " << (100*ik+100)/n_k << "% \n" << std::flush;
       if(ik == n_k-1) std::cout << std::endl;
     }
 
@@ -118,7 +125,7 @@ void Perturbations::integrate_perturbations(){
     //...
 
   }
-  Utils::StartTiming("integrateperturbation");
+  Utils::EndTiming("integrateperturbation");
 
   //=============================================================================
   // TODO: Make all splines needed: Theta0,Theta1,Theta2,Phi,Psi,...

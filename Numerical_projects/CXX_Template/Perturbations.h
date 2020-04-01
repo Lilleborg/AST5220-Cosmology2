@@ -20,7 +20,7 @@ class Perturbations{
     RecombinationHistory *rec  = nullptr;
    
     // The scales we integrate over
-    const int n_k        = 1; //use only one k-value to begin with   was: 100;
+    const int n_k        = 10; //use only one k-value to begin with   was: 100;
     const double k_min   = Constants.k_min;
     const double k_max   = Constants.k_max;
     
@@ -55,9 +55,7 @@ class Perturbations{
     //==========================================================
 
     // Set the initial conditions at the start (which is in tight coupling)
-    Vector set_ic(
-        const double x, 
-        const double k) const;
+    Vector set_ic(const double x, const double k) const;
     
     // Right hand side of the ODE in the tight coupling regime  (A vector from slides, only few multipoles of theta)
     int rhs_tight_coupling_ode(double x, double k, const double *y, double *dydx);
@@ -70,10 +68,7 @@ class Perturbations{
     //==========================================================
     
     // Set initial condition after tight coupling
-    Vector set_ic_after_tight_coupling(
-        const Vector &y_tight_coupling, 
-        const double x, 
-        const double k) const;
+    Vector set_ic_after_tight_coupling(const Vector &y_tight_coupling, const double x, const double k) const;
 
     // Right hand side of the ODE in the full regime (A vector from slides, all multiploles of theta)
     int rhs_full_ode(double x, double k, const double *y, double *dydx);

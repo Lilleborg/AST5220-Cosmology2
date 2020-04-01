@@ -153,7 +153,7 @@ namespace Utils{
     std::vector<double> exponents = linspace(min_exponent,max_exponent,num);
     for (int i = 0; i < num; i++)
     {
-      res[i] = pow(base,exponents[i]);
+      res[i] = pow(base,exponents[i]); // using pow here.. not ment to be called often
     }
     return res;
   }
