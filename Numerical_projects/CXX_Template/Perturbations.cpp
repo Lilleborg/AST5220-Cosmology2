@@ -17,6 +17,9 @@ Perturbations::Perturbations(
 
 void Perturbations::solve(){
 
+  // Vector x_testing = set_up_x_array_resolution();
+  // std::cout << x_testing.size() << "\n";
+  
   // Integrate all the perturbation equation and spline the result
   integrate_perturbations();
 
@@ -32,21 +35,16 @@ void Perturbations::solve(){
 void Perturbations::integrate_perturbations(){
   Utils::StartTiming("integrateperturbation");
 
-  // Set up logarithmic (base e) spaced k-values using own logspace from Utils
-  Vector k_array= Utils::logspace(log(k_min),log(k_max),n_k);
-  
-  // Test logspace, to be removed
-  // std::ofstream fp("./test_logspace.txt");
-  // fp << std::scientific << std::setprecision(14);
-  // for (int ik = 0; ik < n_k; ik++)
+  // Vector x_array_test = set_up_x_array_resolution();
+  // std::ofstream fp("testing_x_resolution.txt");
+  // for (auto x:x_array_test)
   // {
-  //   fp << k_array[ik] << "\n";
+  //   fp << x << "\n";
   // }
-  // fp.close();
   
   // Loop over all wavenumbers
   for(int ik = 0; ik < n_k; ik++){
-    std::cout << ik << "\n";
+    // std::cout << ik << "\n";
 
     // Progress bar...
     if( (10*ik) / n_k != (10*ik+10) / n_k )
@@ -60,6 +58,7 @@ void Perturbations::integrate_perturbations(){
 
     // Find value to integrate to
     double x_end_tight = get_tight_coupling_time(k);
+    std::cout << "x_1700 " << x_1700 << " " << x_end_tight << std::endl;
 
     //===================================================================
     // TODO: Tight coupling integration
@@ -94,9 +93,9 @@ void Perturbations::integrate_perturbations(){
     // auto y_full_ini = set_ic_after_tight_coupling(y_tight_coupling, x_end_tight, k);
 
     // The full ODE system
-    ODEFunction dydx_full = [&](double x, const double *y, double *dydx){
-      return rhs_full_ode(x, k, y, dydx);
-    };
+    // ODEFunction dydx_full = [&](double x, const double *y, double *dydx){
+    //   return rhs_full_ode(x, k, y, dydx);
+    // };
 
     // Integrate from x_end_tight -> x_end
     // ...
@@ -276,16 +275,25 @@ Vector Perturbations::set_ic_after_tight_coupling(
 //====================================================
 
 double Perturbations::get_tight_coupling_time(const double k) const{
-  double x_tight_coupling_end = 0.0;
-
-  //=============================================================================
-  // TODO: compute and return x for when tight coupling ends
-  // Remember all the three conditions in Callin
-  //=============================================================================
-  // ...
-  // ...
-
-  return x_tight_coupling_end;
+  
+  double tau_prime;
+  double ck = Constants.c*k;
+  for (int i = 0; i < n_x; i++)
+  {
+    tau_prime = -rec->dtaudx_of_x(x_array[i]);
+    if (tau_prime < 10 || tau_prime < 10*ck/cosmo->Hp_of_x(x_array[i]) || x_array[i] > x_1700)
+    {
+      std::cout << tau_prime << "\n";
+      std::cout << 10*ck/cosmo->Hp_of_x(x_array[i]) << "\n";
+      return x_array[i];
+    }
+    else
+    {
+      return 0;
+    }
+    
+  }
+return 0;
 }
 
 //====================================================
@@ -523,6 +531,35 @@ double Perturbations::get_Nu(const double x, const double k, const int ell) cons
   return Nu_spline[ell](x,k);
 }
 
+// Vector Perturbations::set_up_x_array_resolution() const{
+//   // Find x-value when recombination is finished following Calin
+//   Vector x_array_linspaced = Utils::linspace(x_start,x_end,n_x);
+//   bool passed_x_star = false;
+//   for (int i = 0; i < n_x; i++)
+//   {
+    
+//   }
+  
+  
+//   Vector x_array_recombination_focus(n_x);
+//   x_array_recombination_focus[0] = x_start;
+//   int n_x_before = 300;
+//   double const dx_before = (x_1700-x_start)/double(n_x_before-1);
+//   double dx = dx_before;
+  
+
+//   // int nx_test = 100;
+//   // Vector x_array_before = Utils::linspace(x_start,x_1700,nx_test/10);
+//   // x_array_before.pop_back(); // Removes last entry as will be inserted later
+//   // Vector x_array_during = Utils::linspace(x_1700,x_1700*0.9,nx_test/10*8);
+//   // x_array_during.pop_back();
+//   // Vector x_array_after  = Utils::linspace(x_1700*0.9,x_end,nx_test/10);
+//   // x_array = x_array_before;
+//   // x_array.insert(x_array.end(), x_array_during.begin(), x_array_during.end());
+//   // x_array.insert(x_array.end(), x_array_after.begin(), x_array_after.end());
+//   return x_array;
+// }
+
 //====================================================
 // Print some useful info about the class
 //====================================================
@@ -590,16 +627,16 @@ void Perturbations::output(const double k, const std::string filename) const{
   auto print_data = [&] (const double x) {
     double arg = k * Constants.c * (cosmo->eta_of_x(0.0) - cosmo->eta_of_x(x));
     fp << x                  << " ";
-    fp << get_Theta(x,k,0)   << " ";
-    fp << get_Theta(x,k,1)   << " ";
-    fp << get_Theta(x,k,2)   << " ";
-    fp << get_Phi(x,k)       << " ";
-    fp << get_Psi(x,k)       << " ";
-    fp << get_Pi(x,k)        << " ";
-    fp << get_Source_T(x,k)  << " ";
-    fp << get_Source_T(x,k) * Utils::j_ell(5,   arg)           << " ";
-    fp << get_Source_T(x,k) * Utils::j_ell(50,  arg)           << " ";
-    fp << get_Source_T(x,k) * Utils::j_ell(500, arg)           << " ";
+    // fp << get_Theta(x,k,0)   << " ";
+    // fp << get_Theta(x,k,1)   << " ";
+    // fp << get_Theta(x,k,2)   << " ";
+    // fp << get_Phi(x,k)       << " ";
+    // fp << get_Psi(x,k)       << " ";
+    // fp << get_Pi(x,k)        << " ";
+    // fp << get_Source_T(x,k)  << " ";
+    // fp << get_Source_T(x,k) * Utils::j_ell(5,   arg)           << " ";
+    // fp << get_Source_T(x,k) * Utils::j_ell(50,  arg)           << " ";
+    // fp << get_Source_T(x,k) * Utils::j_ell(500, arg)           << " ";
     fp << "\n";
   };
   std::for_each(x_array.begin(), x_array.end(), print_data);
