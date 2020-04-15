@@ -3,7 +3,7 @@
 SHELL := /bin/bash
 
 # Set compiler
-CC = g++ -std=c++11 
+CC = g++ -std=c++17
 
 # Paths to GSL library
 INC  = -I/Users/jakobs/c++_stuff/gsl-2.6/include
@@ -35,7 +35,7 @@ OPTIONS += -D_SPLINE_WARNINGS_ON
 #LIBS += -lgfortran -lcomplex_bessel
 #=======================================================
 
-C = -O3 $(OPTIONS)
+C = -O3 -g $(OPTIONS)
 
 TARGETS := cmb
 all: $(TARGETS)
