@@ -167,11 +167,11 @@ Vector Perturbations::set_ic(const double x, const double k) const{
   // Set the initial conditions in the tight coupling regime
   double fv = 0;
   double Psi = -double(2/3);
-  if (neutrinos)
-  {
-    fv = cosmo->get_OmegaNu()/(cosmo->get_OmegaNu()+cosmo->get_OmegaR());
-    Psi = -1/(1.5 + 0.4*fv);
-  }
+  // if (neutrinos)
+  // {
+  //   fv = cosmo->get_OmegaNu()/(cosmo->get_OmegaNu()+cosmo->get_OmegaR());
+  //   Psi = -1/(1.5 + 0.4*fv);
+  // }
   // SET: Scalar quantities (Phi, delta, v, ...)
   Phi       = -(1+0.4*fv)*Psi;
   delta_cdm = -1.5*Psi;
@@ -386,28 +386,52 @@ int Perturbations::rhs_tight_coupling_ode(double x, double k, const double *y, d
   double *dThetadx        = &dydx[Constants.ind_start_theta_tc];
   double *dNudx           = &dydx[Constants.ind_start_nu_tc];
 
-  //=============================================================================
-  // TODO: fill in the expressions for all the derivatives
-  //=============================================================================
+  // Scale factor
+  const double a = exp(x);
+  const double a_squared = a*a;
+
+  // Other values from earlier milestones and handy quantities
+  const double H_p         = cosmo->Hp_of_x(x);
+  const double H_p_squared = H_p*H_p;
+  const double dH_pdx      = cosmo->dHpdx_of_x(x);
+  const double H_0         = cosmo->get_H0();
+  const double H_0_squared = H_0*H_0;
+  const double OmegaR0     = cosmo->get_OmegaR();
+  const double OmegaCDM0   = cosmo->get_OmegaCDM();
+  const double OmegaB0     = cosmo->get_OmegaB();
+  const double R           = 4*OmegaR0/(3*OmegaB0*a);
+
+  const double dtaudx      = rec->dtaudx_of_x(x);
+  const double ddtauddx    = rec->ddtauddx_of_x(x);
+
   // Constants used in the expressions
   const double ck = Constants.c*k;
-  const double H_p = cosmo->Hp_of_x(x);
+  const double ck_squared = ck*ck;
+  const double ck_over_H_p = ck/H_p;
 
-  // Theta[2] = -20*Constants.c*k*Theta[1]/(45*cosmo->Hp_of_x(x)*rec->dtaudx_of_x(x));
+  // Theta_2 from initial condition equation
+  const double Theta2 = -20*ck_over_H_p*Theta[1]/(45*dtaudx);
+  // Psi follows from Phi and Theta2
+  const double Psi = - Phi - 12*H_0_squared/(ck_squared*a_squared)*OmegaR0*Theta2;
 
-  // SET: Scalar quantities (Phi, delta, v, ...)
-  Phi = 
+  // Fill in the expressions for all the derivatives
+  // Scalar quantities that are the same as in normal regime
+  dPhidx = Psi - ck_squared*Phi/(3*H_p_squared) + H_0_squared/(2*H_p_squared)
+    * ( (OmegaCDM0*delta_cdm + OmegaB0*delta_b)/a + 4*OmegaR0*Theta[0]/a_squared);
+  ddelta_cdmdx = ck_over_H_p*v_cdm - 3*dPhidx;
+  dv_cdmdx     = - v_cdm - ck_over_H_p*Psi;
+  ddelta_bdx   = ck_over_H_p*v_b - 3*dPhidx;
+  
+  // Photon monopole
+  dThetadx[0]  = - ck_over_H_p*Theta[1] - dPhidx;
 
-  // SET: Photon multipoles (Theta_ell)
-  // ...
-  // ...
-
-  // SET: Neutrino mutlipoles (Nu_ell)
-  if(neutrinos){
-    // ...
-    // ...
-    // ...
-  }
+  // Quantities special for tight coupling, q, dv_bdx and dTheta1dx
+  const double q_nom = -((1-R)*dtaudx + (1+R)*ddtauddx)*(3*Theta[1]+v_b) - ck_over_H_p*Psi
+    + (1-dH_pdx/H_p)*ck_over_H_p*(-Theta[0]+2*Theta2) - ck_over_H_p*dThetadx[0];
+  const double q_den = (1+R)*dtaudx + dH_pdx/H_p - 1;
+  const double q     = q_nom/q_den;
+  dv_bdx             = 1/(1+R)*(-v_b - ck_over_H_p*Psi + R*(q + ck_over_H_p*(-Theta[0] + 2*Theta2) - ck_over_H_p*Psi));
+  dThetadx[1]        = (q-dv_bdx)/3.0;
 
   return GSL_SUCCESS;
 }
