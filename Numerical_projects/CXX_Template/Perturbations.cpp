@@ -44,7 +44,7 @@ void Perturbations::integrate_perturbations(){
   
   // Loop over all wavenumbers
   for(int ik = 0; ik < n_k; ik++){
-    // std::cout << ik << "\n";
+    std::cout << "ik " << ik << "\n";
 
     // Progress bar...
     if( (10*ik) / n_k != (10*ik+10) / n_k )
@@ -59,6 +59,11 @@ void Perturbations::integrate_perturbations(){
     // Find value to integrate to
     double x_end_tight = get_tight_coupling_time(k);
     std::cout << "x_1700 " << x_1700 << " " << x_end_tight << std::endl;
+    if (x_end_tight >x_1700)
+    {
+      std::cout << "x_end_tight is larger than x_1700!\n";
+    }
+    
 
     //===================================================================
     // TODO: Tight coupling integration
@@ -142,12 +147,6 @@ Vector Perturbations::set_ic(const double x, const double k) const{
 
   // The vector we are going to fill
   Vector y_tc(Constants.n_ell_tot_tc);
-
-  //=============================================================================
-  // Compute where in the y_tc array each component belongs
-  // This is just an example of how to do it to make it easier
-  // Feel free to organize the component any way you like
-  //=============================================================================
   
   // For integration of perturbations in tight coupling regime (Only 2 photon multipoles + neutrinos needed)
   const int n_ell_theta_tc      = Constants.n_ell_theta_tc;
@@ -163,27 +162,31 @@ Vector Perturbations::set_ic(const double x, const double k) const{
   double &v_b          =  y_tc[Constants.ind_vb_tc];
   double &Phi          =  y_tc[Constants.ind_Phi_tc];
   double *Theta        = &y_tc[Constants.ind_start_theta_tc];
-  double *Nu           = &y_tc[Constants.ind_start_nu_tc];
+  // double *Nu           = &y_tc[Constants.ind_start_nu_tc];
 
-  //=============================================================================
-  // TODO: Set the initial conditions in the tight coupling regime
-  //=============================================================================
-  // ...
-  // ...
-
-  // SET: Scalar quantities (Gravitational potential, baryons and CDM)
-  // ...
-  // ...
-
-  // SET: Photon temperature perturbations (Theta_ell)
-  // ...
-  // ...
-
-  // SET: Neutrino perturbations (N_ell)
-  if(neutrinos){
-    // ...
-    // ...
+  // Set the initial conditions in the tight coupling regime
+  double fv = 0;
+  double Psi = -double(2/3);
+  if (neutrinos)
+  {
+    fv = cosmo->get_OmegaNu()/(cosmo->get_OmegaNu()+cosmo->get_OmegaR());
+    Psi = -1/(1.5 + 0.4*fv);
   }
+  // SET: Scalar quantities (Phi, delta, v, ...)
+  Phi       = -(1+0.4*fv)*Psi;
+  delta_cdm = -1.5*Psi;
+  delta_b   = delta_cdm;
+  v_cdm     = -Constants.c*k*Psi/(2*cosmo->Hp_of_x(x));
+  v_b       = v_cdm;
+  // SET: Photon temperature perturbations (Theta_ell)
+  Theta[0]  = -0.5*Psi;
+  Theta[1]  = -v_cdm/3;
+  
+  // // SET: Neutrino perturbations (N_ell)
+  // if(neutrinos){
+  //   // ...
+  //   // ...
+  // }
 
   return y_tc;
 }
@@ -226,7 +229,7 @@ Vector Perturbations::set_ic_after_tight_coupling(
   const double &v_b_tc          =  y_tc[Constants.ind_vb_tc];
   const double &Phi_tc          =  y_tc[Constants.ind_Phi_tc];
   const double *Theta_tc        = &y_tc[Constants.ind_start_theta_tc];
-  const double *Nu_tc           = &y_tc[Constants.ind_start_nu_tc];
+  // const double *Nu_tc           = &y_tc[Constants.ind_start_nu_tc];
 
   // References to the quantities we are going to set
   double &delta_cdm       =  y[Constants.ind_deltacdm_tc];
@@ -235,8 +238,8 @@ Vector Perturbations::set_ic_after_tight_coupling(
   double &v_b             =  y[Constants.ind_vb_tc];
   double &Phi             =  y[Constants.ind_Phi_tc];
   double *Theta           = &y[Constants.ind_start_theta_tc];
-  double *Theta_p         = &y[Constants.ind_start_thetap_tc];
-  double *Nu              = &y[Constants.ind_start_nu_tc];
+  // double *Theta_p         = &y[Constants.ind_start_thetap_tc];
+  // double *Nu              = &y[Constants.ind_start_nu_tc];
 
   //=============================================================================
   // TODO: fill in the initial conditions for the full equation system below
@@ -277,23 +280,17 @@ Vector Perturbations::set_ic_after_tight_coupling(
 double Perturbations::get_tight_coupling_time(const double k) const{
   
   double tau_prime;
-  double ck = Constants.c*k;
   for (int i = 0; i < n_x; i++)
   {
     tau_prime = -rec->dtaudx_of_x(x_array[i]);
-    if (tau_prime < 10 || tau_prime < 10*ck/cosmo->Hp_of_x(x_array[i]) || x_array[i] > x_1700)
+    if (tau_prime < 10 || tau_prime < 10*k*Constants.c/cosmo->Hp_of_x(x_array[i]) || x_array[i] > x_1700)
     {
-      std::cout << tau_prime << "\n";
-      std::cout << 10*ck/cosmo->Hp_of_x(x_array[i]) << "\n";
-      return x_array[i];
+      return x_array[i-1];
     }
-    else
-    {
-      return 0;
-    }
-    
   }
-return 0;
+  std::cout << "@@@@@@@@@@@@@@@@@@@@@@@@@@@@\nDidn't find tight couple end time!\n"
+    "Returning x_1700!\n@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n";
+  return x_1700;
 }
 
 //====================================================
@@ -357,7 +354,6 @@ void Perturbations::compute_source_functions(){
 // The right hand side of the perturbations ODE
 // in the tight coupling regime
 //====================================================
-
 // Derivatives in the tight coupling regime
 int Perturbations::rhs_tight_coupling_ode(double x, double k, const double *y, double *dydx){
 
@@ -393,11 +389,14 @@ int Perturbations::rhs_tight_coupling_ode(double x, double k, const double *y, d
   //=============================================================================
   // TODO: fill in the expressions for all the derivatives
   //=============================================================================
+  // Constants used in the expressions
+  const double ck = Constants.c*k;
+  const double H_p = cosmo->Hp_of_x(x);
+
+  // Theta[2] = -20*Constants.c*k*Theta[1]/(45*cosmo->Hp_of_x(x)*rec->dtaudx_of_x(x));
 
   // SET: Scalar quantities (Phi, delta, v, ...)
-  // ...
-  // ...
-  // ...
+  Phi = 
 
   // SET: Photon multipoles (Theta_ell)
   // ...
