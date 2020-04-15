@@ -19,6 +19,7 @@ void Perturbations::solve(){
 
   // Vector x_testing = set_up_x_array_resolution();
   // std::cout << x_testing.size() << "\n";
+  std::cout << x_1700 << " " << x_array_full[idx_x1700] << "\n";
   
   // Integrate all the perturbation equation and spline the result
   integrate_perturbations();
@@ -35,13 +36,8 @@ void Perturbations::solve(){
 void Perturbations::integrate_perturbations(){
   Utils::StartTiming("integrateperturbation");
 
-  // Vector x_array_test = set_up_x_array_resolution();
-  // std::ofstream fp("testing_x_resolution.txt");
-  // for (auto x:x_array_test)
-  // {
-  //   fp << x << "\n";
-  // }
-  
+
+
   // Loop over all wavenumbers
   for(int ik = 0; ik < n_k; ik++){
     std::cout << "ik " << ik << "\n";
@@ -57,21 +53,19 @@ void Perturbations::integrate_perturbations(){
     double k = k_array[ik];
 
     // Find value to integrate to
-    double x_end_tight = get_tight_coupling_time(k);
-    std::cout << "x_1700 " << x_1700 << " " << x_end_tight << std::endl;
-    if (x_end_tight >x_1700)
+    std::pair<double,int> tight_couple_time_pair = get_tight_coupling_time_and_index(k);
+    double x_end_tight = tight_couple_time_pair.first;
+    int idx_tc_transition = tight_couple_time_pair.second;
+    // std::cout << "x end tight" << x_end_tight << " " << x_array_full[idx_tc_transition] << "\n";
+    // Vector x_array_tc = Utils::linspace(x_start,x_end_tight)
+    
+    // Debugging
+    if (x_end_tight > x_1700)
     {
       std::cout << "x_end_tight is larger than x_1700!\n";
+      std::cout << "x_1700 " << x_1700 << " " << x_end_tight << std::endl;
     }
     
-
-    //===================================================================
-    // TODO: Tight coupling integration
-    // Remember to implement the routines:
-    // set_ic : The IC at the start
-    // rhs_tight_coupling_ode : The dydx for our coupled ODE system
-    //===================================================================
-
     // Set up initial conditions in the tight coupling regime
     auto y_tight_coupling_ini = set_ic(x_start, k);
 
@@ -81,11 +75,6 @@ void Perturbations::integrate_perturbations(){
     };
 
     // Integrate from x_start -> x_end_tight
-    // ...
-    // ...
-    // ...
-    // ...
-    // ...
 
     //====i===============================================================
     // TODO: Full equation integration
@@ -277,20 +266,20 @@ Vector Perturbations::set_ic_after_tight_coupling(
 // The time when tight coupling end
 //====================================================
 
-double Perturbations::get_tight_coupling_time(const double k) const{
+ std::pair<double,int> Perturbations::get_tight_coupling_time_and_index(const double k) const{
   
   double tau_prime;
   for (int i = 0; i < n_x; i++)
   {
-    tau_prime = -rec->dtaudx_of_x(x_array[i]);
-    if (tau_prime < 10 || tau_prime < 10*k*Constants.c/cosmo->Hp_of_x(x_array[i]) || x_array[i] > x_1700)
+    tau_prime = -rec->dtaudx_of_x(x_array_full[i]);
+    if (tau_prime < 10 || tau_prime < 10*k*Constants.c/cosmo->Hp_of_x(x_array_full[i]) || x_array_full[i] > x_1700)
     {
-      return x_array[i-1];
+      return std::pair<double,int>(x_array_full[i-1],int(i-1));
     }
   }
   std::cout << "@@@@@@@@@@@@@@@@@@@@@@@@@@@@\nDidn't find tight couple end time!\n"
     "Returning x_1700!\n@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n";
-  return x_1700;
+  return std::pair<double,int>(x_1700,idx_x1700);
 }
 
 //====================================================

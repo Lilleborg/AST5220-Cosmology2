@@ -20,7 +20,7 @@ class Perturbations{
     RecombinationHistory *rec  = nullptr;
    
     // The scales we integrate over
-    const int n_k        = 1; //use only one k-value to begin with   was: 100;
+    const int n_k        = 100; //use only one k-value to begin with   was: 100;
     const double k_min   = Constants.k_min;
     const double k_max   = Constants.k_max;
     // Set up logarithmic (base e as for logarithmic scale factor) 
@@ -28,13 +28,14 @@ class Perturbations{
     const Vector k_array = Utils::logspace(log(k_min),log(k_max),n_k);
     
     // Start and end of the time-integration
-    const int n_x        = 1000;
+    const int n_x        = 100000;
     const double x_start = Constants.x_start;
     const double x_end   = Constants.x_end;
     // Set up logarithmic scale factor
-    const Vector x_array = Utils::linspace(x_start,x_end,n_x);
+    const Vector x_array_full = Utils::linspace(x_start,x_end,n_x);
     // x-value at start of Recombination, at redshift 1700
     const double x_1700  = log(5.878894768e-4); // this number is 1/1701
+    const int idx_x1700 = std::lower_bound(x_array_full.begin(),x_array_full.end(),x_1700)-x_array_full.begin();
 
     // Below is a full list of splines you probably need, 
     // but you only need to make the splines you will need
@@ -68,7 +69,7 @@ class Perturbations{
     int rhs_tight_coupling_ode(double x, double k, const double *y, double *dydx);
     
     // Compute the time when tight coupling ends  (what x does tight coupling end for each k)
-    double get_tight_coupling_time(const double k) const;
+    std::pair<double,int> get_tight_coupling_time_and_index(const double k) const;
     
     //==========================================================
     // [2] The full ODE system 
