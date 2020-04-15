@@ -20,14 +20,21 @@ class Perturbations{
     RecombinationHistory *rec  = nullptr;
    
     // The scales we integrate over
-    const int n_k        = 10; //use only one k-value to begin with   was: 100;
+    const int n_k        = 1; //use only one k-value to begin with   was: 100;
     const double k_min   = Constants.k_min;
     const double k_max   = Constants.k_max;
+    // Set up logarithmic (base e as for logarithmic scale factor) 
+    // spaced k-values using own logspace from Utils
+    const Vector k_array = Utils::logspace(log(k_min),log(k_max),n_k);
     
     // Start and end of the time-integration
     const int n_x        = 1000;
     const double x_start = Constants.x_start;
     const double x_end   = Constants.x_end;
+    // Set up logarithmic scale factor
+    const Vector x_array = Utils::linspace(x_start,x_end,n_x);
+    // x-value at start of Recombination, at redshift 1700
+    const double x_1700  = log(5.878894768e-4); // this number is 1/1701
 
     // Below is a full list of splines you probably need, 
     // but you only need to make the splines you will need
@@ -45,7 +52,7 @@ class Perturbations{
     Spline2D ST_spline{"ST_spline"};
     Spline2D SE_spline{"SE_spline"};
     
-    // Splines of mulipole quantities
+    // Splines of multipole quantities
     std::vector<Spline2D> Theta_spline;
     std::vector<Spline2D> Theta_p_spline;
     std::vector<Spline2D> Nu_spline;
@@ -94,6 +101,9 @@ class Perturbations{
     Perturbations(
         BackgroundCosmology *cosmo, 
         RecombinationHistory *rec); 
+
+    // Set up x_array with higher resolution during recombination, following Callin
+    Vector set_up_x_array_resolution() const;
 
     // Do all the solving
     void solve();
