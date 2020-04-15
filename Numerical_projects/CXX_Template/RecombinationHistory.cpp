@@ -99,6 +99,7 @@ void RecombinationHistory::solve_number_density_electrons(){
     ne_arr[j+i] = Xe_arr[j+i]*get_number_density_baryons(peebles_x_array[j]);
   }
 
+  Utils::EndTiming("Xe");
   // Spline the result in logarithmic form. Used in get Xe_of_x and ne_of_x methods
   Vector log_Xe_arr = log(Xe_arr);
   Vector log_Xe_arr_only_Saha = log(Xe_arr_only_Saha);
@@ -106,7 +107,6 @@ void RecombinationHistory::solve_number_density_electrons(){
   log_Xe_of_x_spline.create(x_array,log_Xe_arr,"log Xe");
   log_Xe_of_x_spline_only_Saha.create(x_array,log_Xe_arr_only_Saha,"log Xe Saha");
   log_ne_of_x_spline.create(x_array,log_ne_arr,"log ne");
-  Utils::EndTiming("Xe");
 }
 
 //====================================================
@@ -238,14 +238,13 @@ void RecombinationHistory::solve_for_optical_depth_tau(){
     dvisdx_arr[i] = exp(-tau_arr[i])*(dtaudx_arr[i]*dtaudx_arr[i]-ddtauddx_of_x(x_array[i]));
   }
   
+  Utils::EndTiming("opticaldepth");
   // Spline the tau results
   tau_of_x_spline.create(x_array,tau_arr,"tau");
 
   // Spline the visibility resutls
   g_tilde_of_x_spline.create(x_array,vis,"g tilde");
   g_tilde_deriv_of_x_spline.create(x_array,dvisdx_arr,"g tilde deriv");
-
-  Utils::EndTiming("opticaldepth");
 }
 
 //====================================================
@@ -254,6 +253,7 @@ void RecombinationHistory::solve_for_optical_depth_tau(){
 // Get times for last scattering, in x and z
 Vector RecombinationHistory::get_time_results() const{
   Vector res(6);
+
   // Using the tau spline and binary search for value method to find tau = 1
   Doublepair xrange(-10.0,-5.0);  // Range of x-value to search in
   // x and z value when tau equals one, x_star and z_star
