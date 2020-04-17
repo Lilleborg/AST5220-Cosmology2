@@ -19,7 +19,7 @@ void Perturbations::solve(){
 
   // Vector x_testing = set_up_x_array_resolution();
   // std::cout << x_testing.size() << "\n";
-  std::cout << x_1700 << " " << x_array_full[idx_x1700] << "\n";
+  // std::cout << x_1700 << " " << x_array_full[idx_x1700] << "\n";
   
   // Integrate all the perturbation equation and spline the result
   integrate_perturbations();
@@ -36,55 +36,52 @@ void Perturbations::solve(){
 void Perturbations::integrate_perturbations(){
   Utils::StartTiming("integrateperturbation");
 
-
-
   // Loop over all wavenumbers
   for(int ik = 0; ik < n_k; ik++){
-    std::cout << "ik " << ik << "\n";
+    // Current value of k
+    double k = k_array[ik];
 
     // Progress bar...
     if( (10*ik) / n_k != (10*ik+10) / n_k )
     {
-      std::cout << "Progress pert integration: " << (100*ik+100)/n_k << "% \n" << std::flush;
+      printf("Progress pert integration: %3d%%, k-value: %.3e , k per Mpc: %.3e\n",(100*ik+100)/n_k,k,k*Constants.Mpc);
       if(ik == n_k-1) std::cout << std::endl;
     }
 
-    // Current value of k
-    double k = k_array[ik];
-
-    // Find value to integrate to
+    //===================================================================
+    // Tight couple regime
+    //===================================================================
+    // Find value to integrate to and set up x-array for tight couple regime
     std::pair<double,int> tight_couple_time_pair = get_tight_coupling_time_and_index(k);
-    double x_end_tight = tight_couple_time_pair.first;
+    double x_end_tc = tight_couple_time_pair.first;
     int idx_tc_transition = tight_couple_time_pair.second;
-    // std::cout << "x end tight" << x_end_tight << " " << x_array_full[idx_tc_transition] << "\n";
-    // Vector x_array_tc = Utils::linspace(x_start,x_end_tight)
-    
+    Vector x_array_tc = Utils::linspace(x_start,x_end_tc,idx_tc_transition);
+
     // Debugging
-    if (x_end_tight > x_1700)
+    if (x_end_tc > x_1700)
     {
-      std::cout << "x_end_tight is larger than x_1700!\n";
-      std::cout << "x_1700 " << x_1700 << " " << x_end_tight << std::endl;
+      std::cout << "x_end_tc is larger than x_1700!\n";
+      std::cout << "x_1700 " << x_1700 << " " << x_end_tc << std::endl;
     }
     
-    // Set up initial conditions in the tight coupling regime
-    auto y_tight_coupling_ini = set_ic(x_start, k);
-
     // The tight coupling ODE system
-    ODEFunction dydx_tight_coupling = [&](double x, const double *y, double *dydx){
+    ODESolver ODE_tc_regime;
+    auto y_tc_ini = set_ic(x_start, k); // Initial conditions in the tight coupling regime
+    ODEFunction dydx_tc = [&](double x, const double *y, double *dydx){
       return rhs_tight_coupling_ode(x, k, y, dydx);
     };
+    ODE_tc_regime.solve(dydx_tc,x_array_tc,y_tc_ini);
+    auto y_tc_solutions = ODE_tc_regime.get_data();
+    auto y_tc_end       = ODE_tc_regime.get_final_data();
 
-    // Integrate from x_start -> x_end_tight
-
-    //====i===============================================================
-    // TODO: Full equation integration
-    // Remember to implement the routines:
-    // set_ic_after_tight_coupling : The IC after tight coupling ends
-    // rhs_full_ode : The dydx for our coupled ODE system
     //===================================================================
-
+    // The full system, after tight coupling
+    //===================================================================
+    // Set up array for after tight coupling
+    Vector x_array_after_tc = Utils::linspace(x_end_tc,x_end,n_x-idx_tc_transition);
+    printf("number of points in both x arrays: %d, nx: %d\n",int(x_array_tc.size()+x_array_after_tc.size()),n_x);
     // Set up initial conditions (y_tight_coupling is the solution at the end of tight coupling)
-    // auto y_full_ini = set_ic_after_tight_coupling(y_tight_coupling, x_end_tight, k);
+    auto y_full_ini = set_ic_after_tight_coupling(y_tc_end, x_end_tc, k);
 
     // The full ODE system
     // ODEFunction dydx_full = [&](double x, const double *y, double *dydx){
@@ -139,10 +136,10 @@ Vector Perturbations::set_ic(const double x, const double k) const{
   
   // For integration of perturbations in tight coupling regime (Only 2 photon multipoles + neutrinos needed)
   const int n_ell_theta_tc      = Constants.n_ell_theta_tc;
-  const int n_ell_neutrinos_tc  = Constants.n_ell_neutrinos_tc;
+  // const int n_ell_neutrinos_tc  = Constants.n_ell_neutrinos_tc;
   const int n_ell_tot_tc        = Constants.n_ell_tot_tc;
-  const bool polarization       = Constants.polarization;
-  const bool neutrinos          = Constants.neutrinos;
+  // const bool polarization       = Constants.polarization;
+  // const bool neutrinos          = Constants.neutrinos;
 
   // References to the tight coupling quantities
   double &delta_cdm    =  y_tc[Constants.ind_deltacdm_tc];
@@ -184,41 +181,33 @@ Vector Perturbations::set_ic(const double x, const double k) const{
 // Set IC for the full ODE system after tight coupling 
 // regime ends
 //====================================================
-
 Vector Perturbations::set_ic_after_tight_coupling(
-    const Vector &y_tc, 
+    const Vector &y_tc_end_point, 
     const double x, 
     const double k) const{
 
   // Make the vector we are going to fill
   Vector y(Constants.n_ell_tot_full);
-  
-  //=============================================================================
-  // Compute where in the y array each component belongs and where corresponding
-  // components are located in the y_tc array
-  // This is just an example of how to do it to make it easier
-  // Feel free to organize the component any way you like
-  //=============================================================================
 
   // Number of multipoles we have in the full regime
   const int n_ell_theta         = Constants.n_ell_theta;
-  const int n_ell_thetap        = Constants.n_ell_thetap;
-  const int n_ell_neutrinos     = Constants.n_ell_neutrinos;
-  const bool polarization       = Constants.polarization;
-  const bool neutrinos          = Constants.neutrinos;
+  // const int n_ell_thetap        = Constants.n_ell_thetap;
+  // const int n_ell_neutrinos     = Constants.n_ell_neutrinos;
+  // const bool polarization       = Constants.polarization;
+  // const bool neutrinos          = Constants.neutrinos;
 
   // Number of multipoles we have in the tight coupling regime
   const int n_ell_theta_tc      = Constants.n_ell_theta_tc;
-  const int n_ell_neutrinos_tc  = Constants.n_ell_neutrinos_tc;
+  // const int n_ell_neutrinos_tc  = Constants.n_ell_neutrinos_tc;
 
   // References to the tight coupling quantities
-  const double &delta_cdm_tc    =  y_tc[Constants.ind_deltacdm_tc];
-  const double &delta_b_tc      =  y_tc[Constants.ind_deltab_tc];
-  const double &v_cdm_tc        =  y_tc[Constants.ind_vcdm_tc];
-  const double &v_b_tc          =  y_tc[Constants.ind_vb_tc];
-  const double &Phi_tc          =  y_tc[Constants.ind_Phi_tc];
-  const double *Theta_tc        = &y_tc[Constants.ind_start_theta_tc];
-  // const double *Nu_tc           = &y_tc[Constants.ind_start_nu_tc];
+  const double &delta_cdm_tc    =  y_tc_end_point[Constants.ind_deltacdm_tc];
+  const double &delta_b_tc      =  y_tc_end_point[Constants.ind_deltab_tc];
+  const double &v_cdm_tc        =  y_tc_end_point[Constants.ind_vcdm_tc];
+  const double &v_b_tc          =  y_tc_end_point[Constants.ind_vb_tc];
+  const double &Phi_tc          =  y_tc_end_point[Constants.ind_Phi_tc];
+  const double *Theta_tc        = &y_tc_end_point[Constants.ind_start_theta_tc];
+  // const double *Nu_tc           = &y_tc_end_point[Constants.ind_start_nu_tc];
 
   // References to the quantities we are going to set
   double &delta_cdm       =  y[Constants.ind_deltacdm_tc];
@@ -229,43 +218,41 @@ Vector Perturbations::set_ic_after_tight_coupling(
   double *Theta           = &y[Constants.ind_start_theta_tc];
   // double *Theta_p         = &y[Constants.ind_start_thetap_tc];
   // double *Nu              = &y[Constants.ind_start_nu_tc];
-
-  //=============================================================================
-  // TODO: fill in the initial conditions for the full equation system below
-  // NB: remember that we have different number of multipoles in the two
-  // regimes so be careful when assigning from the tc array
-  //=============================================================================
-  // ...
-  // ...
-  // ...
-
-  // SET: Scalar quantities (Gravitational potental, baryons and CDM)
-  // ...
-  // ...
+  
+  // SET: Scalar quantities (Gravitational potential, baryons and CDM)
+  Phi        = Phi_tc;
+  delta_b    = delta_b_tc;
+  v_b        = v_b_tc;
+  delta_cdm  = delta_cdm_tc;
+  v_cdm      = v_cdm_tc;
 
   // SET: Photon temperature perturbations (Theta_ell)
-  // ...
-  // ...
-
+  Theta[0]   = Theta_tc[0];
+  Theta[1]   = Theta_tc[1];
+  const double ck_over_H_p_dtaudx = Constants.c*k/(cosmo->Hp_of_x(x)*rec->dtaudx_of_x(x));
+  Theta[2]   = - 20.0/45*ck_over_H_p_dtaudx*Theta[1];
+  for (int l = 3; l < n_ell_theta; l++)
+  {
+    Theta[l] = - l/(2*l+1) * ck_over_H_p_dtaudx * Theta[l-1];
+  }
   // SET: Photon polarization perturbations (Theta_p_ell)
-  if(polarization){
-    // ...
-    // ...
-  }
+  // if(polarization){
+  //   // ...
+  //   // ...
+  // }
 
-  // SET: Neutrino perturbations (N_ell)
-  if(neutrinos){
-    // ...
-    // ...
-  }
+  // // SET: Neutrino perturbations (N_ell)
+  // if(neutrinos){
+  //   // ...
+  //   // ...
+  // }
 
   return y;
 }
 
 //====================================================
-// The time when tight coupling end
+// The time when tight coupling end and the index of that x-value
 //====================================================
-
  std::pair<double,int> Perturbations::get_tight_coupling_time_and_index(const double k) const{
   
   double tau_prime;
@@ -354,8 +341,8 @@ int Perturbations::rhs_tight_coupling_ode(double x, double k, const double *y, d
   
   // For integration of perturbations in tight coupling regime (Only 2 photon multipoles + neutrinos needed)
   const int n_ell_theta_tc      = Constants.n_ell_theta_tc;
-  const int n_ell_neutrinos_tc  = Constants.n_ell_neutrinos_tc;
-  const bool neutrinos          = Constants.neutrinos;
+  // const int n_ell_neutrinos_tc  = Constants.n_ell_neutrinos_tc;
+  // const bool neutrinos          = Constants.neutrinos;
 
   // The different quantities in the y array
   const double &delta_cdm       =  y[Constants.ind_deltacdm_tc];
@@ -364,7 +351,7 @@ int Perturbations::rhs_tight_coupling_ode(double x, double k, const double *y, d
   const double &v_b             =  y[Constants.ind_vb_tc];
   const double &Phi             =  y[Constants.ind_Phi_tc];
   const double *Theta           = &y[Constants.ind_start_theta_tc];
-  const double *Nu              = &y[Constants.ind_start_nu_tc];
+  // const double *Nu              = &y[Constants.ind_start_nu_tc];
 
   // References to the quantities we are going to set in the dydx array
   double &ddelta_cdmdx    =  dydx[Constants.ind_deltacdm_tc];
@@ -373,7 +360,7 @@ int Perturbations::rhs_tight_coupling_ode(double x, double k, const double *y, d
   double &dv_bdx          =  dydx[Constants.ind_vb_tc];
   double &dPhidx          =  dydx[Constants.ind_Phi_tc];
   double *dThetadx        = &dydx[Constants.ind_start_theta_tc];
-  double *dNudx           = &dydx[Constants.ind_start_nu_tc];
+  // double *dNudx           = &dydx[Constants.ind_start_nu_tc];
 
   // Scale factor
   const double a = exp(x);
@@ -428,7 +415,6 @@ int Perturbations::rhs_tight_coupling_ode(double x, double k, const double *y, d
 //====================================================
 // The right hand side of the full ODE
 //====================================================
-
 int Perturbations::rhs_full_ode(double x, double k, const double *y, double *dydx){
   
   //=============================================================================
@@ -579,12 +565,6 @@ double Perturbations::get_Nu(const double x, const double k, const int ell) cons
 void Perturbations::info() const{
   std::cout << "\n";
   std::cout << "Info about perturbations class:\n";
-  std::cout << "x_start:       " << x_start                << "\n";
-  std::cout << "x_end:         " << x_end                  << "\n";
-  std::cout << "n_x:           " << n_x                    << "\n";
-  std::cout << "k_min (1/Mpc): " << k_min * Constants.Mpc  << "\n";
-  std::cout << "k_max (1/Mpc): " << k_max * Constants.Mpc  << "\n";
-  std::cout << "n_k:           " << n_k              << "\n";
   if(Constants.polarization)
     std::cout << "We include polarization\n";
   else
@@ -594,6 +574,13 @@ void Perturbations::info() const{
   else
     std::cout << "We do not include neutrinos\n";
 
+  std::cout << "x_start:            " << x_start                << "\n";
+  std::cout << "x_end:              " << x_end                  << "\n";
+  std::cout << "n_x:                " << n_x                    << "\n";
+  std::cout << "k_min (1/Mpc):      " << k_min * Constants.Mpc  << "\n";
+  std::cout << "k_max (1/Mpc):      " << k_max * Constants.Mpc  << "\n";
+  std::cout << "n_k:                " << n_k              << "\n";
+
   std::cout << "Information about the perturbation system:\n";
   std::cout << "ind_deltacdm:       " << Constants.ind_deltacdm         << "\n";
   std::cout << "ind_deltab:         " << Constants.ind_deltab           << "\n";
@@ -602,6 +589,7 @@ void Perturbations::info() const{
   std::cout << "ind_Phi:            " << Constants.ind_Phi              << "\n";
   std::cout << "ind_start_theta:    " << Constants.ind_start_theta      << "\n";
   std::cout << "n_ell_theta:        " << Constants.n_ell_theta          << "\n";
+
   if(Constants.polarization){
     std::cout << "ind_start_thetap:   " << Constants.ind_start_thetap   << "\n";
     std::cout << "n_ell_thetap:       " << Constants.n_ell_thetap       << "\n";
