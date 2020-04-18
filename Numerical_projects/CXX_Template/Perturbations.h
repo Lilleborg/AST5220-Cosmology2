@@ -28,7 +28,7 @@ class Perturbations{
     const Vector k_array = Utils::logspace(log(k_min),log(k_max),n_k);
     
     // Start and end of the time-integration
-    const int n_x        = 100000;
+    const int n_x        = 1000;
     const double x_start = Constants.x_start;
     const double x_end   = Constants.x_end;
     // Set up logarithmic scale factor
@@ -51,12 +51,12 @@ class Perturbations{
    
     // Splines of source functions (ST for temperature; SE for polarization)
     Spline2D ST_spline{"ST_spline"};
-    Spline2D SE_spline{"SE_spline"};
+    // Spline2D SE_spline{"SE_spline"};
     
     // Splines of multipole quantities
     std::vector<Spline2D> Theta_spline;
-    std::vector<Spline2D> Theta_p_spline;
-    std::vector<Spline2D> Nu_spline;
+    // std::vector<Spline2D> Theta_p_spline;
+    // std::vector<Spline2D> Nu_spline;
     
     //==========================================================
     // [1] Tight coupling ODE system
@@ -124,10 +124,10 @@ class Perturbations{
     double get_Psi(const double x, const double k) const;
     double get_Pi(const double x, const double k) const;
     double get_Theta(const double x, const double k, const int ell) const;
-    double get_Theta_p(const double x, const double k, const int ell) const;
-    double get_Nu(const double x, const double k, const int ell) const;
+    // double get_Theta_p(const double x, const double k, const int ell) const;
+    // double get_Nu(const double x, const double k, const int ell) const;
     double get_Source_T(const double x, const double k) const;
-    double get_Source_E(const double x, const double k) const;
+    // double get_Source_E(const double x, const double k) const;
 };
 
 #endif
