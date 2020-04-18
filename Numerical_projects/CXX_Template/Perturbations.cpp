@@ -70,6 +70,7 @@ void Perturbations::integrate_perturbations(){
     ODEFunction dydx_tc = [&](double x, const double *y, double *dydx){
       return rhs_tight_coupling_ode(x, k, y, dydx);
     };
+    // Solve from x_start -> x_end_tc
     ODE_tc_regime.solve(dydx_tc,x_array_tc,y_tc_ini);
     auto y_tc_solutions = ODE_tc_regime.get_data();
     auto y_tc_end       = ODE_tc_regime.get_final_data();
@@ -83,19 +84,17 @@ void Perturbations::integrate_perturbations(){
     {
       printf("number of points in x arrays before and after tc not equal max points: %d, nx: %d\n",int(x_array_tc.size()+x_array_after_tc.size()),n_x);
     }
-    // The full ODE system
+    // The full ODE system after tight couping
     // Set up initial conditions (y_tc_end is the solution at the end of tight coupling)
-    auto y_full_ini = set_ic_after_tight_coupling(y_tc_end, x_end_tc, k);
-    ODEFunction dydx_full = [&](double x, const double *y, double *dydx){
+    ODESolver ODE_after_tc;
+    auto y_after_tc_ini = set_ic_after_tight_coupling(y_tc_end, x_end_tc, k);
+    ODEFunction dydx_after_tc = [&](double x, const double *y, double *dydx){
       return rhs_full_ode(x, k, y, dydx);
     };
+    // Solve from x_end_tight -> x_end
+    ODE_after_tc.solve(dydx_after_tc,x_array_after_tc,y_after_tc_ini);
 
-    // Integrate from x_end_tight -> x_end
-    // ...
-    // ...
-    // ...
-    // ...
-    // ...
+    
 
     //===================================================================
     // TODO: remember to store the data found from integrating so we can
@@ -532,18 +531,18 @@ double Perturbations::get_Pi(const double x, const double k) const{
 double Perturbations::get_Source_T(const double x, const double k) const{
   return ST_spline(x,k);
 }
-double Perturbations::get_Source_E(const double x, const double k) const{
-  return SE_spline(x,k);
-}
+// double Perturbations::get_Source_E(const double x, const double k) const{
+//   return SE_spline(x,k);
+// }
 double Perturbations::get_Theta(const double x, const double k, const int ell) const{
   return Theta_spline[ell](x,k);
 }
-double Perturbations::get_Theta_p(const double x, const double k, const int ell) const{
-  return Theta_p_spline[ell](x,k);
-}
-double Perturbations::get_Nu(const double x, const double k, const int ell) const{
-  return Nu_spline[ell](x,k);
-}
+// double Perturbations::get_Theta_p(const double x, const double k, const int ell) const{
+//   return Theta_p_spline[ell](x,k);
+// }
+// double Perturbations::get_Nu(const double x, const double k, const int ell) const{
+//   return Nu_spline[ell](x,k);
+// }
 
 // Vector Perturbations::set_up_x_array_resolution() const{
 //   // Find x-value when recombination is finished following Calin
