@@ -145,7 +145,7 @@ void Perturbations::integrate_perturbations(){
 
     //////////////////////////////////////////////////////////////////////////////
     // Store values from from after tc at end of 2D vectors, using .at() for out of bounds check
-    for (int ix = 0; ix < n_x-(idx_tc_transition+1); ix++)
+    for (int ix = 0; ix < n_x-(idx_tc_transition); ix++)
     {
       // Scale factor
       const double a = exp(x_array_after_tc[ix]);
