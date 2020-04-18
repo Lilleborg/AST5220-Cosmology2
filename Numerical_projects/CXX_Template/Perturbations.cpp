@@ -81,8 +81,8 @@ void Perturbations::integrate_perturbations(){
     // The tight coupling ODE system
     ODESolver ODE_tc_regime;
     auto y_tc_ini = set_ic(x_start, k); // Initial conditions in the tight coupling regime
-    for (auto y_ini:y_tc_ini)
-    std::cout << y_ini << "\n";
+    // for (auto y_ini:y_tc_ini)
+    // std::cout << y_ini << "\n";
     
     ODEFunction dydx_tc = [&](double x, const double *y, double *dydx){
       return rhs_tight_coupling_ode(x, k, y, dydx);
@@ -91,7 +91,7 @@ void Perturbations::integrate_perturbations(){
     ODE_tc_regime.solve(dydx_tc,x_array_tc,y_tc_ini);
     auto y_tc_solutions = ODE_tc_regime.get_data();
     auto y_tc_end       = ODE_tc_regime.get_final_data();
-    std::cout << "Heeeer" << std::flush;
+    // std::cout << "Heeeer" << std::flush;
     //////////////////////////////////////////////////////////////////////////////
     // Store values from tc at start of 2D vectors, using .at() for out of bounds check
     // Constants used in the expressions
