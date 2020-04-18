@@ -82,3 +82,6 @@ bench1:
 plot2:
 	cd ./../Milestone2/python && python plotter_Milestone2.py
 
+plot3:
+	cd ./../Milestone3/python && python plotter_Milestone3.py
+
