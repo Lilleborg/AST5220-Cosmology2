@@ -32,10 +32,25 @@ void Perturbations::solve(){
 // The main work: integrate all the perturbations
 // and spline the results
 //====================================================
-
 void Perturbations::integrate_perturbations(){
+
+  Vector2D delta_cdm_array_2D (n_x,Vector(n_k));
+  Vector2D v_cdm_array_2D     (n_x,Vector(n_k));
+  Vector2D delta_b_array_2D   (n_x,Vector(n_k));
+  Vector2D v_b_array_2D       (n_x,Vector(n_k));
+  Vector2D Phi_array_2D       (n_x,Vector(n_k));
+  Vector2D Psi_array_2D       (n_x,Vector(n_k));
+  Vector2D Theta0_array_2D    (n_x,Vector(n_k));
+  Vector2D Theta1_array_2D    (n_x,Vector(n_k));
+  Vector2D Theta2_array_2D    (n_x,Vector(n_k));
+
   Utils::StartTiming("integrateperturbation");
 
+  // Cosmological parameters
+  const double H_0         = cosmo->get_H0();
+  const double H_0_squared = H_0*H_0;
+  const double OmegaR0     = cosmo->get_OmegaR();
+  
   // Loop over all wavenumbers
   for(int ik = 0; ik < n_k; ik++){
     // Current value of k
@@ -47,7 +62,6 @@ void Perturbations::integrate_perturbations(){
       printf("Progress pert integration: %3d%%, k-value: %.3e , k per Mpc: %.3e\n",(100*ik+100)/n_k,k,k*Constants.Mpc);
       if(ik == n_k-1) std::cout << std::endl;
     }
-
     //===================================================================
     // Tight couple regime
     //===================================================================
@@ -67,6 +81,9 @@ void Perturbations::integrate_perturbations(){
     // The tight coupling ODE system
     ODESolver ODE_tc_regime;
     auto y_tc_ini = set_ic(x_start, k); // Initial conditions in the tight coupling regime
+    for (auto y_ini:y_tc_ini)
+    std::cout << y_ini << "\n";
+    
     ODEFunction dydx_tc = [&](double x, const double *y, double *dydx){
       return rhs_tight_coupling_ode(x, k, y, dydx);
     };
@@ -74,7 +91,38 @@ void Perturbations::integrate_perturbations(){
     ODE_tc_regime.solve(dydx_tc,x_array_tc,y_tc_ini);
     auto y_tc_solutions = ODE_tc_regime.get_data();
     auto y_tc_end       = ODE_tc_regime.get_final_data();
+    
+    //////////////////////////////////////////////////////////////////////////////
+    // Store values from tc at start of 2D vectors, using .at() for out of bounds check
+    // Constants used in the expressions
+    const double ck = Constants.c*k;
+    const double ck_squared = ck*ck;
 
+    for (int ix = 0; ix < idx_tc_transition; ix++)
+    {
+      // Scale factor
+      const double a = exp(x_array_tc[ix]);
+      const double a_squared = a*a;
+      const double ck_over_H_p = ck/cosmo->Hp_of_x(x_array_tc[ix]);
+      const double dtaudx = rec->dtaudx_of_x(x_array_tc[ix]);
+
+      // Scalar quantities
+      delta_cdm_array_2D.at(ix).at(ik) = y_tc_solutions.at(ix).at(Constants.ind_deltacdm_tc);
+      v_cdm_array_2D.at(ix).at(ik)     = y_tc_solutions.at(ix).at(Constants.ind_vcdm_tc);
+      delta_b_array_2D.at(ix).at(ik)   = y_tc_solutions.at(ix).at(Constants.ind_deltab_tc);
+      v_b_array_2D.at(ix).at(ik)       = y_tc_solutions.at(ix).at(Constants.ind_vb_tc);
+      Phi_array_2D.at(ix).at(ik)       = y_tc_solutions.at(ix).at(Constants.ind_Phi_tc);
+      
+      // Multipoles
+      Theta0_array_2D.at(ix).at(ik)    = y_tc_solutions.at(ix).at(Constants.ind_start_theta_tc);
+      Theta1_array_2D.at(ix).at(ik)    = y_tc_solutions.at(ix).at(Constants.ind_start_theta_tc+1);
+      Theta2_array_2D.at(ix).at(ik)    = -20*ck_over_H_p/(45*dtaudx)*Theta1_array_2D.at(ix).at(ik);
+      // Psi not dynamical so not in ODE solution.
+      Psi_array_2D.at(ix).at(ik)       = - Phi_array_2D.at(ix).at(ik)
+        - 12*H_0_squared/(ck_squared*a_squared)*OmegaR0*Theta2_array_2D.at(ix).at(ik);
+    }
+    // End storing tight couple data
+    //////////////////////////////////////////////////////////////////////////////
     //===================================================================
     // The full system, after tight coupling
     //===================================================================
@@ -93,37 +141,50 @@ void Perturbations::integrate_perturbations(){
     };
     // Solve from x_end_tight -> x_end
     ODE_after_tc.solve(dydx_after_tc,x_array_after_tc,y_after_tc_ini);
+    auto y_after_tc_solutions = ODE_after_tc.get_data();
 
-    
+    //////////////////////////////////////////////////////////////////////////////
+    // Store values from from after tc at end of 2D vectors, using .at() for out of bounds check
+    for (int ix = 0; ix < n_x-(idx_tc_transition+1); ix++)
+    {
+      // Scale factor
+      const double a = exp(x_array_after_tc[ix]);
+      const double a_squared = a*a;
+      const double ck_over_H_p = ck/cosmo->Hp_of_x(x_array_after_tc[ix]);
+      const double dtaudx = rec->dtaudx_of_x(x_array_after_tc[ix]);
 
-    //===================================================================
-    // TODO: remember to store the data found from integrating so we can
-    // spline it below
-    //
-    // To compute a 2D spline of a function f(x,k) the data must be given 
-    // to the spline routine as a 1D array f_array with the points f(ix, ik) 
-    // stored as f_array[ix + n_x * ik]
-    // Example:
-    // Vector x_array(n_x);
-    // Vector k_array(n_k);
-    // Vector f(n_x * n_k);
-    // Spline2D y_spline;
-    // f_spline.create(x_array, k_array, f_array);
-    // We can now use the spline as f_spline(x, k)
-    //
-    //===================================================================
-    //...
-    //...
+      // Scalar quantities
+      delta_cdm_array_2D.at(ix+idx_tc_transition).at(ik) = y_after_tc_solutions.at(ix).at(Constants.ind_deltacdm);
+      v_cdm_array_2D.at(ix+idx_tc_transition).at(ik)     = y_after_tc_solutions.at(ix).at(Constants.ind_vcdm);
+      delta_b_array_2D.at(ix+idx_tc_transition).at(ik)   = y_after_tc_solutions.at(ix).at(Constants.ind_deltab);
+      v_b_array_2D.at(ix+idx_tc_transition).at(ik)       = y_after_tc_solutions.at(ix).at(Constants.ind_vb);
+      Phi_array_2D.at(ix+idx_tc_transition).at(ik)       = y_after_tc_solutions.at(ix).at(Constants.ind_Phi);
+      
+      // Multipoles
+      Theta0_array_2D.at(ix+idx_tc_transition).at(ik)    = y_after_tc_solutions.at(ix).at(Constants.ind_start_theta);
+      Theta1_array_2D.at(ix+idx_tc_transition).at(ik)    = y_after_tc_solutions.at(ix).at(Constants.ind_start_theta+1);
+      Theta2_array_2D.at(ix+idx_tc_transition).at(ik)    = y_after_tc_solutions.at(ix).at(Constants.ind_start_theta+2);
+      // Psi not dynamical so not in ODE solution.
+      Psi_array_2D.at(ix+idx_tc_transition).at(ik)       = - Phi_array_2D.at(ix+idx_tc_transition).at(ik)
+        - 12*H_0_squared/(ck_squared*a_squared)*OmegaR0*Theta2_array_2D.at(ix+idx_tc_transition).at(ik);
+    }
+    // End storing tight couple data
+    //////////////////////////////////////////////////////////////////////////////
 
   }
   Utils::EndTiming("integrateperturbation");
 
   //=============================================================================
-  // TODO: Make all splines needed: Theta0,Theta1,Theta2,Phi,Psi,...
+  // Make all splines needed: Theta0,Theta1,Theta2,Phi,Psi,...
   //=============================================================================
-  // ...
-  // ...
-  // ...
+  delta_cdm_spline.create(x_array_full,k_array,delta_cdm_array_2D,"delta_cdm_spline");
+  v_cdm_spline.create(x_array_full,k_array,v_cdm_array_2D,"v_cdm_spline");
+  delta_b_spline.create(x_array_full,k_array,delta_b_array_2D,"delta_b_spline");
+  v_b_spline.create(x_array_full,k_array,v_b_array_2D,"v_b_spline");
+  Phi_spline.create(x_array_full,k_array,Phi_array_2D,"Phi_spline");
+  Psi_spline.create(x_array_full,k_array,Psi_array_2D,"Psi_spline");
+  Pi_spline.create(x_array_full,k_array,Theta2_array_2D,"Pi_spline"); // Not including polarization
+  // Theta_spline.at(0)
 }
 
 //====================================================
@@ -303,7 +364,7 @@ int Perturbations::rhs_tight_coupling_ode(double x, double k, const double *y, d
   const double ck_over_H_p = ck/H_p;
 
   // Theta_2 from initial condition equation
-  const double Theta2 = -20*ck_over_H_p*Theta[1]/(45*dtaudx);
+  const double Theta2 = -20*ck_over_H_p/(45*dtaudx)*Theta[1];
   // Psi follows from Phi and Theta2
   const double Psi = - Phi - 12*H_0_squared/(ck_squared*a_squared)*OmegaR0*Theta2;
 
@@ -477,9 +538,9 @@ void Perturbations::compute_source_functions(){
 
   // Spline the source functions
   ST_spline.create (x_array, k_array, ST_array, "Source_Temp_x_k");
-  if(Constants.polarization){
-    SE_spline.create (x_array, k_array, SE_array, "Source_Pol_x_k");
-  }
+  // if(Constants.polarization){
+  //   SE_spline.create (x_array, k_array, SE_array, "Source_Pol_x_k");
+  // }
 
   Utils::EndTiming("source");
 }
@@ -642,12 +703,16 @@ void Perturbations::output(const double k, const std::string filename) const{
   auto print_data = [&] (const double x) {
     double arg = k * Constants.c * (cosmo->eta_of_x(0.0) - cosmo->eta_of_x(x));
     fp << x                  << " ";
+    fp << get_delta_cdm(x,k) << " ";
+    fp << get_delta_b(x,k)   << " ";
+    fp << get_v_cdm(x,k)     << " ";
+    fp << get_v_b(x,k)       << " ";
+    fp << get_Phi(x,k)       << " ";
+    fp << get_Psi(x,k)       << " ";
+    fp << get_Pi(x,k)        << " ";
     // fp << get_Theta(x,k,0)   << " ";
     // fp << get_Theta(x,k,1)   << " ";
     // fp << get_Theta(x,k,2)   << " ";
-    // fp << get_Phi(x,k)       << " ";
-    // fp << get_Psi(x,k)       << " ";
-    // fp << get_Pi(x,k)        << " ";
     // fp << get_Source_T(x,k)  << " ";
     // fp << get_Source_T(x,k) * Utils::j_ell(5,   arg)           << " ";
     // fp << get_Source_T(x,k) * Utils::j_ell(50,  arg)           << " ";
