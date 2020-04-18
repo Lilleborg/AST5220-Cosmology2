@@ -78,8 +78,17 @@ int main(int argc, char **argv){
   pert.solve();
   
   // Output perturbation quantities
+  // for (int i = 0; i < 6; i++)
+  // {
+  //   /* code */
+  // }
+  
   double kvalue = 0.01 / Constants.Mpc;
   pert.output(kvalue, data_path + "perturbations_k0.01.txt");
+  kvalue = 0.1 / Constants.Mpc;
+  pert.output(kvalue, data_path + "perturbations_k0.1.txt");
+  kvalue = 0.001 / Constants.Mpc;
+  pert.output(kvalue, data_path + "perturbations_k0.001.txt");
   
   // Remove when module is completed
   return 0;
