@@ -91,7 +91,7 @@ void Perturbations::integrate_perturbations(){
     ODE_tc_regime.solve(dydx_tc,x_array_tc,y_tc_ini);
     auto y_tc_solutions = ODE_tc_regime.get_data();
     auto y_tc_end       = ODE_tc_regime.get_final_data();
-    
+    std::cout << "Heeeer" << std::flush;
     //////////////////////////////////////////////////////////////////////////////
     // Store values from tc at start of 2D vectors, using .at() for out of bounds check
     // Constants used in the expressions
@@ -213,7 +213,7 @@ Vector Perturbations::set_ic(const double x, const double k) const{
 
   // Set the initial conditions in the tight coupling regime
   double fv = 0;
-  double Psi = -double(2/3);
+  double Psi = -2.0/3.0;
   // if (neutrinos)
   // {
   //   fv = cosmo->get_OmegaNu()/(cosmo->get_OmegaNu()+cosmo->get_OmegaR());

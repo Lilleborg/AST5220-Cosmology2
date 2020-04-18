@@ -25,14 +25,14 @@ class Perturbations{
     const double k_max   = Constants.k_max;
     // Set up logarithmic (base e as for logarithmic scale factor) 
     // spaced k-values using own logspace from Utils
-    const Vector k_array = Utils::logspace(log(k_min),log(k_max),n_k);
+    Vector k_array = Utils::logspace(log(k_min),log(k_max),n_k);
     
     // Start and end of the time-integration
     const int n_x        = 1000;
     const double x_start = Constants.x_start;
     const double x_end   = Constants.x_end;
     // Set up logarithmic scale factor
-    const Vector x_array_full = Utils::linspace(x_start,x_end,n_x);
+    Vector x_array_full = Utils::linspace(x_start,x_end,n_x);
     // x-value at start of Recombination, at redshift 1700
     const double x_1700  = log(5.878894768e-4); // this number is 1/1701
     const int idx_x1700 = std::lower_bound(x_array_full.begin(),x_array_full.end(),x_1700)-x_array_full.begin();
