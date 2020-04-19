@@ -401,7 +401,7 @@ int Perturbations::rhs_tight_coupling_ode(double x, double k, const double *y, d
   // Fill in the expressions for all the derivatives
   // Scalar quantities that are the same as in normal regime
   dPhidx       = Psi - ck_squared*Phi/(3.0*H_p_squared) + H_0_squared/(2.0*H_p_squared)
-    * ( (OmegaCDM0*delta_cdm + OmegaB0*delta_b)/a + 4.0*OmegaR0*Theta[0]/a_squared);
+    *((OmegaCDM0*delta_cdm + OmegaB0*delta_b)/a + 4.0*OmegaR0*Theta[0]/a_squared);
   ddelta_cdmdx = ck_over_H_p*v_cdm - 3.0*dPhidx;
   dv_cdmdx     = - v_cdm - ck_over_H_p*Psi;
   ddelta_bdx   = ck_over_H_p*v_b - 3.0*dPhidx;
