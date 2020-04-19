@@ -52,7 +52,7 @@ void Perturbations::integrate_perturbations(){
   const double OmegaR0     = cosmo->get_OmegaR();
 
   // Debugging
-  bool use_verbose = true;
+  bool use_verbose = false;
   
   // Loop over all wavenumbers
   for(int ik = 0; ik < n_k; ik++){
@@ -100,7 +100,7 @@ void Perturbations::integrate_perturbations(){
     const double ck = Constants.c*k;
     const double ck_squared = ck*ck;
 
-    for (int ix = 0; ix < idx_tc_transition; ix++)
+    for (int ix = 0; ix < idx_tc_transition-1; ix++)
     {
       // Scale factor
       const double a = exp(x_array_tc[ix]);
@@ -298,32 +298,32 @@ Vector Perturbations::set_ic_after_tight_coupling(
   // const double *Nu_tc           = &y_tc_end_point[Constants.ind_start_nu_tc];
 
   // References to the quantities we are going to set
-  double &delta_cdm       =  y[Constants.ind_deltacdm_tc];
-  double &delta_b         =  y[Constants.ind_deltab_tc];
-  double &v_cdm           =  y[Constants.ind_vcdm_tc];
-  double &v_b             =  y[Constants.ind_vb_tc];
-  double &Phi             =  y[Constants.ind_Phi_tc];
-  double *Theta           = &y[Constants.ind_start_theta_tc];
-  // double *Theta_p         = &y[Constants.ind_start_thetap_tc];
-  // double *Nu              = &y[Constants.ind_start_nu_tc];
+  double &delta_cdm       =  y[Constants.ind_deltacdm];
+  double &delta_b         =  y[Constants.ind_deltab];
+  double &v_cdm           =  y[Constants.ind_vcdm];
+  double &v_b             =  y[Constants.ind_vb];
+  double &Phi             =  y[Constants.ind_Phi];
+  double *Theta           = &y[Constants.ind_start_theta];
+  // double *Theta_p         = &y[Constants.ind_start_thetap];
+  // double *Nu              = &y[Constants.ind_start_nu];
   
-  // SET: Scalar quantities (Gravitational potential, baryons and CDM)
+  // Scalar quantities (Gravitational potential, baryons and CDM)
   Phi        = Phi_tc;
   delta_b    = delta_b_tc;
   v_b        = v_b_tc;
   delta_cdm  = delta_cdm_tc;
   v_cdm      = v_cdm_tc;
 
-  // SET: Photon temperature perturbations (Theta_ell)
+  // Photon temperature perturbations (Theta_ell)
+  const double ck_over_H_p_dtaudx = Constants.c*k/(cosmo->Hp_of_x(x)*rec->dtaudx_of_x(x));
+  // double l_as_double;
   Theta[0]   = Theta_tc[0];
   Theta[1]   = Theta_tc[1];
-  const double ck_over_H_p_dtaudx = Constants.c*k/(cosmo->Hp_of_x(x)*rec->dtaudx_of_x(x));
   Theta[2]   = - 20.0/45.0*ck_over_H_p_dtaudx*Theta[1];
-  double l_as_double;
   for (int l = 3; l < n_ell_theta; l++)
   {
-    l_as_double = double(l);
-    Theta[l] = - l_as_double/(2.0*l_as_double+1.0) * ck_over_H_p_dtaudx * Theta[l-1];
+    // l_as_double = double(l);
+    Theta[l] = - l/(2.0*l+1.0) * ck_over_H_p_dtaudx * Theta[l-1];
   }
   // SET: Photon polarization perturbations (Theta_p_ell)
   // if(polarization){
@@ -587,6 +587,7 @@ std::pair<double,int> Perturbations::get_tight_coupling_time_and_index(const dou
   double tau_prime;
   for (int i = 0; i < n_x; i++)
   {
+    // dtaudx always negative, instead of using absolute value just force it to be positive
     tau_prime = -rec->dtaudx_of_x(x_array_full[i]);
     if (tau_prime < 10 || tau_prime < 10*k*Constants.c/cosmo->Hp_of_x(x_array_full[i]) || x_array_full[i] > x_1700)
     {
