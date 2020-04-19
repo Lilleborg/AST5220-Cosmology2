@@ -589,7 +589,7 @@ std::pair<double,int> Perturbations::get_tight_coupling_time_and_index(const dou
   {
     // dtaudx always negative, instead of using absolute value just force it to be positive
     tau_prime = -rec->dtaudx_of_x(x_array_full[i]);
-    if (tau_prime < 10 || tau_prime < 10*k*Constants.c/cosmo->Hp_of_x(x_array_full[i]) || x_array_full[i] > x_1700)
+    if (tau_prime < 10.0 || tau_prime < 10.0*k*Constants.c/cosmo->Hp_of_x(x_array_full[i]) || rec->Xe_of_x(x_array_full[i]) <0.99)
     {
       return std::pair<double,int>(x_array_full[i-1],int(i-1));
     }
