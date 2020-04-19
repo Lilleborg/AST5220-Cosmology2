@@ -5,6 +5,9 @@
 #include "PowerSpectrum.h"
 #include <string.h>
 
+#include <sstream>
+#include <iomanip>
+
 int main(int argc, char **argv){
   std::cout << "\n";
   Utils::StartTiming("Everything");
@@ -77,18 +80,21 @@ int main(int argc, char **argv){
   pert.info();
   pert.solve();
   
-  // Output perturbation quantities
-  // for (int i = 0; i < 6; i++)
-  // {
-  //   /* code */
-  // }
-  
-  double kvalue = 0.01 / Constants.Mpc;
-  pert.output(kvalue, data_path + "perturbations_k0.01.txt");
-  kvalue = 0.1 / Constants.Mpc;
-  pert.output(kvalue, data_path + "perturbations_k0.1.txt");
-  kvalue = 0.001 / Constants.Mpc;
-  pert.output(kvalue, data_path + "perturbations_k0.001.txt");
+  Vector k_values = {0.1,0.01,0.001};
+
+  std::ofstream fp_k_values(data_path + "perturbations_k_values.txt");
+  fp_k_values << "k_values per Mpc:\n";
+  for (auto k_value:k_values)
+  {
+    fp_k_values << k_value << "\n";
+
+    std::ostringstream stream_kvales;
+    stream_kvales << std::fixed << std::setprecision(3);
+    stream_kvales << k_value;
+    std::string filename = "perturbations_k" + stream_kvales.str() + ".txt";
+    pert.output(k_value/Constants.Mpc, data_path + filename);
+  }
+  fp_k_values.close();
   
   // Remove when module is completed
   return 0;
