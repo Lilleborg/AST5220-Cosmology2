@@ -52,7 +52,7 @@ void Perturbations::integrate_perturbations(){
   const double OmegaR0     = cosmo->get_OmegaR();
 
   // Debugging
-  bool use_verbose = false;
+  bool use_verbose = true;
   
   // Loop over all wavenumbers
   for(int ik = 0; ik < n_k; ik++){
@@ -84,8 +84,6 @@ void Perturbations::integrate_perturbations(){
     // The tight coupling ODE system
     ODESolver ODE_tc_regime;
     auto y_tc_ini = set_ic(x_start, k); // Initial conditions in the tight coupling regime
-    // for (auto y_ini:y_tc_ini)
-    // std::cout << y_ini << "\n";
     
     ODEFunction dydx_tc = [&](double x, const double *y, double *dydx){
       return rhs_tight_coupling_ode(x, k, y, dydx);
@@ -95,7 +93,7 @@ void Perturbations::integrate_perturbations(){
     ODE_tc_regime.solve(dydx_tc,x_array_tc,y_tc_ini);
     auto y_tc_solutions = ODE_tc_regime.get_data();
     auto y_tc_end       = ODE_tc_regime.get_final_data();
-    // std::cout << "Heeeer" << std::flush;
+
     //////////////////////////////////////////////////////////////////////////////
     // Store values from tc at start of 2D vectors, using .at() for out of bounds check
     // Constants used in the expressions
@@ -153,8 +151,6 @@ void Perturbations::integrate_perturbations(){
     ODE_after_tc.solve(dydx_after_tc,x_array_after_tc,y_after_tc_ini);
     auto y_after_tc_solutions = ODE_after_tc.get_data();
 
-    
-
     //////////////////////////////////////////////////////////////////////////////
     // Store values from from after tc at end of 2D vectors, using .at() for out of bounds check
     for (int ix = 0; ix < n_x-(idx_tc_transition); ix++)
@@ -186,6 +182,20 @@ void Perturbations::integrate_perturbations(){
   }
   Utils::EndTiming("integrateperturbation");
 
+  // Check for duplicate values
+  for (int ik = 0; ik < n_k; ik++)
+  {
+    for (int ix = 0; ix < n_x-1; ix++)
+    {
+      if (Theta0_array_2D.at(ix).at(ik) == Theta0_array_2D.at(ix+1).at(ik))
+      {
+        printf("Duplciate value in 2D array, ix: %d, Theta0(ix): %e, Theta0(ix+1): %e\n"\
+          ,ix,Theta0_array_2D.at(ix).at(ik),Theta0_array_2D.at(ix+1).at(ik));
+      }
+    }
+  }
+  
+
   //=============================================================================
   // Make all splines needed: Theta0,Theta1,Theta2,Phi,Psi,...
   //=============================================================================
@@ -196,19 +206,13 @@ void Perturbations::integrate_perturbations(){
   Phi_spline.create(x_array_full,k_array,Phi_array_2D,"Phi_spline");
   Psi_spline.create(x_array_full,k_array,Psi_array_2D,"Psi_spline");
   Pi_spline.create(x_array_full,k_array,Theta2_array_2D,"Pi_spline"); // Not including polarization
-  Spline2D Theta0_spline;
+  
   Theta0_spline.create(x_array_full,k_array,Theta0_array_2D,"Theta0_spline");
-  Spline2D Theta1_spline;
   Theta1_spline.create(x_array_full,k_array,Theta1_array_2D,"Theta1_spline");
-  Spline2D Theta2_spline;
   Theta2_spline.create(x_array_full,k_array,Theta2_array_2D,"Theta2_spline");
-  Theta_spline.push_back(Theta0_spline);
-  Theta_spline.push_back(Theta1_spline);
-  Theta_spline.push_back(Theta2_spline);
-  // Theta_spline.at(0).create(x_array_full,k_array,Theta0_array_2D,"Theta0_spline");
-  // Theta_spline.at(1).create(x_array_full,k_array,Theta1_array_2D,"Theta1_spline");
-  // Theta_spline.at(2).create(x_array_full,k_array,Theta2_array_2D,"Theta2_spline");
-
+  vector_of_Theta_splines.push_back(Theta0_spline);
+  vector_of_Theta_splines.push_back(Theta1_spline);
+  vector_of_Theta_splines.push_back(Theta2_spline);
 }
 
 //====================================================
@@ -243,13 +247,13 @@ Vector Perturbations::set_ic(const double x, const double k) const{
   //   fv = cosmo->get_OmegaNu()/(cosmo->get_OmegaNu()+cosmo->get_OmegaR());
   //   Psi = -1/(1.5 + 0.4*fv);
   // }
-  // SET: Scalar quantities (Phi, delta, v, ...)
+  // Scalar quantities (Phi, delta, v, ...)
   Phi       = -(1.0+0.4*fv)*Psi;
   delta_cdm = -1.5*Psi;
   delta_b   = delta_cdm;
   v_cdm     = -Constants.c*k*Psi/(2.0*cosmo->Hp_of_x(x));
   v_b       = v_cdm;
-  // SET: Photon temperature perturbations (Theta_ell)
+  // Photon temperature perturbations (Theta_ell)
   Theta[0]  = -0.5*Psi;
   Theta[1]  = -v_cdm/3.0;
   
@@ -622,7 +626,7 @@ double Perturbations::get_Source_T(const double x, const double k) const{
 //   return SE_spline(x,k);
 // }
 double Perturbations::get_Theta(const double x, const double k, const int ell) const{
-  return Theta_spline[ell](x,k);
+  return vector_of_Theta_splines.at(ell)(x,k);
 }
 // double Perturbations::get_Theta_p(const double x, const double k, const int ell) const{
 //   return Theta_p_spline[ell](x,k);

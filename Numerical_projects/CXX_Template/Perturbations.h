@@ -54,7 +54,10 @@ class Perturbations{
     // Spline2D SE_spline{"SE_spline"};
     
     // Splines of multipole quantities
-    std::vector<Spline2D> Theta_spline;
+    Spline2D Theta0_spline{"Theta0_spline"};
+    Spline2D Theta1_spline{"Theta1_spline"};
+    Spline2D Theta2_spline{"Theta2_spline"};
+    std::vector<Spline2D> vector_of_Theta_splines;
     // std::vector<Spline2D> Theta_p_spline;
     // std::vector<Spline2D> Nu_spline;
     
