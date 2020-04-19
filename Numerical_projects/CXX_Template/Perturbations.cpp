@@ -100,13 +100,13 @@ void Perturbations::integrate_perturbations(){
     const double ck = Constants.c*k;
     const double ck_squared = ck*ck;
 
-    for (int ix = 0; ix < idx_tc_transition-1; ix++)
+    for (int ix = 0; ix < idx_tc_transition; ix++)
     {
       // Scale factor
-      const double a = exp(x_array_tc[ix]);
+      const double a = exp(x_array_tc.at(ix));
       const double a_squared = a*a;
-      const double ck_over_H_p = ck/cosmo->Hp_of_x(x_array_tc[ix]);
-      const double dtaudx = rec->dtaudx_of_x(x_array_tc[ix]);
+      const double ck_over_H_p = ck/cosmo->Hp_of_x(x_array_tc.at(ix));
+      const double dtaudx = rec->dtaudx_of_x(x_array_tc.at(ix));
 
       // Scalar quantities
       delta_cdm_array_2D.at(ix).at(ik) = y_tc_solutions.at(ix).at(Constants.ind_deltacdm_tc);
@@ -152,7 +152,7 @@ void Perturbations::integrate_perturbations(){
     auto y_after_tc_solutions = ODE_after_tc.get_data();
 
     //////////////////////////////////////////////////////////////////////////////
-    // Store values from from after tc at end of 2D vectors, using .at() for out of bounds check
+    // Store values from after tc at end of 2D vectors, using .at() for out of bounds check
     for (int ix = 0; ix < n_x-(idx_tc_transition); ix++)
     {
       // Scale factor
