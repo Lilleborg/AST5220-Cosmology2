@@ -80,6 +80,7 @@ int main(int argc, char **argv){
   pert.info();
   pert.solve();
   
+  // Vector k_values = {0.1,0.5,0.01,0.05,0.001,0.005};
   Vector k_values = {0.1,0.01,0.001};
 
   std::ofstream fp_k_values(data_path + "perturbations_k_values.txt");
