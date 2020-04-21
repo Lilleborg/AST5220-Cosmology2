@@ -25,7 +25,7 @@ void Perturbations::solve(){
   integrate_perturbations();
 
   // Compute source functions and spline the result
-  // compute_source_functions();
+  compute_source_functions();
 }
 
 //====================================================
@@ -34,16 +34,25 @@ void Perturbations::solve(){
 //====================================================
 void Perturbations::integrate_perturbations(){
 
-  Vector2D delta_cdm_array_2D (n_x,Vector(n_k));
-  Vector2D v_cdm_array_2D     (n_x,Vector(n_k));
-  Vector2D delta_b_array_2D   (n_x,Vector(n_k));
-  Vector2D v_b_array_2D       (n_x,Vector(n_k));
-  Vector2D Phi_array_2D       (n_x,Vector(n_k));
-  Vector2D Psi_array_2D       (n_x,Vector(n_k));
-  Vector2D Theta0_array_2D    (n_x,Vector(n_k));
-  Vector2D Theta1_array_2D    (n_x,Vector(n_k));
-  Vector2D Theta2_array_2D    (n_x,Vector(n_k));
-
+  // Scalar quantities
+  Vector2D delta_cdm_array_2D  (n_x,Vector(n_k));
+  Vector2D v_cdm_array_2D      (n_x,Vector(n_k));
+  Vector2D delta_b_array_2D    (n_x,Vector(n_k));
+  Vector2D v_b_array_2D        (n_x,Vector(n_k));
+  Vector2D dv_b_dx_array_2D    (n_x,Vector(n_k));
+  Vector2D Phi_array_2D        (n_x,Vector(n_k));
+  Vector2D dPhi_dx_array_2D    (n_x,Vector(n_k));
+  Vector2D Psi_array_2D        (n_x,Vector(n_k));
+  // Multipoles and their derivatives
+  Vector2D Theta0_array_2D     (n_x,Vector(n_k));
+  Vector2D dTheta0_dx_array_2D (n_x,Vector(n_k));
+  Vector2D Theta1_array_2D     (n_x,Vector(n_k));
+  Vector2D dTheta1_dx_array_2D (n_x,Vector(n_k));
+  Vector2D Theta2_array_2D     (n_x,Vector(n_k));
+  // Vector2D dTheta2_dx_array_2D (n_x,Vector(n_k));
+  // Start simple, use spline to get dTheta2dx as no expression given for this in TC
+  Vector2D Theta3_array_2D     (n_x,Vector(n_k));
+  // Will eventually get dTheta3_dx from Theta3_spline (might not be needed if using Pi = Theta2)
 
   // Cosmological parameters
   const double H_0         = cosmo->get_H0();
@@ -83,6 +92,7 @@ void Perturbations::integrate_perturbations(){
     // Solve from x_start -> x_end_tc
     ODE_tc_regime.solve(dydx_tc,x_array_tc,y_tc_ini);
     auto y_tc_solutions = ODE_tc_regime.get_data();
+    auto y_deriv_tc_sol = ODE_tc_regime.get_derivative_data();
     auto y_tc_end       = ODE_tc_regime.get_final_data();
 
     //===================================================================
@@ -101,6 +111,7 @@ void Perturbations::integrate_perturbations(){
     // Solve from x_end_tight -> x_end
     ODE_after_tc.solve(dydx_after_tc,x_array_after_tc,y_after_tc_ini);
     auto y_after_tc_solutions = ODE_after_tc.get_data();
+    auto y_deriv_after_tc_sol = ODE_after_tc.get_derivative_data();
 
     //////////////////////////////////////////////////////////////////////////////
     // Store values from tc at start of 2D vectors
@@ -127,6 +138,16 @@ void Perturbations::integrate_perturbations(){
       Theta0_array_2D[ix][ik]    = y_tc_solutions[ix][Constants.ind_start_theta_tc];
       Theta1_array_2D[ix][ik]    = y_tc_solutions[ix][Constants.ind_start_theta_tc+1];
       Theta2_array_2D[ix][ik]    = -20.0*ck_over_H_p/(45.0*dtaudx)*Theta1_array_2D[ix][ik];
+      // Using initial condition with l = 3:
+      Theta3_array_2D[ix][ik]    = -3.0/(7.0)*ck_over_H_p/dtaudx*Theta2_array_2D[ix][ik];
+      // Derivatives
+      dTheta0_dx_array_2D[ix][ik]= y_deriv_tc_sol[ix][Constants.ind_start_theta_tc];
+      dTheta1_dx_array_2D[ix][ik]= y_deriv_tc_sol[ix][Constants.ind_start_theta_tc+1];
+      dPhi_dx_array_2D[ix][ik]   = y_deriv_tc_sol[ix][Constants.ind_Phi_tc];
+      dv_b_dx_array_2D[ix][ik]   = y_deriv_tc_sol[ix][Constants.ind_vb_tc];
+      // Start simple, use spline to get dTheta2dx as no expression given for this in TC
+      // Will eventually get dTheta3_dx from Theta3_spline (might not be needed if using Pi = Theta2)
+
       // Psi not dynamical so not in ODE solution.
       Psi_array_2D[ix][ik]       = - Phi_array_2D[ix][ik]
         - 12*H_0_squared/(ck_squared*a_squared)*OmegaR0*Theta2_array_2D[ix][ik];
@@ -153,6 +174,14 @@ void Perturbations::integrate_perturbations(){
       Theta0_array_2D[ix-1+idx_tc_transition][ik]    = y_after_tc_solutions[ix][Constants.ind_start_theta];
       Theta1_array_2D[ix-1+idx_tc_transition][ik]    = y_after_tc_solutions[ix][Constants.ind_start_theta+1];
       Theta2_array_2D[ix-1+idx_tc_transition][ik]    = y_after_tc_solutions[ix][Constants.ind_start_theta+2];
+      Theta3_array_2D[ix-1+idx_tc_transition][ik]    = y_after_tc_solutions[ix][Constants.ind_start_theta+3];
+      // Derivatives
+      dTheta0_dx_array_2D[ix-1+idx_tc_transition][ik]= y_deriv_after_tc_sol[ix][Constants.ind_start_theta];
+      dTheta1_dx_array_2D[ix-1+idx_tc_transition][ik]= y_deriv_after_tc_sol[ix][Constants.ind_start_theta+1];
+      dPhi_dx_array_2D[ix-1+idx_tc_transition][ik]   = y_deriv_after_tc_sol[ix][Constants.ind_Phi];
+      dv_b_dx_array_2D[ix-1+idx_tc_transition][ik]   = y_deriv_after_tc_sol[ix][Constants.ind_vb];
+      // Start simple, use spline to get dTheta2dx as no expression given for this in TC
+      // Will eventually get dTheta3_dx from Theta3_spline (might not be needed if using Pi = Theta2)      
       // Psi not dynamical so not in ODE solution.
       Psi_array_2D[ix-1+idx_tc_transition][ik]       = - Phi_array_2D[ix-1+idx_tc_transition][ik]
         - 12.0*H_0_squared/(ck_squared*a_squared)*OmegaR0*Theta2_array_2D[ix-1+idx_tc_transition][ik];
@@ -180,20 +209,28 @@ void Perturbations::integrate_perturbations(){
   //=============================================================================
   // Make all splines needed: Theta0,Theta1,Theta2,Phi,Psi,...
   //=============================================================================
+  // Scalar quantities
   delta_cdm_spline.create(x_array_full,k_array,delta_cdm_array_2D,"delta_cdm_spline");
   v_cdm_spline.create(x_array_full,k_array,v_cdm_array_2D,"v_cdm_spline");
   delta_b_spline.create(x_array_full,k_array,delta_b_array_2D,"delta_b_spline");
   v_b_spline.create(x_array_full,k_array,v_b_array_2D,"v_b_spline");
+  dv_b_dx_spline.create(x_array_full,k_array,v_b_array_2D,"dv_b_dx_spline");
   Phi_spline.create(x_array_full,k_array,Phi_array_2D,"Phi_spline");
+  dPhi_dx_spline.create(x_array_full,k_array,dPhi_dx_array_2D,"dPhi_dx_spline");
   Psi_spline.create(x_array_full,k_array,Psi_array_2D,"Psi_spline");
-  Pi_spline.create(x_array_full,k_array,Theta2_array_2D,"Pi_spline"); // Not including polarization
-  
+  Pi_spline.create(x_array_full,k_array,Theta2_array_2D,"Pi_spline"); // Not including polarization so set to Theta2
+  // Multipoles
   Theta0_spline.create(x_array_full,k_array,Theta0_array_2D,"Theta0_spline");
   Theta1_spline.create(x_array_full,k_array,Theta1_array_2D,"Theta1_spline");
   Theta2_spline.create(x_array_full,k_array,Theta2_array_2D,"Theta2_spline");
   vector_of_Theta_splines.push_back(Theta0_spline);
   vector_of_Theta_splines.push_back(Theta1_spline);
   vector_of_Theta_splines.push_back(Theta2_spline);
+  // Multipole derivs
+  dTheta0_dx_spline.create(x_array_full,k_array,dTheta0_dx_array_2D,"dTheta0_dx_spline");
+  dTheta1_dx_spline.create(x_array_full,k_array,dTheta0_dx_array_2D,"dTheta1_dx_spline");
+  vector_of_dTheta_dx_splines.push_back(Theta0_spline);
+  vector_of_dTheta_dx_splines.push_back(Theta1_spline);
 }
 
 //====================================================
@@ -506,49 +543,65 @@ int Perturbations::rhs_full_ode(double x, double k, const double *y, double *dyd
 void Perturbations::compute_source_functions(){
   Utils::StartTiming("source");
 
-  //=============================================================================
-  // TODO: Make the x and k arrays to evaluate over and use to make the splines
-  //=============================================================================
-  // ...
-  // ...
-  Vector k_array;
-  Vector x_array;
 
   // Make storage for the source functions (in 1D array to be able to pass it to the spline)
-  Vector ST_array(k_array.size() * x_array.size());
-  Vector SE_array(k_array.size() * x_array.size());
+  // Vector ST_array(k_array.size() * x_array.size());
+  // Vector SE_array(k_array.size() * x_array.size());
+  Vector2D ST_array_2D(n_x,Vector(n_k));
 
   // Compute source functions
-  for(auto ix = 0; ix < x_array.size(); ix++){
-    const double x = x_array[ix];
+  for(auto ix = 0; ix < x_array_full.size(); ix++){
+    const double x = x_array_full[ix];
     for(auto ik = 0; ik < k_array.size(); ik++){
       const double k = k_array[ik];
 
       // NB: This is the format the data needs to be stored 
       // in a 1D array for the 2D spline routine source(ix,ik) -> S_array[ix + nx * ik]
-      const int index = ix + n_x * ik;
+      // const int index = ix + n_x * ik;
 
-      //=============================================================================
-      // TODO: Compute the source functions
-      //=============================================================================
-      // Fetch all the things we need...
-      // const double Hp       = cosmo->Hp_of_x(x);
-      // const double tau      = rec->tau_of_x(x);
-      // ...
-      // ...
+      // Cosmological values
+      const double H_p            = cosmo->Hp_of_x(x);
+      const double dH_p_dx        = cosmo->dHpdx_of_x(x);
+      const double ddH_p_ddx      = cosmo->ddHpddx_of_x(x);
 
-      // Temperatur source
-      ST_array[index] = 0.0;
+      // Recombination values
+      const double g_tilde        = rec->g_tilde_of_x(x);
+      const double dg_tilde_dx    = rec->dgdx_tilde_of_x(x);
+      const double ddg_tilde_ddx  = rec->ddgddx_tilde_of_x(x);
+      const double tau            = rec->tau_of_x(x);
 
-      // Polarization source
-      if(Constants.polarization){
-        SE_array[index] = 0.0;
-      }
+      // Perturbation values
+      const double Theta0         = get_Theta(x,k,0);
+      const double Psi            = get_Psi(x,k);
+      const double dPsi_dx        = Psi_spline.deriv_x(x,k);
+      const double dPhi_dx        = dPhi_dx_spline(x,k);
+      const double Pi             = get_Pi(x,k);
+      const double dPi_dx         = Pi_spline.deriv_x(x,k);
+      const double ddPi_ddx         = Pi_spline.deriv_xx(x,k);
+      const double v_b            = get_v_b(x,k);
+      const double dv_b_dx        = dv_b_dx_spline(x,k);
+
+      // Constants
+      const double ck             = Constants.c*k;
+
+      // Temperature source
+      ST_array_2D[ix][ik] = g_tilde*(Theta0 + Psi + 0.25*Pi)
+                       + exp(-tau)*(dPsi_dx - dPhi_dx)
+                       - ck*(dH_p_dx*g_tilde*v_b + H_p*dg_tilde_dx+v_b + H_p*g_tilde+dv_b_dx)
+                       + 3.0/(4.0*ck*ck)*(
+                       Pi*g_tilde*(H_p*ddH_p_ddx + dH_p_dx*dH_p_dx)
+                       + 3*H_p*dH_p_dx*(dg_tilde_dx*Pi + g_tilde*ddPi_ddx)
+                       + H_p*H_p*(ddg_tilde_ddx*Pi + 2*dg_tilde_dx*dPi_dx + g_tilde*ddPi_ddx)
+                       );
+      // // Polarization source
+      // if(Constants.polarization){
+      //   SE_array[index] = 0.0;
+      // }
     }
   }
 
   // Spline the source functions
-  ST_spline.create (x_array, k_array, ST_array, "Source_Temp_x_k");
+  ST_spline.create(x_array_full, k_array, ST_array_2D, "Source_Temp_x_k");
   // if(Constants.polarization){
   //   SE_spline.create (x_array, k_array, SE_array, "Source_Pol_x_k");
   // }
@@ -710,6 +763,7 @@ void Perturbations::info() const{
 
 void Perturbations::output(const double k, const std::string filename) const{
   std::ofstream fp(filename.c_str());
+  fp << "k_value" << k << "\n";
   const int npts = 5000;
   auto x_array = Utils::linspace(x_start, x_end, npts);
   auto print_data = [&] (const double x) {
@@ -725,7 +779,7 @@ void Perturbations::output(const double k, const std::string filename) const{
     fp << get_Theta(x,k,0)   << " ";
     fp << get_Theta(x,k,1)   << " ";
     fp << get_Theta(x,k,2)   << " ";
-    // fp << get_Source_T(x,k)  << " ";
+    fp << get_Source_T(x,k)  << " ";
     // fp << get_Source_T(x,k) * Utils::j_ell(5,   arg)           << " ";
     // fp << get_Source_T(x,k) * Utils::j_ell(50,  arg)           << " ";
     // fp << get_Source_T(x,k) * Utils::j_ell(500, arg)           << " ";
