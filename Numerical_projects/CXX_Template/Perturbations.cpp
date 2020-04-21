@@ -52,9 +52,10 @@ void Perturbations::integrate_perturbations(){
   const double OmegaR0     = cosmo->get_OmegaR();
 
   // Debugging
-  bool use_verbose = false;
+  // bool use_verbose = true;
   
   // Loop over all wavenumbers
+  // #pragma omp parallel for schedule(dynamic, 1)
   for(int ik = 0; ik < n_k; ik++){
     // Current value of k
     double k = k_array[ik];
@@ -73,13 +74,6 @@ void Perturbations::integrate_perturbations(){
     double x_end_tc = tight_couple_time_pair.first;
     int idx_tc_transition = tight_couple_time_pair.second;
     Vector x_array_tc = Utils::linspace(x_start,x_end_tc,idx_tc_transition);
-
-    // Debugging
-    if (x_end_tc > x_1700)
-    {
-      std::cout << "x_end_tc is larger than x_1700!\n";
-      std::cout << "x_1700 " << x_1700 << " " << x_end_tc << std::endl;
-    }
     
     // The tight coupling ODE system
     ODESolver ODE_tc_regime;
@@ -89,10 +83,34 @@ void Perturbations::integrate_perturbations(){
       return rhs_tight_coupling_ode(x, k, y, dydx);
     };
     // Solve from x_start -> x_end_tc
-    ODE_tc_regime.set_verbose(use_verbose);
     ODE_tc_regime.solve(dydx_tc,x_array_tc,y_tc_ini);
     auto y_tc_solutions = ODE_tc_regime.get_data();
     auto y_tc_end       = ODE_tc_regime.get_final_data();
+
+    //===================================================================
+    // The full system, after tight coupling
+    //===================================================================
+    // Set up array for after tight coupling
+    Vector x_array_after_tc = Utils::linspace(x_end_tc,x_end,n_x-idx_tc_transition+1);
+    if (x_array_tc.back() == x_array_after_tc[0])
+    {
+      printf("Duplicate x-value before and after tc, %e, index %d\n",x_array_tc.back(),x_array_tc.size());
+    }
+
+    if (x_array_tc.size()+x_array_after_tc.size() != n_x)
+    {
+      printf("number of points in x arrays before and after tc not equal max points: %d, nx: %d\n",int(x_array_tc.size()+x_array_after_tc.size()),n_x);
+    }
+    // The full ODE system after tight couping
+    // Set up initial conditions (y_tc_end is the solution at the end of tight coupling)
+    ODESolver ODE_after_tc;
+    auto y_after_tc_ini = set_ic_after_tight_coupling(y_tc_end, x_end_tc, k);
+    ODEFunction dydx_after_tc = [&](double x, const double *y, double *dydx){
+      return rhs_full_ode(x, k, y, dydx);
+    };
+    // Solve from x_end_tight -> x_end
+    ODE_after_tc.solve(dydx_after_tc,x_array_after_tc,y_after_tc_ini);
+    auto y_after_tc_solutions = ODE_after_tc.get_data();
 
     //////////////////////////////////////////////////////////////////////////////
     // Store values from tc at start of 2D vectors, using .at() for out of bounds check
@@ -125,35 +143,10 @@ void Perturbations::integrate_perturbations(){
     }
     // End storing tight couple data
     //////////////////////////////////////////////////////////////////////////////
-    //===================================================================
-    // The full system, after tight coupling
-    //===================================================================
-    // Set up array for after tight coupling
-    Vector x_array_after_tc = Utils::linspace(x_end_tc,x_end,n_x-idx_tc_transition);
-    if (x_array_tc.back() == x_array_after_tc[0])
-    {
-      printf("Duplicate x-value before and after tc, %e, index %d\n",x_array_tc.back(),x_array_tc.size());
-    }
-
-    if (x_array_tc.size()+x_array_after_tc.size() != n_x)
-    {
-      printf("number of points in x arrays before and after tc not equal max points: %d, nx: %d\n",int(x_array_tc.size()+x_array_after_tc.size()),n_x);
-    }
-    // The full ODE system after tight couping
-    // Set up initial conditions (y_tc_end is the solution at the end of tight coupling)
-    ODESolver ODE_after_tc;
-    auto y_after_tc_ini = set_ic_after_tight_coupling(y_tc_end, x_end_tc, k);
-    ODEFunction dydx_after_tc = [&](double x, const double *y, double *dydx){
-      return rhs_full_ode(x, k, y, dydx);
-    };
-    // Solve from x_end_tight -> x_end
-    ODE_after_tc.set_verbose(use_verbose);
-    ODE_after_tc.solve(dydx_after_tc,x_array_after_tc,y_after_tc_ini);
-    auto y_after_tc_solutions = ODE_after_tc.get_data();
 
     //////////////////////////////////////////////////////////////////////////////
     // Store values from after tc at end of 2D vectors, using .at() for out of bounds check
-    for (int ix = 0; ix < n_x-(idx_tc_transition); ix++)
+    for (int ix = 1; ix < n_x-(idx_tc_transition)+1; ix++)
     {
       // Scale factor
       const double a = exp(x_array_after_tc[ix]);
@@ -162,19 +155,19 @@ void Perturbations::integrate_perturbations(){
       const double dtaudx = rec->dtaudx_of_x(x_array_after_tc[ix]);
 
       // Scalar quantities
-      delta_cdm_array_2D.at(ix+idx_tc_transition).at(ik) = y_after_tc_solutions.at(ix).at(Constants.ind_deltacdm);
-      v_cdm_array_2D.at(ix+idx_tc_transition).at(ik)     = y_after_tc_solutions.at(ix).at(Constants.ind_vcdm);
-      delta_b_array_2D.at(ix+idx_tc_transition).at(ik)   = y_after_tc_solutions.at(ix).at(Constants.ind_deltab);
-      v_b_array_2D.at(ix+idx_tc_transition).at(ik)       = y_after_tc_solutions.at(ix).at(Constants.ind_vb);
-      Phi_array_2D.at(ix+idx_tc_transition).at(ik)       = y_after_tc_solutions.at(ix).at(Constants.ind_Phi);
+      delta_cdm_array_2D.at(ix-1+idx_tc_transition).at(ik) = y_after_tc_solutions.at(ix).at(Constants.ind_deltacdm);
+      v_cdm_array_2D.at(ix-1+idx_tc_transition).at(ik)     = y_after_tc_solutions.at(ix).at(Constants.ind_vcdm);
+      delta_b_array_2D.at(ix-1+idx_tc_transition).at(ik)   = y_after_tc_solutions.at(ix).at(Constants.ind_deltab);
+      v_b_array_2D.at(ix-1+idx_tc_transition).at(ik)       = y_after_tc_solutions.at(ix).at(Constants.ind_vb);
+      Phi_array_2D.at(ix-1+idx_tc_transition).at(ik)       = y_after_tc_solutions.at(ix).at(Constants.ind_Phi);
       
       // Multipoles
-      Theta0_array_2D.at(ix+idx_tc_transition).at(ik)    = y_after_tc_solutions.at(ix).at(Constants.ind_start_theta);
-      Theta1_array_2D.at(ix+idx_tc_transition).at(ik)    = y_after_tc_solutions.at(ix).at(Constants.ind_start_theta+1);
-      Theta2_array_2D.at(ix+idx_tc_transition).at(ik)    = y_after_tc_solutions.at(ix).at(Constants.ind_start_theta+2);
+      Theta0_array_2D.at(ix-1+idx_tc_transition).at(ik)    = y_after_tc_solutions.at(ix).at(Constants.ind_start_theta);
+      Theta1_array_2D.at(ix-1+idx_tc_transition).at(ik)    = y_after_tc_solutions.at(ix).at(Constants.ind_start_theta+1);
+      Theta2_array_2D.at(ix-1+idx_tc_transition).at(ik)    = y_after_tc_solutions.at(ix).at(Constants.ind_start_theta+2);
       // Psi not dynamical so not in ODE solution.
-      Psi_array_2D.at(ix+idx_tc_transition).at(ik)       = - Phi_array_2D.at(ix+idx_tc_transition).at(ik)
-        - 12.0*H_0_squared/(ck_squared*a_squared)*OmegaR0*Theta2_array_2D.at(ix+idx_tc_transition).at(ik);
+      Psi_array_2D.at(ix-1+idx_tc_transition).at(ik)       = - Phi_array_2D.at(ix-1+idx_tc_transition).at(ik)
+        - 12.0*H_0_squared/(ck_squared*a_squared)*OmegaR0*Theta2_array_2D.at(ix-1+idx_tc_transition).at(ik);
     }
     // End storing tight couple data
     //////////////////////////////////////////////////////////////////////////////
@@ -498,8 +491,8 @@ int Perturbations::rhs_full_ode(double x, double k, const double *y, double *dyd
       dThetadx[l] -= dtaudx*Theta[2]/10.0;
     }
   }
-  dThetadx[n_ell_theta] = ck_over_H_p*Theta[n_ell_theta-1]
-  + Theta[n_ell_theta]*(dtaudx - Constants.c*(n_ell_theta+1.0)/(H_p*cosmo->eta_of_x(x)));
+  dThetadx[n_ell_theta-1] = ck_over_H_p*Theta[n_ell_theta-2]
+  + Theta[n_ell_theta-1]*(dtaudx - Constants.c*(n_ell_theta-1+1.0)/(H_p*cosmo->eta_of_x(x)));
 
 
   // SET: Photon polarization multipoles (Theta_p_ell)
