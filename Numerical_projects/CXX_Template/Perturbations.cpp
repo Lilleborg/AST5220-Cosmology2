@@ -103,7 +103,7 @@ void Perturbations::integrate_perturbations(){
     auto y_after_tc_solutions = ODE_after_tc.get_data();
 
     //////////////////////////////////////////////////////////////////////////////
-    // Store values from tc at start of 2D vectors, using .at() for out of bounds check
+    // Store values from tc at start of 2D vectors
     // Constants used in the expressions
     const double ck = Constants.c*k;
     const double ck_squared = ck*ck;
@@ -111,53 +111,51 @@ void Perturbations::integrate_perturbations(){
     for (int ix = 0; ix < idx_tc_transition; ix++)
     {
       // Scale factor
-      const double a = exp(x_array_tc.at(ix));
+      const double a = exp(x_array_tc[ix]);
       const double a_squared = a*a;
-      const double ck_over_H_p = ck/cosmo->Hp_of_x(x_array_tc.at(ix));
-      const double dtaudx = rec->dtaudx_of_x(x_array_tc.at(ix));
+      const double ck_over_H_p = ck/cosmo->Hp_of_x(x_array_tc[ix]);
+      const double dtaudx = rec->dtaudx_of_x(x_array_tc[ix]);
 
       // Scalar quantities
-      delta_cdm_array_2D.at(ix).at(ik) = y_tc_solutions.at(ix).at(Constants.ind_deltacdm_tc);
-      v_cdm_array_2D.at(ix).at(ik)     = y_tc_solutions.at(ix).at(Constants.ind_vcdm_tc);
-      delta_b_array_2D.at(ix).at(ik)   = y_tc_solutions.at(ix).at(Constants.ind_deltab_tc);
-      v_b_array_2D.at(ix).at(ik)       = y_tc_solutions.at(ix).at(Constants.ind_vb_tc);
-      Phi_array_2D.at(ix).at(ik)       = y_tc_solutions.at(ix).at(Constants.ind_Phi_tc);
+      delta_cdm_array_2D[ix][ik] = y_tc_solutions[ix][Constants.ind_deltacdm_tc];
+      v_cdm_array_2D[ix][ik]     = y_tc_solutions[ix][Constants.ind_vcdm_tc];
+      delta_b_array_2D[ix][ik]   = y_tc_solutions[ix][Constants.ind_deltab_tc];
+      v_b_array_2D[ix][ik]       = y_tc_solutions[ix][Constants.ind_vb_tc];
+      Phi_array_2D[ix][ik]       = y_tc_solutions[ix][Constants.ind_Phi_tc];
       
       // Multipoles
-      Theta0_array_2D.at(ix).at(ik)    = y_tc_solutions.at(ix).at(Constants.ind_start_theta_tc);
-      Theta1_array_2D.at(ix).at(ik)    = y_tc_solutions.at(ix).at(Constants.ind_start_theta_tc+1);
-      Theta2_array_2D.at(ix).at(ik)    = -20.0*ck_over_H_p/(45.0*dtaudx)*Theta1_array_2D.at(ix).at(ik);
+      Theta0_array_2D[ix][ik]    = y_tc_solutions[ix][Constants.ind_start_theta_tc];
+      Theta1_array_2D[ix][ik]    = y_tc_solutions[ix][Constants.ind_start_theta_tc+1];
+      Theta2_array_2D[ix][ik]    = -20.0*ck_over_H_p/(45.0*dtaudx)*Theta1_array_2D[ix][ik];
       // Psi not dynamical so not in ODE solution.
-      Psi_array_2D.at(ix).at(ik)       = - Phi_array_2D.at(ix).at(ik)
-        - 12*H_0_squared/(ck_squared*a_squared)*OmegaR0*Theta2_array_2D.at(ix).at(ik);
+      Psi_array_2D[ix][ik]       = - Phi_array_2D[ix][ik]
+        - 12*H_0_squared/(ck_squared*a_squared)*OmegaR0*Theta2_array_2D[ix][ik];
     }
     // End storing tight couple data
     //////////////////////////////////////////////////////////////////////////////
 
     //////////////////////////////////////////////////////////////////////////////
-    // Store values from after tc at end of 2D vectors, using .at() for out of bounds check
+    // Store values from after tc at end of 2D vectors
     for (int ix = 1; ix < n_x-(idx_tc_transition)+1; ix++)
     {
       // Scale factor
       const double a = exp(x_array_after_tc[ix]);
       const double a_squared = a*a;
-      const double ck_over_H_p = ck/cosmo->Hp_of_x(x_array_after_tc[ix]);
-      const double dtaudx = rec->dtaudx_of_x(x_array_after_tc[ix]);
 
       // Scalar quantities
-      delta_cdm_array_2D.at(ix-1+idx_tc_transition).at(ik) = y_after_tc_solutions.at(ix).at(Constants.ind_deltacdm);
-      v_cdm_array_2D.at(ix-1+idx_tc_transition).at(ik)     = y_after_tc_solutions.at(ix).at(Constants.ind_vcdm);
-      delta_b_array_2D.at(ix-1+idx_tc_transition).at(ik)   = y_after_tc_solutions.at(ix).at(Constants.ind_deltab);
-      v_b_array_2D.at(ix-1+idx_tc_transition).at(ik)       = y_after_tc_solutions.at(ix).at(Constants.ind_vb);
-      Phi_array_2D.at(ix-1+idx_tc_transition).at(ik)       = y_after_tc_solutions.at(ix).at(Constants.ind_Phi);
+      delta_cdm_array_2D[ix-1+idx_tc_transition][ik] = y_after_tc_solutions[ix][Constants.ind_deltacdm];
+      v_cdm_array_2D[ix-1+idx_tc_transition][ik]     = y_after_tc_solutions[ix][Constants.ind_vcdm];
+      delta_b_array_2D[ix-1+idx_tc_transition][ik]   = y_after_tc_solutions[ix][Constants.ind_deltab];
+      v_b_array_2D[ix-1+idx_tc_transition][ik]       = y_after_tc_solutions[ix][Constants.ind_vb];
+      Phi_array_2D[ix-1+idx_tc_transition][ik]       = y_after_tc_solutions[ix][Constants.ind_Phi];
       
       // Multipoles
-      Theta0_array_2D.at(ix-1+idx_tc_transition).at(ik)    = y_after_tc_solutions.at(ix).at(Constants.ind_start_theta);
-      Theta1_array_2D.at(ix-1+idx_tc_transition).at(ik)    = y_after_tc_solutions.at(ix).at(Constants.ind_start_theta+1);
-      Theta2_array_2D.at(ix-1+idx_tc_transition).at(ik)    = y_after_tc_solutions.at(ix).at(Constants.ind_start_theta+2);
+      Theta0_array_2D[ix-1+idx_tc_transition][ik]    = y_after_tc_solutions[ix][Constants.ind_start_theta];
+      Theta1_array_2D[ix-1+idx_tc_transition][ik]    = y_after_tc_solutions[ix][Constants.ind_start_theta+1];
+      Theta2_array_2D[ix-1+idx_tc_transition][ik]    = y_after_tc_solutions[ix][Constants.ind_start_theta+2];
       // Psi not dynamical so not in ODE solution.
-      Psi_array_2D.at(ix-1+idx_tc_transition).at(ik)       = - Phi_array_2D.at(ix-1+idx_tc_transition).at(ik)
-        - 12.0*H_0_squared/(ck_squared*a_squared)*OmegaR0*Theta2_array_2D.at(ix-1+idx_tc_transition).at(ik);
+      Psi_array_2D[ix-1+idx_tc_transition][ik]       = - Phi_array_2D[ix-1+idx_tc_transition][ik]
+        - 12.0*H_0_squared/(ck_squared*a_squared)*OmegaR0*Theta2_array_2D[ix-1+idx_tc_transition][ik];
     }
     // End storing tight couple data
     //////////////////////////////////////////////////////////////////////////////
@@ -170,10 +168,10 @@ void Perturbations::integrate_perturbations(){
   {
     for (int ix = 0; ix < n_x-1; ix++)
     {
-      if (Theta0_array_2D.at(ix).at(ik) == Theta0_array_2D.at(ix+1).at(ik))
+      if (Theta0_array_2D[ix][ik] == Theta0_array_2D[ix+1][ik])
       {
         printf("Duplciate value in 2D array, ix: %d, Theta0(ix): %e, Theta0(ix+1): %e\n"\
-          ,ix,Theta0_array_2D.at(ix).at(ik),Theta0_array_2D.at(ix+1).at(ik));
+          ,ix,Theta0_array_2D[ix][ik],Theta0_array_2D[ix+1][ik]);
       }
     }
   }
@@ -610,7 +608,7 @@ double Perturbations::get_Source_T(const double x, const double k) const{
 //   return SE_spline(x,k);
 // }
 double Perturbations::get_Theta(const double x, const double k, const int ell) const{
-  return vector_of_Theta_splines.at(ell)(x,k);
+  return vector_of_Theta_splines[ell](x,k);
 }
 // double Perturbations::get_Theta_p(const double x, const double k, const int ell) const{
 //   return Theta_p_spline[ell](x,k);
