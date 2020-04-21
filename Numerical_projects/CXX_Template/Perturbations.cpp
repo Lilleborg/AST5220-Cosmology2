@@ -44,15 +44,13 @@ void Perturbations::integrate_perturbations(){
   Vector2D Theta1_array_2D    (n_x,Vector(n_k));
   Vector2D Theta2_array_2D    (n_x,Vector(n_k));
 
-  Utils::StartTiming("integrateperturbation");
 
   // Cosmological parameters
   const double H_0         = cosmo->get_H0();
   const double H_0_squared = H_0*H_0;
   const double OmegaR0     = cosmo->get_OmegaR();
 
-  // Debugging
-  // bool use_verbose = true;
+  Utils::StartTiming("integrateperturbation");
   
   // Loop over all wavenumbers
   // #pragma omp parallel for schedule(dynamic, 1)
@@ -92,15 +90,7 @@ void Perturbations::integrate_perturbations(){
     //===================================================================
     // Set up array for after tight coupling
     Vector x_array_after_tc = Utils::linspace(x_end_tc,x_end,n_x-idx_tc_transition+1);
-    if (x_array_tc.back() == x_array_after_tc[0])
-    {
-      printf("Duplicate x-value before and after tc, %e, index %d\n",x_array_tc.back(),x_array_tc.size());
-    }
 
-    if (x_array_tc.size()+x_array_after_tc.size() != n_x)
-    {
-      printf("number of points in x arrays before and after tc not equal max points: %d, nx: %d\n",int(x_array_tc.size()+x_array_after_tc.size()),n_x);
-    }
     // The full ODE system after tight couping
     // Set up initial conditions (y_tc_end is the solution at the end of tight coupling)
     ODESolver ODE_after_tc;
@@ -576,20 +566,20 @@ void Perturbations::compute_source_functions(){
 // The time when tight coupling end and the index of that x-value
 //====================================================
 std::pair<double,int> Perturbations::get_tight_coupling_time_and_index(const double k) const{
-  
+
   double tau_prime;
   for (int i = 0; i < n_x; i++)
   {
     // dtaudx always negative, instead of using absolute value just force it to be positive
     tau_prime = -rec->dtaudx_of_x(x_array_full[i]);
-    if (tau_prime < 10.0 || tau_prime < 10.0*k*Constants.c/cosmo->Hp_of_x(x_array_full[i]) || rec->Xe_of_x(x_array_full[i]) <0.99)
+    if (tau_prime < 10.0 || tau_prime < 10.0*k*Constants.c/cosmo->Hp_of_x(x_array_full[i]) || rec->Xe_of_x(x_array_full[i]) < 0.99)
     {
       return std::pair<double,int>(x_array_full[i-1],int(i-1));
     }
   }
   std::cout << "@@@@@@@@@@@@@@@@@@@@@@@@@@@@\nDidn't find tight couple end time!\n"
-    "Returning x_1700!\n@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n";
-  return std::pair<double,int>(x_1700,idx_x1700);
+    "Returning x matching Xe < 0.99!\n@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n";
+  return std::pair<double,int>(x_start_recombination,id_x_start_recombination);
 }
 
 double Perturbations::get_delta_cdm(const double x, const double k) const{
