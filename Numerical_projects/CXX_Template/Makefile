@@ -7,9 +7,11 @@ CC = g++ -std=c++17
 
 # Paths to GSL library
 INC  = -I/Users/jakobs/c++_stuff/gsl-2.6/include
+# INC += -I/usr/local/include
 #INC += -I/Users/jakobs/miniconda3/include/python3.7m
 #INC += -I/usr/local/include/python2.7
 LIBS = -L/Users/jakobs/c++_stuff/gsl-2.6/lib -lgsl -lgslcblas
+# LIBS += -L/usr/local/lib
 #LIBS += -L/Users/jakobs/miniconda3/include/python3.7m# -lpython3.7m
 
 #=======================================================
@@ -18,7 +20,8 @@ LIBS = -L/Users/jakobs/c++_stuff/gsl-2.6/lib -lgsl -lgslcblas
 OPTIONS = 
 
 # Add bounds checking
-OPTIONS += -D_GLIBCXX_DEBUG
+# OPTIONS += -D_GLIBCXX_DEBUG
+OPTIONS += -fsanitize=address
 
 # Show warnings if atempting to evaluate a spline out of bounds
 OPTIONS += -D_SPLINE_WARNINGS_ON
@@ -28,7 +31,7 @@ OPTIONS += -D_SPLINE_WARNINGS_ON
 
 # Add OpenMP parallelization
 # OPTIONS += -D_USEOPEMP
-# CC += -fopenmp
+# CC += -Xpreprocessor -fopenmp
 
 # Add bessel function library (otherwise use the GSL one)
 #OPTIONS += -D_COMPLEX_BESSEL
