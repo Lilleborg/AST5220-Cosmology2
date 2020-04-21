@@ -81,16 +81,20 @@ int main(int argc, char **argv){
   pert.solve();
   
   // Vector k_values = {0.1,0.5,0.01,0.05,0.001,0.005};
+  // Vector k_values = Utils::logspace(log(Constants.k_min*Constants.Mpc),log(Constants.k_max*Constants.Mpc),6);
+  // k_values = Utils::linspace(Constants.k_min*Constants.Mpc,Constants.k_max*Constants.Mpc,6);
+
   Vector k_values = {0.1,0.01,0.001};
 
   std::ofstream fp_k_values(data_path + "perturbations_k_values.txt");
   fp_k_values << "k_values per Mpc:\n";
   for (auto k_value:k_values)
   {
-    fp_k_values << k_value << "\n";
+    std::cout << k_value << std::endl;
+    fp_k_values << std::fixed <<  k_value << "\n";
 
     std::ostringstream stream_kvales;
-    stream_kvales << std::fixed << std::setprecision(3);
+    stream_kvales << std::fixed << std::setprecision(5);
     stream_kvales << k_value;
     std::string filename = "perturbations_k" + stream_kvales.str() + ".txt";
     pert.output(k_value/Constants.Mpc, data_path + filename);
