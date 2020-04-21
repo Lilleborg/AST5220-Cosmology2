@@ -28,7 +28,7 @@ class Perturbations{
     Vector k_array = Utils::logspace(log(k_min),log(k_max),n_k);
     
     // Start and end of the time-integration
-    const int n_x        = 1000;
+    const int n_x        = 10000;
     const double x_start = Constants.x_start;
     const double x_end   = Constants.x_end;
     // Set up logarithmic scale factor
@@ -46,9 +46,11 @@ class Perturbations{
     Spline2D delta_b_spline{"delta_b_spline"};
     Spline2D v_cdm_spline{"v_cdm_spline"};
     Spline2D v_b_spline{"v_b_spline"};
-    Spline2D Phi_spline{"Phi_spline"};
+    Spline2D dv_b_dx_spline{"dv_b_dx_spline"};
     Spline2D Pi_spline{"Pi_spline"};
     Spline2D Psi_spline{"Psi_spline"};
+    Spline2D Phi_spline{"Phi_spline"};
+    Spline2D dPhi_dx_spline{"dPhi_dx_spline"};
    
     // Splines of source functions (ST for temperature; SE for polarization)
     Spline2D ST_spline{"ST_spline"};
@@ -59,8 +61,10 @@ class Perturbations{
     Spline2D Theta1_spline{"Theta1_spline"};
     Spline2D Theta2_spline{"Theta2_spline"};
     std::vector<Spline2D> vector_of_Theta_splines;
-    // std::vector<Spline2D> Theta_p_spline;
-    // std::vector<Spline2D> Nu_spline;
+    Spline2D dTheta0_dx_spline{"Theta0_spline"};
+    Spline2D dTheta1_dx_spline{"Theta1_spline"};
+    std::vector<Spline2D> vector_of_dTheta_dx_splines;
+
     
     //==========================================================
     // [1] Tight coupling ODE system
