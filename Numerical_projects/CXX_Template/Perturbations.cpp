@@ -657,52 +657,13 @@ double Perturbations::get_Pi(const double x, const double k) const{
 double Perturbations::get_Source_T(const double x, const double k) const{
   return ST_spline(x,k);
 }
-// double Perturbations::get_Source_E(const double x, const double k) const{
-//   return SE_spline(x,k);
-// }
 double Perturbations::get_Theta(const double x, const double k, const int ell) const{
   return vector_of_Theta_splines[ell](x,k);
 }
-// double Perturbations::get_Theta_p(const double x, const double k, const int ell) const{
-//   return Theta_p_spline[ell](x,k);
-// }
-// double Perturbations::get_Nu(const double x, const double k, const int ell) const{
-//   return Nu_spline[ell](x,k);
-// }
-
-// Vector Perturbations::set_up_x_array_resolution() const{
-//   // Find x-value when recombination is finished following Calin
-//   Vector x_array_linspaced = Utils::linspace(x_start,x_end,n_x);
-//   bool passed_x_star = false;
-//   for (int i = 0; i < n_x; i++)
-//   {
-    
-//   }
-  
-  
-//   Vector x_array_recombination_focus(n_x);
-//   x_array_recombination_focus[0] = x_start;
-//   int n_x_before = 300;
-//   double const dx_before = (x_1700-x_start)/double(n_x_before-1);
-//   double dx = dx_before;
-  
-
-//   // int nx_test = 100;
-//   // Vector x_array_before = Utils::linspace(x_start,x_1700,nx_test/10);
-//   // x_array_before.pop_back(); // Removes last entry as will be inserted later
-//   // Vector x_array_during = Utils::linspace(x_1700,x_1700*0.9,nx_test/10*8);
-//   // x_array_during.pop_back();
-//   // Vector x_array_after  = Utils::linspace(x_1700*0.9,x_end,nx_test/10);
-//   // x_array = x_array_before;
-//   // x_array.insert(x_array.end(), x_array_during.begin(), x_array_during.end());
-//   // x_array.insert(x_array.end(), x_array_after.begin(), x_array_after.end());
-//   return x_array;
-// }
 
 //====================================================
 // Print some useful info about the class
 //====================================================
-
 void Perturbations::info() const{
   std::cout << "\n";
   std::cout << "Info about perturbations class:\n";
