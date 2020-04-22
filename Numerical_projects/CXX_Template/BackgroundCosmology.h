@@ -32,12 +32,11 @@ class BackgroundCosmology{
     double x_start = Constants.x_start_cosmo;
     double x_end   = Constants.x_end_cosmo;
     int npts = 10000;
-
-    // Splines to be made
-    Spline eta_of_x_spline{"eta"};
  
   public:
-
+    // Splines to be made
+    Spline eta_of_x_spline{"eta"};
+    
     // Constructors 
     BackgroundCosmology() = delete;
     BackgroundCosmology(

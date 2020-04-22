@@ -73,7 +73,7 @@ double BackgroundCosmology::H0_over_H_squared(double x) const{
   return H0*H0/H_temp/H_temp;
 }
 
-  // Returns a pair with components exp(3*x) and exp(4*x)
+// Returns a pair with components exp(3*x) and exp(4*x)
 Doublepair BackgroundCosmology::exp_of_3x_and_4x(double x) const{
   // From testing this method performs better than calling the exponential functions
   // with 3*x and 4*x as arguments. For consistent code this method is used each time
