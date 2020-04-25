@@ -30,12 +30,12 @@ extern struct ConstantsAndUnits {
   const double eV          = 1.60217653e-19 * J;		      // Electronvolt
   
   // Physical constants    
-  const double k_b         = 1.38064852e-23 * J/K;	      // Bolzmanns constant
+  const double k_b         = 1.38064852e-23 * J/K;	      // Boltzmann's constant
   const double m_e         = 9.10938356e-31 * kg;	        // Mass of electron
   const double m_H         = 1.6735575e-27 * kg;	        // Mass of hydrogen atom
   const double c           = 2.99792458e8 * m/s;	        // Speed of light
   const double G           = 6.67430e-11 * N*m*m/(kg*kg);	// Gravitational constant
-  const double hbar        = 1.054571817e-34 * J*s;		    // Reduced Plancks constant
+  const double hbar        = 1.054571817e-34 * J*s;		    // Reduced Planck's constant
   const double sigma_T     = 6.6524587158e-29 * m*m;		  // Thomas scattering cross-section
   const double lambda_2s1s = 8.227 / s;                   // Transition time is
   const double H0_over_h   = 100 * km/s/Mpc;              // H0 / h
@@ -48,10 +48,12 @@ extern struct ConstantsAndUnits {
   const double k_max = 0.3     / Mpc;
   
   // Min and max x-value
-  const double x_start = - 25;
-  const double x_end   = 3.0;
+  const double x_start_cosmo = -20; // Value used in milestone1 to deal with boundary
+  const double x_end_cosmo   = 4;   // Value used in milestone1 to deal with boundary
+  const double x_start = -15;
+  const double x_end   = 2;
 
-  // Include polarization and/or neutrinos?
+  // Don't include polarization and/or neutrinos so set these to false
   const bool polarization  = false;
   const bool neutrinos     = false;
 
@@ -91,7 +93,7 @@ namespace Utils {
   
   // Find the x-value such that y(x) = y_value
   double binary_search_for_value(
-      Spline &y, 
+      Spline const &y, 
       double y_value, 
       std::pair<double,double> xrange = {0.0,0.0}, 
       double epsilon = 1e-7);
@@ -105,6 +107,9 @@ namespace Utils {
   
   // Generate an array with n equispaced points from xmin to xmax
   std::vector<double> linspace(double xmin, double xmax, int num);
+
+  // Generate an array with n logspaced points from xmin to xmax, default base e
+  std::vector<double> logspace(double xmin, double xmax, int num, double base = exp(1));
   
   // Take the derivative of a function (simple 2pt stencil)
   std::vector<double> derivative(std::vector<double> &x, std::vector<double> &f);

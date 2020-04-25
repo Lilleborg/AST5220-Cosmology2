@@ -45,7 +45,7 @@ namespace Utils{
 
   // Find a value in a spline
   double binary_search_for_value(
-      Spline &y, 
+      Spline const &y, 
       double y_value, 
       std::pair<double,double> xrange, 
       double epsilon){
@@ -147,6 +147,17 @@ namespace Utils{
     return res;
   }
 
+  // Function to generate a logspace with default base e
+  std::vector<double> logspace(double min_exponent, double max_exponent, int num, double base){
+    std::vector<double> res(num);
+    std::vector<double> exponents = linspace(min_exponent,max_exponent,num);
+    for (int i = 0; i < num; i++)
+    {
+      res[i] = pow(base,exponents[i]); // using pow here.. not ment to be called often
+    }
+    return res;
+  }
+
   // Function to get the spherical Bessel function j_n(x)
   double j_ell(const int n, const double x){
     if(x==0.0) return n == 0 ? 1.0 : 0.0;
@@ -163,6 +174,31 @@ namespace Utils{
     return gsl_sf_bessel_Jn(n, x);
 #endif
   }
+
+  // // Function to get the spherical Bessel function j_n(x)
+  //   double j_ell(const int n, const double x){
+  //     if(x==0.0) return n == 0 ? 1.0 : 0.0;
+
+  // #if ((defined(_MSVC_LANG) && _MSVC_LANG >= 201703L) || (__cplusplus >= 201703L))
+  //     // If you have a c++17 compiler you can use this
+  //     return std::sph_bessel(n, x);
+  // #else
+  //     // Otherwise lets use GSL with approximation for x << n to prevent 
+  //     // underflow issues in that implementation for large n and small x
+  //     // std::cout << "Using GSL \n";
+  //     if(n > 100 && x < 0.2 * n) return 0.0;
+  //     return gsl_sf_bessel_jl(n, x);
+  // #endif
+  //   }
+  //   double J_n(const int n, const double x){
+  // #if ((defined(_MSVC_LANG) && _MSVC_LANG >= 201703L) || (__cplusplus >= 201703L))
+  //     // If you have a c++17 compiler you can use this
+  //     return std::cyl_bessel(n, x);
+  // #else
+  //     if(n > 100 && x < 0.2 * n) return 0.0;
+  //     return gsl_sf_bessel_Jn(n, x);
+  // #endif
+  //   }
 
   // 2-point stencil with zero derivative at the end-points
   std::vector<double> derivative(std::vector<double> &x, std::vector<double> &f){

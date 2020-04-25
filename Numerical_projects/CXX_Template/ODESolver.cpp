@@ -95,7 +95,7 @@ void ODESolver::solve(
   for(int i = 1; i < num_x_points; i++){
     const double xnew = xarr[i];
 
-    if(verbose){
+    if(verbose && i%10==0){
       std::cout << "ODESolver step " << std::setw(5) << i << " / " << num_x_points-1 << " x: [" << std::setw(10) << xnew << "] ";
     }
 
@@ -106,7 +106,7 @@ void ODESolver::solve(
       throw ODE_ERROR;
     }
 
-    if(verbose){
+    if(verbose && i%10==0){
       std::cout << "y: [";
       for(auto &ycomp : y) std::cout << " " << std::setw(10) << ycomp << " ";
       std::cout << "]" << std::endl;

@@ -49,6 +49,7 @@
 //===================================================
 
 // The fiducial stepper if not provided by the user
+// Changed fiducial stepper to rkf45:
 #define _FIDUCIAL_STEPPER gsl_odeiv2_step_rk4
 
 using ODEFunctionPointer         = int (*)(double, const double[], double [], void*);

@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 import sys
-sys.path.append('./../Milestone1/')
+sys.path.append('./../../Milestone1/python')
 from plotter_Milestone1 import color_each_regime
 
 # Plot styling
@@ -12,14 +12,14 @@ mpl.rc('text', usetex=False)
 
 # Load data
 x_array, Xe, Xe_saha, ne, tau, tau_deriv, tau_2deriv, g, g_deriv, g_2deriv =\
-    np.loadtxt('../data/recombination.txt', unpack=True)
+    np.loadtxt('../../data/recombination.txt', unpack=True)
 
 print('\nTodays value of Xe, full solution:')
 print('Xe(x=0) = {:.5e}'.format(Xe[np.argmin(np.abs(x_array-1))]))
 
 # Data handling and some numerical testing of g_tilde
 # xstar and xrec read from file
-x_times, z_times = np.loadtxt('../data/recombination_times.txt', unpack=True, usecols=(1, 3))
+x_times, z_times = np.loadtxt('../../data/recombination_times.txt', unpack=True, usecols=(1, 3))
 xstar = x_times[0]
 xrec = x_times[1]
 xrec_saha = x_times[2]
@@ -135,18 +135,21 @@ Xeax[1].set_xlim(*zoomed_xlim)
 handles, labels = Xeax[0].get_legend_handles_labels()
 Xelegend = Xefig.legend(handles+neplot, labels+['\n'+'$n_e$'], bbox_to_anchor=(1.0, 0.5), loc='center left')
 Xetitle = Xefig.suptitle('Fraction of free electrons and the number density')
-Xefig.savefig('./figs/free_electrons.pdf', bbox_extra_artists=(Xelegend, Xetitle), bbox_inches='tight')
+print('Saving ../figs/free_electrons.pdf')
+Xefig.savefig('../figs/free_electrons.pdf', bbox_extra_artists=(Xelegend, Xetitle), bbox_inches='tight')
 
 # Tau
 tauaxes[1].set_xlim(*zoomed_xlim)
 handles, labels = tauaxes[0].get_legend_handles_labels()
 taulegend = taufig.legend(handles+g_tau_plot, labels + ['\n'+r'$\tilde{g}$'], bbox_to_anchor=(1.0, 0.5), loc='center left')
 tautitle = taufig.suptitle('Optical depth, its derivatives and the visibility function')
-taufig.savefig('./figs/optical_depth.pdf', bbox_extra_artists=(taulegend, tautitle), bbox_inches='tight')
+print('Saving ../figs/optical_depth.pdf')
+taufig.savefig('../figs/optical_depth.pdf', bbox_extra_artists=(taulegend, tautitle), bbox_inches='tight')
 
 # g_tilde
 gax[1].set_xlim(*zoomed_xlim)
 handles, labels = gax[0].get_legend_handles_labels()
 glegend = gfig.legend(handles, labels, bbox_to_anchor=(1.0, 0.5), loc='center left')
 gtitle = gfig.suptitle('The visibility function and its scaled derivatives')
-gfig.savefig('./figs/visibility_functions.pdf', bbox_extra_artists=(glegend, gtitle), bbox_inches='tight')
+print('Saving ../figs/visibility_functions.pdf')
+gfig.savefig('../figs/visibility_functions.pdf', bbox_extra_artists=(glegend, gtitle), bbox_inches='tight')
