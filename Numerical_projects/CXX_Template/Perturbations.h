@@ -23,7 +23,7 @@ class Perturbations{
     const int n_k        = 100; //use only one k-value to begin with   was: 100;
     const double k_min   = Constants.k_min;
     const double k_max   = Constants.k_max;
-    // Set up logarithmic (base e as for logarithmic scale factor) 
+    // Set up logarithmic (using base e as for logarithmic scale factor) 
     // spaced k-values using own logspace from Utils
     Vector k_array = Utils::logspace(log(k_min),log(k_max),n_k);
     
