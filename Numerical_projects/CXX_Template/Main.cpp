@@ -80,14 +80,12 @@ int main(int argc, char **argv){
   pert.info();
   pert.solve();
   
-  Vector k_values = {0.3,0.1,0.01,0.001,0.0005};
-  // Vector k_values = Utils::logspace(log(Constants.k_min*Constants.Mpc),log(Constants.k_max*Constants.Mpc),6);
-  // k_values = Utils::linspace(Constants.k_min*Constants.Mpc,Constants.k_max*Constants.Mpc,6);
-
-  // Vector k_values = {0.1,0.01,0.001};
-
+  // Experimented with different values and found these to present the different regimes
+  Vector k_values = {0.3,0.1,0.013,0.007,0.001,0.0005};
+  
   std::ofstream fp_k_values(data_path + "perturbations_k_values.txt");
   fp_k_values << "k_values per Mpc: | k_values: | horizon entry (x):\n";
+  std::cout << "\nWriting output to " << data_path << " with following k-values per Mpc\n";
   for (auto k_value:k_values)
   {
     std::cout << k_value << std::endl;
@@ -105,6 +103,7 @@ int main(int argc, char **argv){
     pert.output(k_value/Constants.Mpc, data_path + filename);
   }
   fp_k_values.close();
+  std::cout << std::endl;
   
   // Remove when module is completed
   return 0;
