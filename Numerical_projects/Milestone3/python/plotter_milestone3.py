@@ -10,7 +10,7 @@ plt.style.use('bmh')
 mpl.rc('font', family='serif', size=15)
 mpl.rc('text', usetex=False)
 
-# Load data
+# Load perturbation data
 k_values, _, horizon_entry = np.loadtxt("../../data/perturbations_k_values.txt",skiprows=1,delimiter="|",unpack=True)
 quantities = ["x_array", "delta_cdm", "delta_b", "v_cdm", "v_b", "Phi", "Psi",\
     "Pi","Theta0", "Theta1", "Theta2","Source_T","Source_T5","Source_T50","Source_T500"]
@@ -20,10 +20,15 @@ for k_value in k_values:
     for i,q in enumerate(quantities):
         data[q].append(loaded_data[:,i])
 
-    
+# Load recombination times
+x_times, z_times = np.loadtxt('../../data/recombination_times.txt', unpack=True, usecols=(1, 3))
+xstar = round(x_times[0],2)
+xrec = x_times[1]
+xend = x_times[4]
+
 x_array = data["x_array"][0]
 x_array_ticks = np.append(np.linspace(x_array.min(), x_array.max(), 6), 0)
-x_array_ticks = np.array(x_array_ticks,dtype=int)
+x_array_ticks = np.append(np.array(x_array_ticks,dtype=int), xstar)
 all_axes = []
 
 # Matter perturbations
@@ -71,25 +76,28 @@ potential_title = potential_fig.suptitle("Gravitational potentials")
 potential_ax.set_ylabel(r"$\Phi,\, \Psi$ in dashed")
 all_axes.append(potential_ax)
 
-# # Source function, not used in this milestone
-SourceT_fig, SourceT_ax = plt.subplots()
-SourceT_fig.suptitle(r'Temperature Source function')
-for ik,k in enumerate(k_values):
-    SourceT_ax.plot(x_array,data["Source_T"][ik],label=r'$k = {:g}$'.format(k)+r'$/\rm{Mpc}$')
-all_axes.append(SourceT_ax)
+# # # Source function, not used in this milestone
+# SourceT_fig, SourceT_ax = plt.subplots()
+# SourceT_fig.suptitle(r'Temperature Source function')
+# for ik,k in enumerate(k_values):
+#     SourceT_ax.plot(x_array,data["Source_T"][ik],label=r'$k = {:g}$'.format(k)+r'$/\rm{Mpc}$')
+# all_axes.append(SourceT_ax)
 
-# Line of sight integrand
-los_fig, los_ax = plt.subplots()
-for ik, k in enumerate(k_values):
-    los_ax.plot(x_array[x_array<0],data["Source_T5"][ik][x_array<0])
-all_axes.append(los_ax)
+# # Line of sight integrand
+# los_fig, los_ax = plt.subplots()
+# for ik, k in enumerate(k_values):
+#     los_ax.plot(x_array[x_array<-0.9],data["Source_T5"][ik][x_array<-0.9])
+# all_axes.append(los_ax)
 
 for ax in all_axes:
     color_each_regime(ax,x_array)
     ax.margins(x=0)
     ax.set_xticks(x_array_ticks)
+    ax.set_xticklabels(x_array_ticks, rotation=25)
     for ik in range(len(k_values)):
         ax.axvline(x=horizon_entry[ik],linestyle=':',color='C{:0d}'.format(ik))
+    # Fill in recombination, using xrec and xstar, (Xe<0.5 and peak of visibility)
+    ax.axvspan(xrec,xend,alpha=0.3,color='C8')
 
 # Saving
 print("Saving ../figs/matter_pert.pdf")
@@ -98,5 +106,3 @@ print("Saving ../figs/multipole_pert.pdf")
 theta_fig.savefig("../figs/multipole_pert.pdf",bbox_extra_artists=(theta_legend,theta_title),bbox_inches='tight')
 print("Saving ../figs/potential_pert.pdf")
 potential_fig.savefig("../figs/potential_pert.pdf",bbox_extra_artists=(potential_legend,potential_title),bbox_inches='tight')
-
-plt.show()
