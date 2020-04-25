@@ -205,7 +205,7 @@ void RecombinationHistory::solve_for_optical_depth_tau(){
   Vector x_array = Utils::linspace(x_start, x_end, npts_tau);
   Vector tau_arr(npts_tau);
   Vector dtaudx_arr(npts_tau);
-  Vector vis(npts_tau);
+  Vector vis(npts_tau,0);
   Vector dvisdx_arr(npts_tau);
 
   // Set up and solve the ODE for tau
@@ -229,6 +229,8 @@ void RecombinationHistory::solve_for_optical_depth_tau(){
   // Spline the derivative array, used in the first derivative of the visibility function
   tau_deriv_of_x_spline.create(x_array,dtaudx_arr,"tau derivative");
   
+  bool vis_peaked = false;
+  bool stored_rec_end_time = false;
   for (int i = 0; i < npts_tau; i++)
   {
     tau_arr[i] = tau_data[i] - tau_data[id_x_equal_zero]; // normalise with today value
@@ -236,6 +238,21 @@ void RecombinationHistory::solve_for_optical_depth_tau(){
     // Store its first derivative using the product and chain rule
     // This way the second derivative of visibility func can be obtained from the first derivative spline
     dvisdx_arr[i] = exp(-tau_arr[i])*(dtaudx_arr[i]*dtaudx_arr[i]-ddtauddx_of_x(x_array[i]));
+
+    // Adhoc way of finding recombination end time, inspired from Calin
+    if (not stored_rec_end_time)
+    {
+      if (i>100 && vis[i] > 4.0 && vis[i]<vis[i-1] && vis_peaked == false)
+      {
+        vis_peaked = true;
+      }
+      if (vis_peaked && vis[i]<0.1)
+      {
+        x_rec_end = x_array[i];
+        stored_rec_end_time = true;
+      }
+    }
+    
   }
   
   Utils::EndTiming("opticaldepth");
@@ -244,7 +261,7 @@ void RecombinationHistory::solve_for_optical_depth_tau(){
 
   // Spline the visibility resutls
   g_tilde_of_x_spline.create(x_array,vis,"g tilde");
-  g_tilde_deriv_of_x_spline.create(x_array,dvisdx_arr,"g tilde deriv");
+  g_tilde_deriv_of_x_spline.create(x_array,dvisdx_arr,"g tilde deriv");   
 }
 
 //====================================================
@@ -252,7 +269,7 @@ void RecombinationHistory::solve_for_optical_depth_tau(){
 //====================================================
 // Get times for last scattering, in x and z
 Vector RecombinationHistory::get_time_results() const{
-  Vector res(6);
+  Vector res(7);
 
   // Using the tau spline and binary search for value method to find tau = 1
   Doublepair xrange(-10.0,-5.0);  // Range of x-value to search in
@@ -267,6 +284,9 @@ Vector RecombinationHistory::get_time_results() const{
   // Using Xe_saha_only spline to search for Xe = 0.5, the spline is log so search for log(0.5)
   res[4] = Utils::binary_search_for_value(log_Xe_of_x_spline_only_Saha,log(0.5),xrange);
   res[5] = 1/exp(res[4]) - 1;
+
+  // From adhoc way of finding recombination end time, return x_rec_end
+  res[6] = x_rec_end;
   return res;
 }
 
@@ -353,6 +373,9 @@ void RecombinationHistory::print_time_results() const{
 
   std::cout << "\nTime for transition between Saha and Peebles regime:\n";
   std::cout << "x_Peebles:  " << x_Saha_to_Peebles << "\n";
+
+  std::cout << "\nTime for recombination end:\n";
+  std::cout << "x_rec_end:  " << times[6] << "\n";
   std::cout << std::endl;
 }
 
@@ -372,7 +395,10 @@ void RecombinationHistory::save_time_results(const std::string filename) const{
   fp << "z_rec_Saha: " << times[5] << "\n";
 
   fp << "x_Peebles:  " << x_Saha_to_Peebles << " ";
-  fp << "z_Peebles:  " << 1/exp(x_Saha_to_Peebles) - 1;
+  fp << "z_Peebles:  " << 1/exp(x_Saha_to_Peebles) - 1 << "\n";
+
+  fp << "x_rec_end:  " << times[6] << " ";
+  fp << "z_rec_end:  " << 1/exp(times[6]) - 1 << " ";
   fp.close();
 }
 //====================================================

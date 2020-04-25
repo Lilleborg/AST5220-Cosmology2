@@ -88,6 +88,10 @@ class RecombinationHistory{
     double get_number_density_baryons(double x) const;
     Vector get_time_results() const;
     double Xe_of_x_Saha_approx(double x) const;
+
+    // Adhoc method for finding the time recombination ends
+    // Using later in following milestones, not perfect but im in a hurry
+    double x_rec_end;
 };
 
 #endif
