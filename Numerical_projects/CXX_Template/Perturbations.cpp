@@ -639,7 +639,7 @@ void Perturbations::info() const{
 void Perturbations::output(const double k, const std::string filename) const{
   std::ofstream fp(filename.c_str());
   fp << "k_value: " << k << "\n";
-  const int npts = 10000;
+  const int npts = 5000;
   auto x_array = Utils::linspace(x_start, x_end, npts);
   auto print_data = [&] (const double x) {
     // Using absolute value in arg, to be able to evaluate j_ell beyond x=0.
