@@ -1,0 +1,169 @@
+\documentclass[10pt,a4paper]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+
+%%%%%%%%%%% Own packages
+\usepackage[a4paper, margin=1in]{geometry}
+\usepackage{multicol}
+\usepackage{lipsum}
+\usepackage{natbib}
+
+% Header/footer
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\renewcommand{\headrulewidth}{0pt}
+
+% Footnotes at bottom of page
+\usepackage[bottom,marginal]{footmisc}
+% \setlength{\footnotemargin}{1.8em}
+
+% Maths
+\usepackage{physics}
+\usepackage{esdiff}
+\usepackage{cancel}
+\usepackage{amstext,amsbsy,amssymb,mathtools}
+\usepackage{times} 
+\usepackage{siunitx}
+\usepackage{tensor}
+
+%% Graphics
+\usepackage{caption}
+\captionsetup{margin=20pt,font=small,labelfont=bf}
+%\renewcommand{\thesubfigure}{(\alph{subfigure})} % Style: 1(a), 1(b)
+%\pagestyle{empty}
+\usepackage{graphicx} % Include figure files
+
+% Listsings and items
+\usepackage[page]{appendix}
+\usepackage[shortlabels]{enumitem}
+\setenumerate{wide,labelwidth=!, labelindent=0pt}
+\usepackage{varioref}
+\usepackage{hyperref}
+\usepackage{cleveref}
+
+% Paragraph indent and skip
+\setlength{\parindent}{2em}
+\setlength{\parskip}{1em}
+\setlength\extrarowheight{5pt}
+
+%% User units
+\DeclareSIUnit \parsec {pc}
+
+%% User commands
+\providecommand{\qwhere}
+{
+    \ensuremath{
+    ,\quad \text{where} \quad 
+    }
+}
+\providecommand{\rCDM}
+{
+    \rm{CDM}
+}
+
+\title{AST5220 Cosmology \rm{II}\\ 
+\vspace{5mm}Milestone 3 - The Evolution of Structure in the Universe}
+\author{Jakob Borg}
+%%%%%%%
+\begin{document}
+%%%%%%%
+\maketitle
+\lhead{Milestone 3 AST5220}
+\rhead{Jakobbor}
+%%%%%%%%
+
+\section{Introduction}
+\label{sec:Introduction}
+This report sums up milestone three of four in our way to compute the cosmic microwave background (CMB) power spectrum. In part one and two we've calculated the background evolution giving us the expansion history of the Universe\footnote{Milestone 1, \cite{milestone1}}, and it's ionization history giving us the optical depth and visibility function\footnote{Milestone 2, \cite{milestone2}}, all as functions of the logarithmic scale factor $x$.
+
+Now in part three we are ready to calculate how the early small perturbations set up by inflation in the photon-baryon-dark-matter fluid of the early Universe evolves from shortly after inflation until today, also as functions of $x$. The perturbations are described by the Boltzmann equations for each component, see \cref{subsec:Theory/Coupled equations}. These perturbations will behave differently on different scales, dependent on the time they become causally connected to them self, see \cref{subsec:Theory/Horizon entry}. To simplify our equations dramatically we will perform all calculations and subsequent analysis in Fourier space with wave number $k$. In Fourier space we can look at how different scales, characterized as $\lambda \propto 1/k$, evolve independently. The final goal of this project is therefore to compute two dimensional functions able to evaluate the following main physical quantities
+\begin{alignat*}{4}
+    & \text{Gravitational potentials :} &\quad& \Psi(x,k) &\quad& \Phi(x,k) &
+    \\
+    & \text{Matter perturbations :}     &\quad& \delta_{\rCDM}(x,k) &\quad& v_{\rCDM}(x,k) &
+    \\
+    &                                  &\quad& \delta_{b}(x,k) &\quad& v_{b}(x,k) &
+    \\
+    & \text{\parbox{3cm}{Photon perturbations as multipoles} :}
+                                    &\quad& \Theta_\ell(x,k) &\quad& \qfor* 0 \leq \ell \leq 8&
+\end{alignat*}%
+where \rm{CDM} and $b$ is short for cold dark matter and baryons. See \cref{subsec:Theory/Coupled equations} for a short description of the photon multipoles, following \cite{Calin} and \cite{Dodelson}.
+
+The full project can be found on GitHub, here are link to the \href{https://github.com/Lilleborg/AST5220-Cosmology2/tree/master/Numerical_projects}{projects main directory}\footnote{URL: \url{https://github.com/Lilleborg/AST5220-Cosmology2/tree/master/Numerical_projects}}. All computation and calculations are done in "C++", with the source code found \href{https://github.com/Lilleborg/AST5220-Cosmology2/tree/master/Numerical_projects/src}{here}\footnote{URL: \url{https://github.com/Lilleborg/AST5220-Cosmology2/tree/master/Numerical_projects/src}}, and the plotting is done in "Python".
+
+%  _______ _                           
+% |__   __| |                          
+%    | |  | |__   ___  ___  _ __ _   _ 
+%    | |  | '_ \ / _ \/ _ \| '__| | | |
+%    | |  | | | |  __/ (_) | |  | |_| |
+%    |_|  |_| |_|\___|\___/|_|   \__, |
+%                                __/ |
+%                               |___/ 
+\section{Theoretical Background}
+\label{sec:Theory}
+
+\subsection{The Coupled System of Equations}
+\label{subsec:Theory/Coupled equations}
+
+The photon perturbations are here directly presented in the expanded form using Legendre polynomials 
+
+    \subsubsection{Tight Coupling Regime}
+    \label{subsubsec:Theory/Tight Coupling}
+
+    \subsubsection{Initial Conditions}
+    \label{subsubsec:Theory/Initial conditions}
+
+    % Why lmax = 8:
+    \subsubsection{Line of Sight Integration}
+    \label{subsubsec:Theory/LoS Integration}
+
+\subsection{Horizon Entry}
+\label{subsec:Theory/Horizon entry}
+
+
+%  __  __      _   _               _ 
+% |  \/  |    | | | |             | |
+% | \  / | ___| |_| |__   ___   __| |
+% | |\/| |/ _ \ __| '_ \ / _ \ / _` |
+% | |  | |  __/ |_| | | | (_) | (_| |
+% |_|  |_|\___|\__|_| |_|\___/ \__,_|
+\section{Method}
+\label{sec:Method}
+
+\subsection{Solving in Two Regimes}
+\label{subsec:Method/Solving in two regimes}
+
+    \subsubsection{Two Sets of Coupled Equations}
+    \label{subsubsec:Method/Two ODE systems}
+
+    \subsubsection{Determining the Tight Coupling Regime}
+    \label{subsubsec:Method/Determine TC}
+
+    \subsubsection{Setting Initial Condtions}
+    \label{subsubsec:Method/setting initial conditions}
+
+\subsection{Creating Two Dimensional Functions}
+\label{subsec:Method/2D functions}
+
+%  _____                 _ _       
+% |  __ \               | | |      
+% | |__) |___  ___ _   _| | |_ ___ 
+% |  _  // _ \/ __| | | | | __/ __|
+% | | \ \  __/\__ \ |_| | | |_\__ \
+% |_|  \_\___||___/\__,_|_|\__|___/
+\section{Results}
+\label{sec:Results}
+
+
+%\pagebreak
+\bibliographystyle{plainnat}
+\bibliography{ref_milestone3}
+
+\clearpage
+\begin{appendices}
+    \appendix
+    \section{Should We list equations in appendix?}
+\end{appendices}
+
+\end{document}
