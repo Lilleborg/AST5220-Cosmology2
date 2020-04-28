@@ -239,7 +239,7 @@ void RecombinationHistory::solve_for_optical_depth_tau(){
     // This way the second derivative of visibility func can be obtained from the first derivative spline
     dvisdx_arr[i] = exp(-tau_arr[i])*(dtaudx_arr[i]*dtaudx_arr[i]-ddtauddx_of_x(x_array[i]));
 
-    // Adhoc way of finding recombination end time, inspired from Calin
+    // Adhoc way of finding recombination end time, inspired by Calin
     if (not stored_rec_end_time)
     {
       if (i>100 && vis[i] > 4.0 && vis[i]<vis[i-1] && vis_peaked == false)

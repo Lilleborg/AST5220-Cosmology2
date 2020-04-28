@@ -164,9 +164,13 @@ namespace Utils{
 #ifdef _COMPLEX_BESSEL
     return sp_bessel::besselJ(n+0.5, x).real() * sqrt(M_PI/(2.0*x));
 #else
+    if(n > 99 && x < 0.2 * n) return 0.0;
     return gsl_sf_bessel_jl(n, x);
 #endif
   }
+
+
+  
   double J_n(const int n, const double x){
 #ifdef _COMPLEX_BESSEL
     return sp_bessel::besselJ(n, x).real();
@@ -174,6 +178,9 @@ namespace Utils{
     return gsl_sf_bessel_Jn(n, x);
 #endif
   }
+
+  // if(n > 100 && x < 0.2 * n) return 0.0;    
+  //  return gsl_sf_bessel_Jn(n, x); 
 
   // // Function to get the spherical Bessel function j_n(x)
   //   double j_ell(const int n, const double x){
