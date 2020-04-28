@@ -34,7 +34,7 @@
 *.out
 *.app
 
-Numerical_projects/CXX_Template/cmb
+Numerical_projects/srs/cmb
 
 Numerical_projects/temporary_CXX_Template_for_milestone2/cmb
 
@@ -42,22 +42,20 @@ Numerical_projects/temporary_CXX_Template_for_milestone2/cmb
 
 *.gz
 
-Numerical_projects/.vscode/settings.json
-
 Numerical_projects/data_toy/
 
 Numerical_projects/data/
 
-Numerical_projects/CXX_Template/test_logspace.txt
+Numerical_projects/srs/test_logspace.txt
 
-Numerical_projects/CXX_Template/examples
+Numerical_projects/srs/examples
 
-Numerical_projects/CXX_Template/testing_bessel.py
+Numerical_projects/srs/testing_bessel.py
 
-Numerical_projects/CXX_Template/testing_bessel.txt
+Numerical_projects/srs/testing_bessel.txt
 
-Numerical_projects/CXX_Template/testing_logspace.py
+Numerical_projects/srs/testing_logspace.py
 
-Numerical_projects/CXX_Template/testing_x_res.py
+Numerical_projects/srs/testing_x_res.py
 
-Numerical_projects/CXX_Template/testing_x_resolution.txt
+Numerical_projects/srs/testing_x_resolution.txt
