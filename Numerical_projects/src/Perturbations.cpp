@@ -659,6 +659,7 @@ void Perturbations::output(const double k, const std::string filename) const{
       double arg = k * (cosmo->eta_of_x(0.0) - cosmo->eta_of_x(x));
       fp << get_Source_T(x,k) * Utils::j_ell(5,   arg)           << " ";
       fp << get_Source_T(x,k) * Utils::j_ell(50,  arg)           << " ";
+      fp << get_Source_T(x,k) * Utils::j_ell(80,  arg)           << " ";
       fp << get_Source_T(x,k) * Utils::j_ell(500, arg)           << " ";
     }
     fp << "\n";
