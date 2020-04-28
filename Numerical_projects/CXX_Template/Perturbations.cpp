@@ -639,13 +639,9 @@ void Perturbations::info() const{
 void Perturbations::output(const double k, const std::string filename) const{
   std::ofstream fp(filename.c_str());
   fp << "k_value: " << k << "\n";
-  const int npts = 5000;
+  const int npts = 20000;
   auto x_array = Utils::linspace(x_start, x_end, npts);
   auto print_data = [&] (const double x) {
-    // Using absolute value in arg, to be able to evaluate j_ell beyond x=0.
-    // Not sure if this is valid, but doing it fast here to see if j_ell works
-    // Might change this in milestone 4 after
-    double arg = k * Constants.c * abs((cosmo->eta_of_x(0.0) - cosmo->eta_of_x(x)));
     fp << x                  << " ";
     fp << get_delta_cdm(x,k) << " ";
     fp << get_delta_b(x,k)   << " ";
@@ -658,9 +654,13 @@ void Perturbations::output(const double k, const std::string filename) const{
     fp << get_Theta(x,k,1)   << " ";
     fp << get_Theta(x,k,2)   << " ";
     fp << get_Source_T(x,k)  << " ";
-    fp << get_Source_T(x,k) * Utils::j_ell(5,   arg)           << " ";
-    fp << get_Source_T(x,k) * Utils::j_ell(50,  arg)           << " ";
-    fp << get_Source_T(x,k) * Utils::j_ell(500, arg)           << " ";
+    if (x<0)
+    {
+      double arg = k * (cosmo->eta_of_x(0.0) - cosmo->eta_of_x(x));
+      fp << get_Source_T(x,k) * Utils::j_ell(5,   arg)           << " ";
+      fp << get_Source_T(x,k) * Utils::j_ell(50,  arg)           << " ";
+      fp << get_Source_T(x,k) * Utils::j_ell(500, arg)           << " ";
+    }
     fp << "\n";
   };
   std::for_each(x_array.begin(), x_array.end(), print_data);
