@@ -53,15 +53,16 @@
 %% User commands
 \providecommand{\qwhere}
 {
-    \ensuremath{
-    ,\quad \text{where} \quad 
-    }
+\ensuremath{
+,\quad \text{where} \quad 
+}
 }
 \providecommand{\rCDM}
 {
-    \rm{CDM}
+\rm{CDM}
 }
 
+\allowdisplaybreaks
 \title{AST5220 Cosmology \rm{II}\\ 
 \vspace{5mm}Milestone 3 - The Evolution of Structure in the Universe}
 \author{Jakob Borg}
@@ -77,20 +78,20 @@
 \label{sec:Introduction}
 This report sums up milestone three of four in our way to compute the cosmic microwave background (CMB) power spectrum. In part one and two we've calculated the background evolution giving us the expansion history of the Universe\footnote{Milestone 1, \cite{milestone1}}, and it's ionization history giving us the optical depth and visibility function\footnote{Milestone 2, \cite{milestone2}}, all as functions of the logarithmic scale factor $x$.
 
-Now in part three we are ready to calculate how the early small perturbations set up by inflation in the photon-baryon-dark-matter fluid of the early Universe evolves from shortly after inflation until today, also as functions of $x$. The perturbations are described by the Boltzmann equations for each component, see \cref{subsec:Theory/Coupled equations}. These perturbations will behave differently on different scales, dependent on the time they become causally connected to them self, see \cref{subsec:Theory/Horizon entry}. To simplify our equations dramatically we will perform all calculations and subsequent analysis in Fourier space with wave number $k$. In Fourier space we can look at how different scales, characterized as $\lambda \propto 1/k$, evolve independently. The final goal of this project is therefore to compute two dimensional functions able to evaluate the following main physical quantities
+Now in part three we are ready to calculate how the early small perturbations set up by inflation in the photon-baryon-dark-matter fluid of the early Universe evolves from shortly after inflation until today, also as functions of $x$. The perturbations are described by the Boltzmann equations for each component, see \cref{subsec:Theory/Coupled equations}. These perturbations will behave differently on different scales, dependent on the time they become causally connected to them self, see \cref{subsec:Method/Horizon entry}. To simplify our equations dramatically we will perform all calculations and subsequent analysis in Fourier space with wave number $k$. In Fourier space we can look at how different scales, characterized as $\lambda \propto 1/k$, evolve independently. The final goal of this milestone is therefore to compute two dimensional functions able to evaluate the following main physical quantities which will be discussed in \cref{sec:Results}
 \begin{alignat*}{4}
-    & \text{Gravitational potentials :} &\quad& \Psi(x,k) &\quad& \Phi(x,k) &
-    \\
-    & \text{Matter perturbations :}     &\quad& \delta_{\rCDM}(x,k) &\quad& v_{\rCDM}(x,k) &
-    \\
-    &                                  &\quad& \delta_{b}(x,k) &\quad& v_{b}(x,k) &
-    \\
-    & \text{\parbox{3cm}{Photon perturbations as multipoles} :}
-                                    &\quad& \Theta_\ell(x,k) &\quad& \qfor* 0 \leq \ell \leq 8&
+  & \text{Gravitational potentials :} &\quad& \Psi(x,k) &\quad& \Phi(x,k) &
+  \\
+  & \text{Matter perturbations :}     &\quad& \delta_{\rCDM}(x,k) &\quad& v_{\rCDM}(x,k) &
+  \\
+  &                                  &\quad& \delta_{b}(x,k) &\quad& v_{b}(x,k) &
+  \\
+  & \text{\parbox{3cm}{Photon perturbations as multipoles} :}
+                                  &\quad& \Theta_\ell(x,k) &\quad& \qfor* \ell = {0,1}&
 \end{alignat*}%
-where \rm{CDM} and $b$ is short for cold dark matter and baryons. See \cref{subsec:Theory/Coupled equations} for a short description of the photon multipoles, following \cite{Calin} and \cite{Dodelson}.
+where \rm{CDM} and $b$ is short for cold dark matter and baryons. See \cref{subsec:Theory/Coupled equations} for a short description of the photon multipoles following \cite{Calin} and \cite{Dodelson}.
 
-The full project can be found on GitHub, here are link to the \href{https://github.com/Lilleborg/AST5220-Cosmology2/tree/master/Numerical_projects}{projects main directory}\footnote{URL: \url{https://github.com/Lilleborg/AST5220-Cosmology2/tree/master/Numerical_projects}}. All computation and calculations are done in "C++", with the source code found \href{https://github.com/Lilleborg/AST5220-Cosmology2/tree/master/Numerical_projects/src}{here}\footnote{URL: \url{https://github.com/Lilleborg/AST5220-Cosmology2/tree/master/Numerical_projects/src}}, and the plotting is done in "Python".
+The full project can be found on GitHub, here are link to the \href{https://github.com/Lilleborg/AST5220-Cosmology2/tree/master/Numerical_projects}{projects main directory}\footnote{URL: \url{https://github.com/Lilleborg/AST5220-Cosmology2/tree/master/Numerical_projects}}. All computation and calculations are done in "C++", with the source code found \href{https://github.com/Lilleborg/AST5220-Cosmology2/tree/master/Numerical_projects/src}{here}\footnote{URL: \url{https://github.com/Lilleborg/AST5220-Cosmology2/tree/master/Numerical_projects/src}}. The main work for this milestone is concentrated into the \textit{Perturbations.h} class, building upon the work done in previous milestones. Note also that some of the code in the class is done in preparation for the next milestone, mainly computing the temperature source function, and this will not be discussed in detail here, but briefly mentioned in \cref{subsec:Theory/LoS Integration,subsubsec:Method/Two ODE systems}.
 
 %  _______ _                           
 % |__   __| |                          
@@ -106,21 +107,119 @@ The full project can be found on GitHub, here are link to the \href{https://gith
 \subsection{The Coupled System of Equations}
 \label{subsec:Theory/Coupled equations}
 
-The photon perturbations are here directly presented in the expanded form using Legendre polynomials 
+With the background cosmology of the Universe solved in \cite{milestone1} we can now focus on the perturbations alone, and simply add them to the background solutions to describe the full Universe with Einsteins field equations. When we measure the temperature of the CMB we actually measure this deviation from the background solution set up by the perturbations. All the following equations are thus describing the perturbations of the different quantities obtained from the Boltzmann equation for photons, \rCDM and baryons.
 
-    \subsubsection{Tight Coupling Regime}
-    \label{subsubsec:Theory/Tight Coupling}
+Following \cite{Calin} we describe a perturbed universe with the Newtonian gauge, writing the perturbed metric as 
+\begin{equation}
+\tensor{g}{_\mu_\nu} =
+  \begin{pmatrix}
+    -(1+2\Psi) & 0
+    \\
+    0 & a^2\delta_{ij}(1+2\Phi)
+  \end{pmatrix}
+\end{equation}
+where $\Phi$ and $\Psi$ are interpreted as small gravitational potentials set up by the perturbations. Using this metric we obtain equations for the potentials using Einsteins equation.
 
-    \subsubsection{Initial Conditions}
-    \label{subsubsec:Theory/Initial conditions}
+Using the logarithmic scale factor $x$ as time variable we can write the resulting coupled equations from Einsteins equation and the Boltzmann equations as follows, where $^\prime$ denotes derivatives with respect to $x = \ln(a)$:
+\begin{itemize}
+\item Potential or metric perturbations
+\begin{align}
+  \Phi^\prime &= \Psi - \frac{c^2k^2}{3\mathcal{H}^2} \Phi + \frac{H_0^2}{2\mathcal{H}^2}
+  \left[\Omega_{\rm CDM 0} a^{-1} \delta_{\rm CDM} + \Omega_{b0} a^{-1} \delta_b + 4\Omega_{r0}
+  a^{-2}\Theta_0\right] \\
+  \Psi &= -\Phi - \frac{12H_0^2}{c^2k^2a^2}\Omega_{r0}\Theta_2 \label{eq:Psi}
+\end{align}%
+Note that written on this form we don't have an equation of motion for $\Psi$, but instead express it in terms of the other dynamical perturbations $\Phi$ and $\Theta_2$.
 
-    % Why lmax = 8:
-    \subsubsection{Line of Sight Integration}
-    \label{subsubsec:Theory/LoS Integration}
+\item The photon temperature perturbations
+\begin{align}
+  \Theta^\prime_0 &= -\frac{ck}{\mathcal{H}} \Theta_1 - \Phi^\prime,
+  \\
+  \Theta^\prime_1 &=  \frac{ck}{3\mathcal{H}} \Theta_0 - \frac{2ck}{3\mathcal{H}}\Theta_2 +
+  \frac{ck}{3\mathcal{H}}\Psi + \tau^\prime\left[\Theta_1 + \frac{1}{3}v_b\right],
+  \label{eq:dipole ODE}
+  \\
+  \Theta^\prime_\ell &= \frac{\ell ck}{(2\ell+1)\mathcal{H}}\Theta_{\ell-1} - \frac{(\ell+1)ck}{(2\ell+1)\mathcal{H}}
+  \Theta_{\ell+1} + \tau^\prime\left[\Theta_\ell - \frac{1}{10}\Pi
+  \delta_{\ell,2}\right], \quad\quad 2 \leq \ell < \ell_{\textrm{max}}
+  \\
+  \Theta_{\ell}^\prime &= \frac{ck}{\mathcal{H}}
+  \Theta_{\ell-1}-c\frac{\ell+1}{\mathcal{H}\eta(x)}\Theta_\ell+\tau^\prime\Theta_\ell,
+  \quad\quad \ell = \ell_{\textrm{max}}
+\end{align}
+where $\Pi$ is a sum over the quadrupole perturbation $\Theta_2$ and perturbations of the photon polarization, but we exclude polarization from our model and thus define $\Pi \equiv \Theta_2$. The photon perturbations are here directly presented in the expanded form using Legendre polynomials.
 
-\subsection{Horizon Entry}
-\label{subsec:Theory/Horizon entry}
+Note that the multipoles in reality sets up an infinite hierarchy of equations, where $\ell_{\rm{max}} \rightarrow \infty$, but we have to define a maximum number of equations and thus have a separate equation for $\Theta_{\ell_{\rm{max}}}$. CONTROL THIS SENTENCE AT THE END(??) 
+To balance the accuracy of this abrupt stop in the hierarchy with the required computation time we define $\ell_{\rm{max}}=8$, made possible by a neat trick called line of sight integration which will be used in the next milestone when we actually need higher order multipoles up to $\ell \sim 1200$. We will come back to this in \cref{subsec:Theory/LoS Integration}. MAYBE DROP THIS SECTION?? For this milestone, as mentioned in \cref{sec:Introduction}, we will only focus on the quantities we have a physical intuitive description of, namely the monopole and dipole.
 
+% , where the full photon perturbation is
+% \begin{equation}
+%   \Theta = 
+% \end{equation}
+
+\item The matter perturbations
+\begin{align}
+  \delta_{\rm CDM}^\prime &= \frac{ck}{\mathcal{H}} v_{\rm CDM} - 3\Phi^\prime \\
+  v_{\rm CDM}^\prime &= -v_{\rm CDM} -\frac{ck}{\mathcal{H}} \Psi \\
+  \delta_b^\prime &= \frac{ck}{\mathcal{H}}v_b -3\Phi^\prime \\
+  v_b^\prime &= -v_b - \frac{ck}{\mathcal{H}}\Psi + \tau^\prime R(3\Theta_1 + v_b)
+\end{align}
+where
+\begin{equation}
+  R = \frac{4\Omega_{r0}}{3\Omega_{b0}a}.
+  \label{eq:R}
+\end{equation}
+\end{itemize}
+
+\subsubsection{Tight Coupling Regime}
+\label{subsubsec:Theory/Tight Coupling}
+In the early universe we know from \cite{milestone2} that the optical depth is very large, so the mean free path of photons is very short. This means that electrons in the early Universe only is affected by photons, or in other words temperature fluctuations, that are in the close vicinity. Thus the photons and electrons are tightly coupled and behave like a electron-photon fluid. During this period of tight coupling we will only have very smooth fluctuations since the small fluctuations, and hence gradients, are efficiently washed out. Therefor the only relevant quantities affecting the baryon-photon fluid are
+\begin{enumerate}
+  \item the mean temperature, quantified by the monopole $\Theta_0$,
+  \item the dipole itself $\Theta_1$, given by the velocity of the electron-photon fluid due to the Doppler effect
+  \item and the quadrupole, $\Theta_2$, which is the only relevant source of polarization in this early regime
+\end{enumerate}
+and the higher order multipoles are negligible. Thus at early times we don't need to include higher order multipoles than $\ell = 0$ and $1$ in our coupled system of differential equations. For the higher order multipoles we will simply use a set of algebraic equations as given by the initial conditions which will be described next in \cref{subsubsec:Theory/Initial conditions}.
+
+We also have a numerical issue in the early times, lurking in \cref{eq:dipole ODE}. Early on the perturbations are really small, with small velocities, and thus the sum in $\left[\Theta_1 + \frac{1}{3}v_b\right]$ is very small. This is multiplied by the derivative of the optical depth $\tau^\prime$, which is in turn very large following the order of magnitude of the optical depth it self. The result is a very unstable numerical system, where the tiniest error in the mentioned sum will lead to a large error in the system of differential equations. To solve this we use a clever approximation for $\left[3\Theta_1 + v_b\right]$ following \cite{Calin}, resulting in the following equations for $\Theta_1$ and $v_b$
+\begin{align}
+  q &= \frac{-[(1-R)\tau^\prime + (1+R)\tau^{\prime\prime}](3\Theta_1+v_b) -
+  \frac{ck}{\mathcal{H}}\Psi + (1-\frac{\mathcal{H}^\prime}{\mathcal{H}})\frac{ck}{\mathcal{H}}(-\Theta_0 +
+  2\Theta_2) - \frac{ck}{\mathcal{H}}\Theta_0^\prime}{(1+R)\tau^\prime + \frac{\mathcal{H}^\prime}{\mathcal{H}} -
+  1}
+  \\
+  v_b^\prime &= \frac{1}{1+R} \left[-v_b - \frac{ck}{\mathcal{H}}\Psi + R(q +
+  \frac{ck}{\mathcal{H}}(-\Theta_0 + 2\Theta_2) - \frac{ck}{\mathcal{H}}\Psi)\right]
+  \\
+  \Theta^\prime_1 &= \frac{1}{3} (q - v_b^\prime)
+\end{align}
+where again $R$ is from \cref{eq:R}.
+
+\subsubsection{Initial Conditions}
+\label{subsubsec:Theory/Initial conditions}
+As mentioned when presenting the system of equations, $\Psi$ in \cref{eq:Psi} is not a dynamical quantity in the system. Since the system is linear we are free to choose any normalization of $\Psi$ as we want when we solve the system, and just rescale the quantities later appropriately. We will come back to this is the next milestone when we compute the CMB and matter power spectra. For now we simply choose to set the initial condition for $\Psi_ = -\frac{2}{3}$. This expression would be slightly more complicated if we computed with neutrinos, but as with polarization we exclude this from our model. It can be shown that the rest of the initial conditions follows from this, assuming adiabatic initial conditions set up by an adiabatic inflation period.
+\begin{align}
+  \Psi &= -\frac{1}{\frac{3}{2} + \frac{2f_\nu}{5}}
+  \\
+  \Phi &= -(1+\frac{2f_\nu}{5})\Psi
+  \\
+  \delta_{\rm CDM} &= \delta_b = -\frac{3}{2} \Psi 
+  \\
+  v_{\rm CDM} &= v_b = -\frac{ck}{2\mathcal{H}} \Psi
+  \\
+  \Theta_0 &= -\frac{1}{2} \Psi 
+  \\
+  \Theta_1 &= \frac{ck}{6\mathcal{H}}\Psi 
+  \\
+  \Theta_2 &= -\frac{20ck}{45\mathcal{H}\tau^\prime} \Theta_1,
+  \\
+  \Theta_\ell &= -\frac{\ell}{2\ell+1} \frac{ck}{\mathcal{H}\tau^\prime} \Theta_{\ell-1}.
+\end{align}
+
+% Why l_max = 8:
+\subsection{Line of Sight Integration}
+\label{subsec:Theory/LoS Integration}
+MAYBE DROP THIS SECTION?
 
 %  __  __      _   _               _ 
 % |  \/  |    | | | |             | |
@@ -131,20 +230,27 @@ The photon perturbations are here directly presented in the expanded form using 
 \section{Method}
 \label{sec:Method}
 
+\subsection{Creating Two Dimensional Functions}
+\label{subsec:Method/2D functions}
+looping k and x, spline results
+
 \subsection{Solving in Two Regimes}
 \label{subsec:Method/Solving in two regimes}
 
-    \subsubsection{Two Sets of Coupled Equations}
-    \label{subsubsec:Method/Two ODE systems}
+Solve equations in right order. $\Phi^\prime$ first etc
 
-    \subsubsection{Determining the Tight Coupling Regime}
-    \label{subsubsec:Method/Determine TC}
+\subsubsection{Two Sets of Coupled Equations}
+\label{subsubsec:Method/Two ODE systems}
+Storing some values needed for source func
 
-    \subsubsection{Setting Initial Condtions}
-    \label{subsubsec:Method/setting initial conditions}
+\subsubsection{Determining the Tight Coupling Regime}
+\label{subsubsec:Method/Determine TC}
 
-\subsection{Creating Two Dimensional Functions}
-\label{subsec:Method/2D functions}
+\subsubsection{Setting Initial Condtions}
+\label{subsubsec:Method/setting initial conditions}
+
+\subsection{Horizon Entry}
+\label{subsec:Method/Horizon entry}
 
 %  _____                 _ _       
 % |  __ \               | | |      
@@ -162,8 +268,8 @@ The photon perturbations are here directly presented in the expanded form using 
 
 \clearpage
 \begin{appendices}
-    \appendix
-    \section{Should We list equations in appendix?}
+\appendix
+\section{Should We list equations in appendix?}
 \end{appendices}
 
 \end{document}
