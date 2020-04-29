@@ -185,7 +185,7 @@ void Perturbations::integrate_perturbations(){
       Psi_array_2D[ix-1+idx_tc_transition][ik]       = - Phi_array_2D[ix-1+idx_tc_transition][ik]
         - 12.0*H_0_squared/(ck_squared*a_squared)*OmegaR0*Theta2_array_2D[ix-1+idx_tc_transition][ik];
     }
-    // End storing tight couple data
+    // End storing full data
     //////////////////////////////////////////////////////////////////////////////
 
   }
@@ -542,10 +542,10 @@ std::pair<double,int> Perturbations::get_tight_coupling_time_and_index(const dou
       return std::pair<double,int>(x_array_full[i-1],int(i-1)); // Return previous value and index, as condition is violated in current step
     }
   }
-  // "Fail safe"
+  // "Fail safe, to return something if the if-test fail"
   std::cout << "@@@@@@@@@@@@@@@@@@@@@@@@@@@@\nDidn't find tight couple end time!\n"
-    "Returning x matching Xe < 0.99!\n@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n";
-  return std::pair<double,int>(x_start_recombination,id_x_start_recombination);
+    "Returning invalid x-value and index!\n@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n";
+  return std::pair<double,int>(999999,999999);
 }
 
 double Perturbations::get_delta_cdm(const double x, const double k) const{
@@ -653,15 +653,21 @@ void Perturbations::output(const double k, const std::string filename) const{
     fp << get_Theta(x,k,0)   << " ";
     fp << get_Theta(x,k,1)   << " ";
     fp << get_Theta(x,k,2)   << " ";
-    fp << get_Source_T(x,k)  << " ";
     if (x<0)
     {
+      fp << get_Source_T(x,k)  << " ";
       double arg = k * (cosmo->eta_of_x(0.0) - cosmo->eta_of_x(x));
       fp << get_Source_T(x,k) * Utils::j_ell(5,   arg)           << " ";
       fp << get_Source_T(x,k) * Utils::j_ell(50,  arg)           << " ";
-      fp << get_Source_T(x,k) * Utils::j_ell(80,  arg)           << " ";
+      // fp << get_Source_T(x,k) * Utils::j_ell(80,  arg)           << " ";
       fp << get_Source_T(x,k) * Utils::j_ell(500, arg)           << " ";
     }
+    else
+    {
+      fp << "0.0 0.0 0.0 0.0";
+    }
+    
+    
     fp << "\n";
   };
   std::for_each(x_array.begin(), x_array.end(), print_data);

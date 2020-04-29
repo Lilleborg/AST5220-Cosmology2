@@ -33,10 +33,6 @@ class Perturbations{
     const double x_end   = Constants.x_end;
     // Set up logarithmic scale factor
     Vector x_array_full = Utils::linspace(x_start,x_end,n_x);
-    // x-value at start of Recombination, using Xe<0.99 from RecombinationHistory
-    // hardcoded for now... should read from file but im in a hurry!
-    const double x_start_recombination = -7.370323703;
-    const int id_x_start_recombination = std::lower_bound(x_array_full.begin(),x_array_full.end(),x_start_recombination)-x_array_full.begin();
     
     // Below is a full list of splines you probably need, 
     // but you only need to make the splines you will need

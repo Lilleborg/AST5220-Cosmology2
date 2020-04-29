@@ -60,7 +60,7 @@ for ik,k in enumerate(k_values):
 
 handles, labels = theta0_ax.get_legend_handles_labels()
 theta_legend = theta_fig.legend(handles,labels,bbox_to_anchor=(1.0, 0.5), loc='center left')
-theta_title = theta_fig.suptitle("Multipole perturbations,\n "+r"$\ell = 0,\,\ell=1$")
+theta_title = theta_fig.suptitle("Photon multipoles,\n "+r"$\ell = 0,\,\ell=1$")
 theta0_ax.set_ylabel(r'$\delta_{\gamma} = 4\theta_0$')
 theta1_ax.set_ylabel(r'$v_{\gamma} = -3\theta_1$')
 all_axes.extend(theta_axes)
