@@ -94,7 +94,7 @@ if __name__== "__main__":
     fig.savefig('./../figs/omegas_of_x.pdf', bbox_inches='tight')
 
     # Plotting Hubble parameter vs x
-    fig, axes = plt.subplots(2, 2)
+    fig, axes = plt.subplots(2, 2,figsize=(12,9))
     axes[0, 0].plot(x_array, H_units, color='C2')
     axes[0, 0].set_ylabel(r'$H(x) \left[\rm{km}\,\rm{s^{-1}}\,\rm{Mpc^{-1}}\right]$')
 
@@ -128,4 +128,4 @@ if __name__== "__main__":
             ax.set_xticks(x_array_ticks)
     print('Saving ./../figs/Hubble_eta_of_x.pdf')
     fig.savefig('./../figs/Hubble_eta_of_x.pdf', bbox_inches='tight')
-    plt.show()
+    
