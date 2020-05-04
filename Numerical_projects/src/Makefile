@@ -21,7 +21,7 @@ OPTIONS =
 
 # Add bounds checking
 # OPTIONS += -D_GLIBCXX_DEBUG
-# OPTIONS += -fsanitize=address
+OPTIONS += -fsanitize=address
 
 # Show warnings if atempting to evaluate a spline out of bounds
 # OPTIONS += -D_SPLINE_WARNINGS_ON
