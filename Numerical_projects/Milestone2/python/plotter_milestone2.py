@@ -24,6 +24,7 @@ xstar = x_times[0]
 xrec = x_times[1]
 xrec_saha = x_times[2]
 x_Peebles = x_times[3]
+xend = x_times[4]
 
 zoomed_xlim = [xstar+xstar*0.1, xstar-xstar*0.1]
 x_array_ticks = np.append(np.linspace(x_array.min(), x_array.max(), 5), 0)
@@ -128,6 +129,7 @@ for i, ax in enumerate(all_axes):
     ax.axvline(x=x_Peebles, linestyle='-.', color='C5', label=r'$x_{\rm{Peebles}}$', linewidth=1)
     ax.margins(x=0)
     ax.set_xlabel(r'$x = \ln(a)$')
+    ax.axvspan(xrec,xend,alpha=0.3,color='C8')
 
 # Final tweaking and saving
 # Xe and ne
