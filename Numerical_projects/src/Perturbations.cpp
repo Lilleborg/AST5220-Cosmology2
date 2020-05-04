@@ -1,5 +1,10 @@
 #include"Perturbations.h"
 
+
+#include <sstream>
+#include <iomanip>
+
+
 //====================================================
 // Constructors
 //====================================================
@@ -517,6 +522,54 @@ void Perturbations::compute_source_functions(){
     }
   }
 
+  
+  // std::string data_path ("../data_testing/");
+  // std::ofstream fp_k_values(data_path + "perturbations_k_values.txt");
+  // fp_k_values << "k_values per Mpc: | k_values: | horizon entry (x):\n";
+  // std::cout << "\nWriting output to " << data_path << " with following k-values per Mpc\n";
+  // for (int ik = 1; ik < k_array.size(); ik++)
+  // {
+  //   double k_value = k_array[ik]*Constants.Mpc;
+  //   std::cout << k_value << std::endl;
+  //   // Find and write horizon entry
+  //   double horizon_entry_x = Utils::binary_search_for_value(cosmo->eta_of_x_spline,1.0/(k_value/Constants.Mpc),
+  //                                 std::pair(Constants.x_start,Constants.x_end));
+  //   std::cout << "found horizon " << std::endl;
+  //   fp_k_values << std::fixed <<  k_value << " | " << 
+  //       std::scientific << k_value/Constants.Mpc << " | " << horizon_entry_x << "\n";
+
+  //   // Configure filename and write output
+  //   std::ostringstream stream_kvales;
+  //   stream_kvales << std::fixed << std::setprecision(5);
+  //   stream_kvales << k_value;
+  //   std::string filename = data_path + "perturbations_k" + stream_kvales.str() + ".txt";
+
+  //   std::ofstream ST_fp(filename.c_str());
+  //   for (int ix = 0; ix < x_array_full.size(); ix++)
+  //   {
+  //     double x = x_array_full[ix];
+  //     if (x<0)
+  //     {
+  //     ST_fp << x_array_full[ix] << " ";
+  //     ST_fp << ST_array_2D[ix][ik] << " ";
+  //     double arg = k_value/Constants.Mpc * (cosmo->eta_of_x(0.0) - cosmo->eta_of_x(x_array_full[ix]));
+  //     // std::cout << arg << "\n";
+  //     for (int ell = 5; ell < 100; ell+=10)
+  //       {
+  //       std::cout << ell << std::endl;
+  //       ST_fp << Utils::j_ell(ell,arg) << " ";
+  //       }
+  //     }
+  //     ST_fp << "\n";
+      
+  //   }
+  //   ST_fp.close();
+  //   // pert.output(k_value/Constants.Mpc, data_path + filename);
+  // }
+  // fp_k_values.close();
+  // std::cout << std::endl;
+
+
   // Spline the source function
   ST_spline.create(x_array_full, k_array, ST_array_2D, "Source_Temp_x_k");
 
@@ -533,7 +586,7 @@ void Perturbations::compute_source_functions(){
 std::pair<double,int> Perturbations::get_tight_coupling_time_and_index(const double k) const{
 
   double tau_prime;
-  for (int i = 0; i < n_x; i++)
+  for (int i = 1; i < n_x; i++)
   {
     // dtaudx always negative, instead of using absolute value just force it to be positive
     tau_prime = -rec->dtaudx_of_x(x_array_full[i]);
@@ -657,14 +710,15 @@ void Perturbations::output(const double k, const std::string filename) const{
     {
       fp << get_Source_T(x,k)  << " ";
       double arg = k * (cosmo->eta_of_x(0.0) - cosmo->eta_of_x(x));
+      fp << arg << " ";
       fp << get_Source_T(x,k) * Utils::j_ell(5,   arg)           << " ";
       fp << get_Source_T(x,k) * Utils::j_ell(50,  arg)           << " ";
-      // fp << get_Source_T(x,k) * Utils::j_ell(80,  arg)           << " ";
       fp << get_Source_T(x,k) * Utils::j_ell(500, arg)           << " ";
+      fp << Utils::j_ell(50,  arg)           << " ";
     }
     else
     {
-      fp << "0.0 0.0 0.0 0.0";
+      fp << "0.0 0.0 0.0 0.0 0.0 0.0";
     }
     
     
