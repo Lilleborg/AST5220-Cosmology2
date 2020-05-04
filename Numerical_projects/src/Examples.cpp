@@ -12,7 +12,7 @@ for (int i = 0; i < spherical_bessel.size(); i++)
     spherical_bessel[i] = Utils::j_ell(4,x_testing[i]);
 }
 
-std::ofstream fp("testing_bessel.txt");
+std::ofstream fp("../data/testing_bessel.txt");
 for (int i = 0; i < x_testing.size(); i++)
 {
     fp << spherical_bessel[i] << " " << x_testing[i] << "\n";
@@ -421,4 +421,7 @@ example_make_2D_spline();
 
 std::cout << "\n==============================\n\n";
 other_stuff();
+
+std::cout << "\n==============================\n\n";
+testing_bessel_function();
 }
