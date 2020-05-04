@@ -24,7 +24,7 @@ OPTIONS =
 OPTIONS += -fsanitize=address
 
 # Show warnings if atempting to evaluate a spline out of bounds
-# OPTIONS += -D_SPLINE_WARNINGS_ON
+OPTIONS += -D_SPLINE_WARNINGS_ON
 
 # Show info about the solution as we integrate
 # OPTIONS = -D_FIDUCIAL_VERBOSE_ODE_SOLVER_TRUE
