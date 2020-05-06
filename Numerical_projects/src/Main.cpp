@@ -79,6 +79,7 @@ int main(int argc, char **argv){
   Perturbations pert(&cosmo, &rec);
   pert.info();
   pert.solve();
+  return 0;
   
   // Experimented with different values and found these to present the different regimes
   Vector k_values = {0.3,0.1,0.013,0.007,0.001,0.0005};

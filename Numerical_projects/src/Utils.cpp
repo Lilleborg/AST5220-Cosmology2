@@ -167,7 +167,7 @@ namespace Utils{
     if(ell >= 10 && x < (1.0 - 2.6/sqrt(ell)) * ell) return 0.0;
 
   // For 'small' ell GSL fails for the largest arguments so simply put to zero
-  //     // to avoid issues with this (these large values not very relevant for us anyway)
+  // to avoid issues with this (these large values not very relevant for us anyway)
     if(ell < 500 && x > 9000) return 0.0; 
 
     return gsl_sf_bessel_jl(ell, x);

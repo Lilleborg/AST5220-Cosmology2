@@ -522,52 +522,52 @@ void Perturbations::compute_source_functions(){
     }
   }
 
-  
-  // std::string data_path ("../data_testing/");
-  // std::ofstream fp_k_values(data_path + "perturbations_k_values.txt");
-  // fp_k_values << "k_values per Mpc: | k_values: | horizon entry (x):\n";
-  // std::cout << "\nWriting output to " << data_path << " with following k-values per Mpc\n";
-  // for (int ik = 1; ik < k_array.size(); ik++)
-  // {
-  //   double k_value = k_array[ik]*Constants.Mpc;
-  //   std::cout << k_value << std::endl;
-  //   // Find and write horizon entry
-  //   double horizon_entry_x = Utils::binary_search_for_value(cosmo->eta_of_x_spline,1.0/(k_value/Constants.Mpc),
-  //                                 std::pair(Constants.x_start,Constants.x_end));
-  //   std::cout << "found horizon " << std::endl;
-  //   fp_k_values << std::fixed <<  k_value << " | " << 
-  //       std::scientific << k_value/Constants.Mpc << " | " << horizon_entry_x << "\n";
+  std::string data_path ("../data_testing/");
+  std::ofstream fp_k_values(data_path + "perturbations_k_values.txt");
+  fp_k_values << "k_values per Mpc: | k_values: | horizon entry (x):\n";
+  std::cout << "\nWriting output to " << data_path << " with following k-values per Mpc\n";
+  for (int ik = 1; ik < k_array.size(); ik+=2)
+  {
+    double k_value = k_array[ik]*Constants.Mpc;
+    std::cout << k_value << std::endl;
+    // Find and write horizon entry
+    double horizon_entry_x = Utils::binary_search_for_value(cosmo->eta_of_x_spline,1.0/(k_value/Constants.Mpc),
+                                  std::pair(Constants.x_start,Constants.x_end));
+    std::cout << "found horizon " << std::endl;
+    fp_k_values << std::fixed <<  k_value << " | " << 
+        std::scientific << k_value/Constants.Mpc << " | " << horizon_entry_x << "\n";
 
-  //   // Configure filename and write output
-  //   std::ostringstream stream_kvales;
-  //   stream_kvales << std::fixed << std::setprecision(5);
-  //   stream_kvales << k_value;
-  //   std::string filename = data_path + "perturbations_k" + stream_kvales.str() + ".txt";
+    // Configure filename and write output
+    std::ostringstream stream_kvales;
+    stream_kvales << std::fixed << std::setprecision(5);
+    stream_kvales << k_value;
+    std::string filename = data_path + "perturbations_k" + stream_kvales.str() + ".txt";
 
-  //   std::ofstream ST_fp(filename.c_str());
-  //   for (int ix = 0; ix < x_array_full.size(); ix++)
-  //   {
-  //     double x = x_array_full[ix];
-  //     if (x<0)
-  //     {
-  //     ST_fp << x_array_full[ix] << " ";
-  //     ST_fp << ST_array_2D[ix][ik] << " ";
-  //     double arg = k_value/Constants.Mpc * (cosmo->eta_of_x(0.0) - cosmo->eta_of_x(x_array_full[ix]));
-  //     // std::cout << arg << "\n";
-  //     for (int ell = 5; ell < 100; ell+=10)
-  //       {
-  //       std::cout << ell << std::endl;
-  //       ST_fp << Utils::j_ell(ell,arg) << " ";
-  //       }
-  //     }
-  //     ST_fp << "\n";
-      
-  //   }
-  //   ST_fp.close();
-  //   // pert.output(k_value/Constants.Mpc, data_path + filename);
-  // }
-  // fp_k_values.close();
-  // std::cout << std::endl;
+    std::ofstream ST_fp(filename.c_str());
+    ST_fp <<std::fixed << std::setprecision(15) <<  std::setw(20);
+    ST_fp << "        x                  ST                       arg                  j_ell...\n";
+    for (int ix = 0; ix < x_array_full.size(); ix++)
+    {
+      double x = x_array_full[ix];
+      if (x<0)
+      {
+      ST_fp << x_array_full[ix] << " ";
+      ST_fp << ST_array_2D[ix][ik] << " ";
+      double arg = k_value/Constants.Mpc * (cosmo->eta_of_x(0.0) - cosmo->eta_of_x(x_array_full[ix]));
+      ST_fp << arg << " ";
+      for (int ell = 5; ell < 100; ell++)
+        {
+        // std::cout << ell << std::endl;
+        ST_fp << Utils::j_ell(ell,arg) << " ";
+        }
+      ST_fp << "\n";
+      }
+    }
+    ST_fp.close();
+    // pert.output(k_value/Constants.Mpc, data_path + filename);
+  }
+  fp_k_values.close();
+  std::cout << std::endl;
 
 
   // Spline the source function
