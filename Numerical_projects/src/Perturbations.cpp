@@ -516,18 +516,18 @@ void Perturbations::compute_source_functions(){
       const double ck             = Constants.c*k;
 
       // Temperature source
-      term1[ix][ik] = 
-      term2[ix][ik] = 
-      term3[ix][ik] = 
-      term4[ix][ik] = 
-      ST_array_2D[ix][ik] = g_tilde*(Theta0 + Psi + 0.25*Pi)
-                       + exp(-tau)*(dPsi_dx - dPhi_dx)
-                       - ck*(dH_p_dx*g_tilde*v_b + H_p*dg_tilde_dx+v_b + H_p*g_tilde+dv_b_dx)
-                       + 3.0/(4.0*ck*ck)*(
-                       Pi*g_tilde*(H_p*ddH_p_ddx + dH_p_dx*dH_p_dx)
-                       + 3*H_p*dH_p_dx*(dg_tilde_dx*Pi + g_tilde*ddPi_ddx)
-                       + H_p*H_p*(ddg_tilde_ddx*Pi + 2*dg_tilde_dx*dPi_dx + g_tilde*ddPi_ddx)
-                       );
+      term1[ix][ik] = g_tilde*(Theta0 + Psi + 0.25*Pi);
+      term2[ix][ik] = exp(-tau)*(dPsi_dx - dPhi_dx);
+      term3[ix][ik] = 1/ck*(dH_p_dx*g_tilde*v_b + H_p*dg_tilde_dx+v_b + H_p*g_tilde+dv_b_dx);
+      term4[ix][ik] = 3.0/(4.0*ck*ck)*(
+                      Pi*g_tilde*(H_p*ddH_p_ddx + dH_p_dx*dH_p_dx)
+                      + 3*H_p*dH_p_dx*(dg_tilde_dx*Pi + g_tilde*ddPi_ddx)
+                      + H_p*H_p*(ddg_tilde_ddx*Pi + 2*dg_tilde_dx*dPi_dx + g_tilde*ddPi_ddx)
+                      );
+      ST_array_2D[ix][ik] = term1[ix][ik]
+                            + term2[ix][ik]
+                            - term3[ix][ik]
+                            + term4[ix][ik];
     }
   }
 
