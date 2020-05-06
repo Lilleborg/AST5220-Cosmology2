@@ -479,11 +479,16 @@ void Perturbations::compute_source_functions(){
   // Vector to store source function results. using 2D as in the integration solver
   Vector2D ST_array_2D(n_x,Vector(n_k));
 
+  Vector2D term1(n_x,Vector(n_k));
+  Vector2D term2(n_x,Vector(n_k));
+  Vector2D term3(n_x,Vector(n_k));
+  Vector2D term4(n_x,Vector(n_k));
+
   // Compute source functions
-  for(auto ix = 0; ix < x_array_full.size(); ix++){
-    const double x = x_array_full[ix];
-    for(auto ik = 0; ik < k_array.size(); ik++){
-      const double k = k_array[ik];
+  for(auto ik = 0; ik < k_array.size(); ik++){
+    const double k = k_array[ik];
+    for(auto ix = 0; ix < x_array_full.size(); ix++){
+      const double x = x_array_full[ix];
 
       // Cosmological values
       const double H_p            = cosmo->Hp_of_x(x);
@@ -511,6 +516,10 @@ void Perturbations::compute_source_functions(){
       const double ck             = Constants.c*k;
 
       // Temperature source
+      term1[ix][ik] = 
+      term2[ix][ik] = 
+      term3[ix][ik] = 
+      term4[ix][ik] = 
       ST_array_2D[ix][ik] = g_tilde*(Theta0 + Psi + 0.25*Pi)
                        + exp(-tau)*(dPsi_dx - dPhi_dx)
                        - ck*(dH_p_dx*g_tilde*v_b + H_p*dg_tilde_dx+v_b + H_p*g_tilde+dv_b_dx)
@@ -526,7 +535,7 @@ void Perturbations::compute_source_functions(){
   std::ofstream fp_k_values(data_path + "perturbations_k_values.txt");
   fp_k_values << "k_values per Mpc: | k_values: | horizon entry (x):\n";
   std::cout << "\nWriting output to " << data_path << " with following k-values per Mpc\n";
-  for (int ik = 1; ik < k_array.size(); ik+=2)
+  for (int ik = 1; ik < k_array.size(); ik++)
   {
     double k_value = k_array[ik]*Constants.Mpc;
     std::cout << k_value << std::endl;
@@ -541,24 +550,40 @@ void Perturbations::compute_source_functions(){
     std::ostringstream stream_kvales;
     stream_kvales << std::fixed << std::setprecision(5);
     stream_kvales << k_value;
-    std::string filename = data_path + "perturbations_k" + stream_kvales.str() + ".txt";
+    std::string filename = data_path + "testing_perturbations_k" + stream_kvales.str() + ".txt";
 
     std::ofstream ST_fp(filename.c_str());
-    ST_fp <<std::fixed << std::setprecision(15) <<  std::setw(20);
-    ST_fp << "        x                  ST                       arg                  j_ell...\n";
+
+    ST_fp << "k-value: " << k_value << " " << k_value/Constants.Mpc << "\n";
+    ST_fp << std::setw(15) << "x";
+    ST_fp << std::setw(15) << "ST";
+    ST_fp << std::setw(15) << "ST*j_5";
+    ST_fp << std::setw(15) << "ST*j_50";
+    ST_fp << std::setw(15) << "ST*j_100";
+    ST_fp << std::setw(15) << "ST";
+    ST_fp << std::setw(15) << "arg";
+    #define ell_loop int ell = 5; ell < 506; ell+=50
+    for (ell_loop)
+    {
+    ST_fp << std::setw(15) << "j_" + std::to_string(ell);
+    }
+    ST_fp << "\n";
+
     for (int ix = 0; ix < x_array_full.size(); ix++)
     {
       double x = x_array_full[ix];
       if (x<0)
       {
-      ST_fp << x_array_full[ix] << " ";
-      ST_fp << ST_array_2D[ix][ik] << " ";
-      double arg = k_value/Constants.Mpc * (cosmo->eta_of_x(0.0) - cosmo->eta_of_x(x_array_full[ix]));
-      ST_fp << arg << " ";
-      for (int ell = 5; ell < 100; ell++)
+      double arg = k_value/Constants.Mpc * (cosmo->eta_of_x(0.0) - cosmo->eta_of_x(x));
+      ST_fp << std::setw(15) << x;
+      ST_fp << std::setw(15) << ST_array_2D[ix][ik];
+      ST_fp << std::setw(15) << ST_array_2D[ix][ik]*Utils::j_ell(5,arg);
+      ST_fp << std::setw(15) << ST_array_2D[ix][ik]*Utils::j_ell(50,arg);
+      ST_fp << std::setw(15) << ST_array_2D[ix][ik]*Utils::j_ell(100,arg);
+      ST_fp << std::setw(15) << arg;
+      for (ell_loop)
         {
-        // std::cout << ell << std::endl;
-        ST_fp << Utils::j_ell(ell,arg) << " ";
+        ST_fp << std::setw(15) << Utils::j_ell(ell,arg);
         }
       ST_fp << "\n";
       }
