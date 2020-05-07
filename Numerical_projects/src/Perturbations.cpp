@@ -518,7 +518,7 @@ void Perturbations::compute_source_functions(){
       // Temperature source
       term1[ix][ik] = g_tilde*(Theta0 + Psi + 0.25*Pi);
       term2[ix][ik] = exp(-tau)*(dPsi_dx - dPhi_dx);
-      term3[ix][ik] = 1/ck*(dH_p_dx*g_tilde*v_b + H_p*dg_tilde_dx+v_b + H_p*g_tilde+dv_b_dx);
+      term3[ix][ik] = ck*(dH_p_dx*g_tilde*v_b + H_p*dg_tilde_dx+v_b + H_p*g_tilde+dv_b_dx);
       term4[ix][ik] = 3.0/(4.0*ck*ck)*(
                       Pi*g_tilde*(H_p*ddH_p_ddx + dH_p_dx*dH_p_dx)
                       + 3*H_p*dH_p_dx*(dg_tilde_dx*Pi + g_tilde*ddPi_ddx)
@@ -560,8 +560,11 @@ void Perturbations::compute_source_functions(){
     ST_fp << std::setw(15) << "ST*j_5";
     ST_fp << std::setw(15) << "ST*j_50";
     ST_fp << std::setw(15) << "ST*j_100";
-    ST_fp << std::setw(15) << "ST";
     ST_fp << std::setw(15) << "arg";
+    ST_fp << std::setw(15) << "term1";
+    ST_fp << std::setw(15) << "term2";
+    ST_fp << std::setw(15) << "term3";
+    ST_fp << std::setw(15) << "term4";
     #define ell_loop int ell = 5; ell < 506; ell+=50
     for (ell_loop)
     {
@@ -581,6 +584,10 @@ void Perturbations::compute_source_functions(){
       ST_fp << std::setw(15) << ST_array_2D[ix][ik]*Utils::j_ell(50,arg);
       ST_fp << std::setw(15) << ST_array_2D[ix][ik]*Utils::j_ell(100,arg);
       ST_fp << std::setw(15) << arg;
+      ST_fp << std::setw(15) << term1[ix][ik];
+      ST_fp << std::setw(15) << term2[ix][ik];
+      ST_fp << std::setw(15) << term3[ix][ik];
+      ST_fp << std::setw(15) << term4[ix][ik];
       for (ell_loop)
         {
         ST_fp << std::setw(15) << Utils::j_ell(ell,arg);
