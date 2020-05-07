@@ -58,7 +58,7 @@ PowerSpectrum.o         : PowerSpectrum.h BackgroundCosmology.h RecombinationHis
 Examples.o              : Utils.h Spline.h ODESolver.h writeme.h
 writeme.o  				: writeme.h
 
-examples: Examples.o Utils.o Spline.o ODESolver.o writeme.o
+examples: Examples.o Utils.o Spline.o ODESolver.o writeme.o BackgroundCosmology.o
 	${CC} -o $@ $^ $C $(INC) $(LIBS)
 
 cmb: $(OBJS)
