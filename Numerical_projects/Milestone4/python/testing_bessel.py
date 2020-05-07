@@ -36,29 +36,24 @@ for k_value in k_values:
 x = data["x"][0]
 
 for ik in range(len(k_values)):
-    fig, ax = plt.subplots(3,1,figsize=(12,9),sharex=True)
+    fig, ax = plt.subplots(4,1,figsize=(12,9),sharex=True)
     k = k_values[ik]
     fig.suptitle("k = "+str(k))
-    # ax[0].set_title("Integrand, k = {:.5f}".format(k))
-    # source_T5 = data["Source_T5"][ik]
-    # ax[0].plot(x_array,source_T5,label=r'$\ell = 5$')
-    # source_T50 = data["Source_T50"][ik]
-    # ax[0].plot(x_array,source_T50,label=r'$\ell = 50$')
-    # source_T500 = data["Source_T500"][ik]
-    # ax[0].plot(x_array,source_T500,label=r'$\ell = 500$')
-    # ax[0].legend()
+    
+    ax[0].plot(x,data["ST"][ik],label="ST")
+    ax[0].legend()
 
-    for q in range(1,4):
-        ax[0].plot(x,data[quantities[q]][ik],label=quantities[q])
-    ax[0].legend(loc=2)
-    for ind_ell in range(10,len(quantities),2):
+    for q in range(2,5):
+        ax[1].plot(x,data[quantities[q]][ik],label=quantities[q])
+    ax[1].legend(loc=2)
+    for ind_ell in range(10,len(quantities)):
         if np.all(data[quantities[ind_ell]][ik]==0):
             pass
         else:
-            ax[1].plot(x,data[quantities[ind_ell]][ik],label=quantities[ind_ell])
-    ax[1].legend(loc=2)
+            ax[2].plot(x,data[quantities[ind_ell]][ik],label=quantities[ind_ell])
+    ax[2].legend(loc=2)
 
     for q in range(6,10):
-        ax[2].plot(x,data[quantities[q]][ik],label=quantities[q])
-    ax[2].legend(loc=2)
+        ax[3].plot(x,data[quantities[q]][ik],label=quantities[q])
+    ax[3].legend(loc=2)
 plt.show()
