@@ -28,7 +28,7 @@ class Perturbations{
     Vector k_array = Utils::logspace(log(k_min),log(k_max),n_k);
     
     // Start and end of the time-integration
-    const int n_x        = 2000;
+    const int n_x        = 10000;
     const double x_start = Constants.x_start;
     const double x_end   = Constants.x_end;
     // Set up logarithmic scale factor

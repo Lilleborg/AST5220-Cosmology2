@@ -484,9 +484,57 @@ void Perturbations::compute_source_functions(){
   Vector2D term3(n_x,Vector(n_k));
   Vector2D term4(n_x,Vector(n_k));
 
+  std::string data_path ("../data_testing/");
+  std::ofstream fp_k_values(data_path + "perturbations_k_values.txt");
+  fp_k_values << "k_values per Mpc: | k_values: | horizon entry (x):\n";
+
   // Compute source functions
-  for(auto ik = 0; ik < k_array.size(); ik++){
+  for(auto ik = 1; ik < k_array.size(); ik++){
     const double k = k_array[ik];
+    const double k_Mpc = k*Constants.Mpc;
+
+    // Find and write horizon entry
+    printf("k: %e, k_Mpc: %f",k,k_Mpc);
+    double horizon_entry_x = Utils::binary_search_for_value(cosmo->eta_of_x_spline,1.0/k,
+                                  std::pair(Constants.x_start,Constants.x_end));
+    fp_k_values << std::fixed <<  k_Mpc << " | " << 
+        std::scientific << k << " | " << horizon_entry_x << "\n";
+
+    // Configure filename and write output
+    std::ostringstream stream_kvales;
+    stream_kvales << std::fixed << std::setprecision(5);
+    stream_kvales << k_Mpc;
+    std::string filename = data_path + "testing_perturbations_k" + stream_kvales.str() + ".txt";
+    std::string filename_components = data_path + "component_test_k" + stream_kvales.str() + ".txt";
+
+    std::ofstream ST_fp(filename.c_str());
+    std::cout << "\nWriting output to " << filename << "\n";
+    std::ofstream comp_fp(filename_components.c_str());
+
+    comp_fp << "k-value: " << k_Mpc << " " << k << "\n";
+    comp_fp << std::setw(15) << "x";
+    comp_fp << std::setw(15) << "dPsi";
+    comp_fp << std::setw(15) << "dPhi";
+    comp_fp << "\n";
+
+    ST_fp << "k-value: " << k_Mpc << " " << k << "\n";
+    ST_fp << std::setw(15) << "x";
+    ST_fp << std::setw(15) << "ST";
+    ST_fp << std::setw(15) << "ST*j_5";
+    ST_fp << std::setw(15) << "ST*j_50";
+    ST_fp << std::setw(15) << "ST*j_100";
+    ST_fp << std::setw(15) << "arg";
+    ST_fp << std::setw(15) << "term1";
+    ST_fp << std::setw(15) << "term2";
+    ST_fp << std::setw(15) << "term3";
+    ST_fp << std::setw(15) << "term4";
+    #define ell_loop int ell = 5; ell < 506; ell+=50
+    for (ell_loop)
+    {
+    ST_fp << std::setw(15) << "j_" + std::to_string(ell);
+    }
+    ST_fp << "\n";
+
     for(auto ix = 0; ix < x_array_full.size(); ix++){
       const double x = x_array_full[ix];
 
@@ -528,85 +576,36 @@ void Perturbations::compute_source_functions(){
                             + term2[ix][ik]
                             - term3[ix][ik]
                             + term4[ix][ik];
-    }
-  }
 
-  std::string data_path ("../data_testing/");
-  std::ofstream fp_k_values(data_path + "perturbations_k_values.txt");
-  fp_k_values << "k_values per Mpc: | k_values: | horizon entry (x):\n";
-  std::cout << "\nWriting output to " << data_path << " with following k-values per Mpc\n";
-  for (int ik = 1; ik < k_array.size(); ik++)
-  {
-    double k_value = k_array[ik]*Constants.Mpc;
-    std::cout << k_value << std::endl;
-    // Find and write horizon entry
-    double horizon_entry_x = Utils::binary_search_for_value(cosmo->eta_of_x_spline,1.0/(k_value/Constants.Mpc),
-                                  std::pair(Constants.x_start,Constants.x_end));
-    std::cout << "found horizon " << std::endl;
-    fp_k_values << std::fixed <<  k_value << " | " << 
-        std::scientific << k_value/Constants.Mpc << " | " << horizon_entry_x << "\n";
-
-    // Configure filename and write output
-    std::ostringstream stream_kvales;
-    stream_kvales << std::fixed << std::setprecision(5);
-    stream_kvales << k_value;
-    std::string filename = data_path + "testing_perturbations_k" + stream_kvales.str() + ".txt";
-    std::string filename_components = data_path + "component_test" + stream_kvales.str() + ".txt";
-
-    std::ofstream ST_fp(filename.c_str());
-    std::ofstream comp_fp(filename_components.c_str());
-
-    comp_fp << "k-value: " << k_value << " " << k_value/Constants.Mpc << "\n";
-    comp_fp << std::setw(15) << "x";
-    comp_fp << std::setw(15) << "y0";
-
-    ST_fp << "k-value: " << k_value << " " << k_value/Constants.Mpc << "\n";
-    ST_fp << std::setw(15) << "x";
-    ST_fp << std::setw(15) << "ST";
-    ST_fp << std::setw(15) << "ST*j_5";
-    ST_fp << std::setw(15) << "ST*j_50";
-    ST_fp << std::setw(15) << "ST*j_100";
-    ST_fp << std::setw(15) << "arg";
-    ST_fp << std::setw(15) << "term1";
-    ST_fp << std::setw(15) << "term2";
-    ST_fp << std::setw(15) << "term3";
-    ST_fp << std::setw(15) << "term4";
-    #define ell_loop int ell = 5; ell < 506; ell+=50
-    for (ell_loop)
-    {
-    ST_fp << std::setw(15) << "j_" + std::to_string(ell);
-    }
-    ST_fp << "\n";
-
-    for (int ix = 0; ix < x_array_full.size(); ix++)
-    {
-      double x = x_array_full[ix];
       if (x<0)
-      {
-      double arg = k_value/Constants.Mpc * (cosmo->eta_of_x(0.0) - cosmo->eta_of_x(x));
-      ST_fp << std::setw(15) << x;
-      ST_fp << std::setw(15) << ST_array_2D[ix][ik];
-      ST_fp << std::setw(15) << ST_array_2D[ix][ik]*Utils::j_ell(5,arg);
-      ST_fp << std::setw(15) << ST_array_2D[ix][ik]*Utils::j_ell(50,arg);
-      ST_fp << std::setw(15) << ST_array_2D[ix][ik]*Utils::j_ell(100,arg);
-      ST_fp << std::setw(15) << arg;
-      ST_fp << std::setw(15) << term1[ix][ik];
-      ST_fp << std::setw(15) << term2[ix][ik];
-      ST_fp << std::setw(15) << term3[ix][ik];
-      ST_fp << std::setw(15) << term4[ix][ik];
-      for (ell_loop)
-        {
-        ST_fp << std::setw(15) << Utils::j_ell(ell,arg);
+          {
+          double arg = k * (cosmo->eta_of_x(0.0) - cosmo->eta_of_x(x));
+          ST_fp << std::setw(15) << x;
+          ST_fp << std::setw(15) << ST_array_2D[ix][ik];
+          ST_fp << std::setw(15) << ST_array_2D[ix][ik]*Utils::j_ell(5,arg);
+          ST_fp << std::setw(15) << ST_array_2D[ix][ik]*Utils::j_ell(50,arg);
+          ST_fp << std::setw(15) << ST_array_2D[ix][ik]*Utils::j_ell(100,arg);
+          ST_fp << std::setw(15) << arg;
+          ST_fp << std::setw(15) << term1[ix][ik];
+          ST_fp << std::setw(15) << term2[ix][ik];
+          ST_fp << std::setw(15) << term3[ix][ik];
+          ST_fp << std::setw(15) << term4[ix][ik];
+
+          comp_fp << std::setw(15) << x;
+          comp_fp << std::setw(15) << dPsi_dx;
+          comp_fp << std::setw(15) << dPhi_dx;
+          for (ell_loop)
+            {
+            ST_fp << std::setw(15) << Utils::j_ell(ell,arg);
+            }
+          ST_fp << "\n";
+          comp_fp << "\n";
         }
-      ST_fp << "\n";
-      }
     }
     ST_fp.close();
-    // pert.output(k_value/Constants.Mpc, data_path + filename);
+    comp_fp.close();
   }
   fp_k_values.close();
-  std::cout << std::endl;
-
 
   // Spline the source function
   ST_spline.create(x_array_full, k_array, ST_array_2D, "Source_Temp_x_k");

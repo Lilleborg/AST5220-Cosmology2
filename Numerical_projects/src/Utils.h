@@ -45,7 +45,7 @@ extern struct ConstantsAndUnits {
   
   // Min and max k-value
   const double k_min = 0.00005 / Mpc;
-  const double k_max = 0.3     / Mpc;
+  const double k_max = 0.05     / Mpc;
   
   // Min and max x-value
   const double x_start_cosmo = -20; // Value used in milestone1 to deal with boundary
