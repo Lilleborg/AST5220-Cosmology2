@@ -551,8 +551,14 @@ void Perturbations::compute_source_functions(){
     stream_kvales << std::fixed << std::setprecision(5);
     stream_kvales << k_value;
     std::string filename = data_path + "testing_perturbations_k" + stream_kvales.str() + ".txt";
+    std::string filename_components = data_path + "component_test" + stream_kvales.str() + ".txt";
 
     std::ofstream ST_fp(filename.c_str());
+    std::ofstream comp_fp(filename_components.c_str());
+
+    comp_fp << "k-value: " << k_value << " " << k_value/Constants.Mpc << "\n";
+    comp_fp << std::setw(15) << "x";
+    comp_fp << std::setw(15) << "y0";
 
     ST_fp << "k-value: " << k_value << " " << k_value/Constants.Mpc << "\n";
     ST_fp << std::setw(15) << "x";
