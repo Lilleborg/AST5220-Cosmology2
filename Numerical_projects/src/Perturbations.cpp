@@ -487,6 +487,10 @@ void Perturbations::compute_source_functions(){
 
   Vector2D term2_1(n_x,Vector(n_k));
   Vector2D term2_2(n_x,Vector(n_k));
+  Vector2D term3_1(n_x,Vector(n_k));
+  Vector2D term3_2(n_x,Vector(n_k));
+  Vector2D term3_3(n_x,Vector(n_k));
+  
 
   // Compute source functions
   for(auto ik = 0; ik < n_k; ik++){
@@ -514,7 +518,7 @@ void Perturbations::compute_source_functions(){
       const double dPhi_dx        = dPhi_dx_spline(x,k);
       const double Pi             = get_Pi(x,k);
       const double dPi_dx         = Pi_spline.deriv_x(x,k);
-      const double ddPi_ddx         = Pi_spline.deriv_xx(x,k);
+      const double ddPi_ddx       = Pi_spline.deriv_xx(x,k);
       const double v_b            = get_v_b(x,k);
       const double dv_b_dx        = dv_b_dx_spline(x,k);
 
@@ -527,7 +531,11 @@ void Perturbations::compute_source_functions(){
       term2_1[ix][ik] = dPsi_dx;
       term2_2[ix][ik] = dPhi_dx;
 
-      term3[ix][ik] = (dH_p_dx*g_tilde*v_b + H_p*dg_tilde_dx*v_b + H_p*g_tilde*dv_b_dx)/ck;
+      term3[ix][ik] = - (dH_p_dx*g_tilde*v_b + H_p*dg_tilde_dx*v_b + H_p*g_tilde*dv_b_dx)/ck;
+      term3_1[ix][ik] = dH_p_dx*g_tilde*v_b/ck;
+      term3_2[ix][ik] = H_p*dg_tilde_dx*v_b/ck;
+      term3_3[ix][ik] = H_p*g_tilde*dv_b_dx/ck;
+
       term4[ix][ik] = 3.0/(4.0*ck*ck)*(
                       Pi*g_tilde*(H_p*ddH_p_ddx + dH_p_dx*dH_p_dx)
                       + 3*H_p*dH_p_dx*(dg_tilde_dx*Pi + g_tilde*dPi_dx)
@@ -536,7 +544,7 @@ void Perturbations::compute_source_functions(){
       // Temperature source
       ST_array_2D[ix][ik] = term1[ix][ik]
                             + term2[ix][ik]
-                            - term3[ix][ik]
+                            + term3[ix][ik]
                             + term4[ix][ik];
     }
   }
@@ -548,8 +556,8 @@ void Perturbations::compute_source_functions(){
   std::ofstream fp_k_values(data_path + "perturbations_k_values.txt");
   fp_k_values << "k_values per Mpc: | k_values: | horizon entry (x):\n";
 
-  for (int ik = 0; ik < n_k; ik+=10)
-  {
+  for (int ik = 0; ik < n_k; ik+=20)
+  { 
     if (ik==0)
     {
       continue;
@@ -558,9 +566,9 @@ void Perturbations::compute_source_functions(){
     const double k = k_array[ik];
     const double k_Mpc = k*Constants.Mpc;
     // Find and write horizon entry
-    printf("k: %e, k_Mpc: %.10f",k,k_Mpc);
+    printf("ik: %d, k: %e, k_Mpc: %.10f\n",ik,k,k_Mpc);
     double horizon_entry_x = Utils::binary_search_for_value(cosmo->eta_of_x_spline,1.0/k,
-                                  std::pair(Constants.x_start,Constants.x_end));
+                                  std::pair(Constants.x_start,Constants.x_end_cosmo));
     fp_k_values << std::fixed << std::setprecision(5) <<  k_Mpc << " | " << 
         std::scientific << k << " | " << horizon_entry_x << "\n";
 
@@ -571,13 +579,18 @@ void Perturbations::compute_source_functions(){
     std::string filename_components = data_path + "component_test_k" + stream_kvales.str() + ".txt";
 
     std::ofstream ST_fp(filename.c_str());
-    std::cout << "\nWriting output to " << filename << "\n";
+    std::cout << "Writing output to " << filename << "\n";
     std::ofstream comp_fp(filename_components.c_str());
 
     comp_fp << "k-value: " << k_Mpc << " " << k << "\n";
     comp_fp << std::setw(15) << "x";
     comp_fp << std::setw(15) << "dPsi";
     comp_fp << std::setw(15) << "dPhi";
+    
+    comp_fp << std::setw(15) << "term3_1";
+    comp_fp << std::setw(15) << "term3_2";
+    comp_fp << std::setw(15) << "term3_3";
+    
     comp_fp << "\n";
 
     ST_fp << "k-value: " << k_Mpc << " " << k << "\n";
@@ -620,6 +633,10 @@ void Perturbations::compute_source_functions(){
           comp_fp << std::setw(15) << x;
           comp_fp << std::setw(15) << term2_1[ix][ik];
           comp_fp << std::setw(15) << term2_2[ix][ik];
+          
+          comp_fp << std::setw(15) << term3_1[ix][ik];
+          comp_fp << std::setw(15) << term3_2[ix][ik];
+          comp_fp << std::setw(15) << term3_3[ix][ik];
 
           for (ell_loop)
             {

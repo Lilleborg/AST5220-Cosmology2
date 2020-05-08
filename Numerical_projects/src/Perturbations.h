@@ -20,7 +20,7 @@ class Perturbations{
     RecombinationHistory *rec  = nullptr;
    
     // The scales we integrate over
-    const int n_k        = 100;
+    const int n_k        = 101;
     const double k_min   = Constants.k_min;
     const double k_max   = Constants.k_max;
     // Set up logarithmic (using base e as for logarithmic scale factor) 
