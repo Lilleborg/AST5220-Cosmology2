@@ -20,7 +20,7 @@ class Perturbations{
     RecombinationHistory *rec  = nullptr;
    
     // The scales we integrate over
-    const int n_k        = 101;
+    const int n_k        = 151;
     const double k_min   = Constants.k_min;
     const double k_max   = Constants.k_max;
     // Set up logarithmic (using base e as for logarithmic scale factor) 
@@ -28,7 +28,7 @@ class Perturbations{
     Vector k_array = Utils::logspace(log(k_min),log(k_max),n_k);
     
     // Start and end of the time-integration
-    const int n_x        = 10000;
+    const int n_x        = 2000;
     const double x_start = Constants.x_start;
     const double x_end   = Constants.x_end;
     // Set up logarithmic scale factor

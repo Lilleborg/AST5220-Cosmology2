@@ -21,21 +21,22 @@ OPTIONS =
 
 # Add bounds checking
 # OPTIONS += -D_GLIBCXX_DEBUG
-OPTIONS += -fsanitize=address
+# OPTIONS += -fsanitize=address
 
 # Show warnings if atempting to evaluate a spline out of bounds
-OPTIONS += -D_SPLINE_WARNINGS_ON
+# OPTIONS += -D_SPLINE_WARNINGS_ON
 
 # Show info about the solution as we integrate
-# OPTIONS = -D_FIDUCIAL_VERBOSE_ODE_SOLVER_TRUE
+# OPTIONS += -D_FIDUCIAL_VERBOSE_ODE_SOLVER_TRUE
+# OPTIONS += -D_SOURCE_FUNCTION_DEBUGGING
 
 # Add OpenMP parallelization
 # OPTIONS += -D_USEOPEMP
 # CC += -Xpreprocessor -fopenmp
 
 # Add bessel function library (otherwise use the GSL one)
-#OPTIONS += -D_COMPLEX_BESSEL
-#LIBS += -lgfortran -lcomplex_bessel
+# OPTIONS += -D_COMPLEX_BESSEL
+# LIBS += -lgfortran -lcomplex_bessel
 #=======================================================
 
 C = -O3 -g $(OPTIONS)
