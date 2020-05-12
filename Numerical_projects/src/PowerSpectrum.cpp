@@ -88,7 +88,6 @@ void PowerSpectrum::generate_bessel_function_splines()
   Utils::EndTiming("besselspline");
   // std::string data_path ("../data_testing/");
   // std::ofstream fp_bessel_spline (data_path + "test_bessel_spline.txt");
-
   // fp_bessel_spline W15 "arg";
   // for (int i = 0; i < ells.size(); i++)
   // {
@@ -104,7 +103,6 @@ void PowerSpectrum::generate_bessel_function_splines()
   //     fp_bessel_spline W15 j_ell_splines[i](arg_array[i_arg]);
   //   }
   //   fp_bessel_spline << "\n";
-    
   // }
   // fp_bessel_spline.close();
 }
@@ -125,27 +123,30 @@ Vector2D PowerSpectrum::line_of_sight_integration_single(
 
   // Set up initial condition for Theta_ell equal zero for x_start
   Vector Theta_ell_IC{0};
+  // Set up ODESolver object to be used for the integration
+  double hstart = 1e-4, abserr = 1e-10, relerr = 1e-10;
+  ODESolver ODE_theta_ell(hstart,abserr,relerr);
 
+  // Loop over the different ks
   for(int ik = 0; ik < k_array.size(); ik++)
   {
     const double k = k_array[ik];
+    // Loop over the different ells
     for (int iell = 0; iell < ells.size(); iell++)
     {
-      const double ell = ells[iell];
-      ODESolver ODE_theta_ell;
+      // Set up ODE rhs for this k and ell
       ODEFunction dtheta_ell_dx = [&](double x, const double *y, double *dydx)
       {
         const double arg = k*(cosmo->eta_of_x_spline(0.0)-cosmo->eta_of_x_spline(x));
         dydx[0] = source_function(x,k)* j_ell_splines[iell](arg);
         return GSL_SUCCESS;
       };
+      // Solve the ODE
+      ODE_theta_ell.solve(dtheta_ell_dx,x_array,Theta_ell_IC);
+      // Extract result today
+      result[iell][ik] = ODE_theta_ell.get_final_data_by_component(0);
     }
-    
-    
-
-    // Store the result for Source_ell(k) in results[ell][ik]
   }
-
   Utils::EndTiming("lineofsight");
   return result;
 }
@@ -153,45 +154,28 @@ Vector2D PowerSpectrum::line_of_sight_integration_single(
 //====================================================
 // Do the line of sight integration
 //====================================================
-void PowerSpectrum::line_of_sight_integration(Vector & k_array)
-{
-  const int n_k        = k_array.size();
-  const int n          = 100;
-  const int nells      = ells.size();
+// void PowerSpectrum::line_of_sight_integration(Vector & k_array)
+// {
+//   const int n_k        = k_array.size();
+//   const int n          = 100;
+//   const int nells      = ells.size();
   
-  // Make storage for the splines we are to create
-  thetaT_ell_of_k_spline = std::vector<Spline>(nells);
+//   // Make storage for the splines we are to create
+//   thetaT_ell_of_k_spline = std::vector<Spline>(nells);
 
-  //============================================================================
-  // TODO: Solve for Theta_ell(k) and spline the result
-  //============================================================================
+//   //============================================================================
+//   // TODO: Solve for Theta_ell(k) and spline the result
+//   //============================================================================
 
-  // Make a function returning the source function
-  std::function<double(double,double)> source_function_T = [&](double x, double k){
-    return pert->get_Source_T(x,k);
-  };
+//   // Make a function returning the source function
+//   std::function<double(double,double)> source_function_T = [&](double x, double k){
+//     return pert->get_Source_T(x,k);
+//   };
 
-  // Do the line of sight integration
-  Vector2D thetaT_ell_of_k = line_of_sight_integration_single(k_array, source_function_T);
+//   // Do the line of sight integration
+//   Vector2D thetaT_ell_of_k = line_of_sight_integration_single(k_array, source_function_T);
 
-  // Spline the result and store it in thetaT_ell_of_k_spline
-  // ...
-  // ...
-  // ...
-  // ...
-
-  //============================================================================
-  // TODO: Solve for ThetaE_ell(k) and spline
-  //============================================================================
-  if(Constants.polarization){
-
-    // ...
-    // ...
-    // ...
-    // ...
-
-  }
-}
+// }
 
 //====================================================
 // Compute Cell (could be TT or TE or EE) 
