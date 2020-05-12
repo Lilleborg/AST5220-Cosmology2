@@ -1,4 +1,5 @@
 #include"PowerSpectrum.h"
+#define W15 << std::setw(15) <<
 
 //====================================================
 // Constructors
@@ -16,7 +17,8 @@ PowerSpectrum::PowerSpectrum(
 //====================================================
 // Do all the solving
 //====================================================
-void PowerSpectrum::solve(){
+void PowerSpectrum::solve()
+{
 
   //=========================================================================
   // TODO: Choose the range of k's and the resolution to compute Theta_ell(k)
@@ -34,14 +36,14 @@ void PowerSpectrum::solve(){
   // TODO: Line of sight integration to get Theta_ell(k)
   // Implement line_of_sight_integration
   //=========================================================================
-  line_of_sight_integration(k_array);
+  // line_of_sight_integration(k_array);
 
   //=========================================================================
   // TODO: Integration to get Cell by solving dCell^f/dlogk = Delta(k) * f_ell(k)^2
   // Implement solve_for_cell
   //=========================================================================
-  auto cell_TT = solve_for_cell(log_k_array, thetaT_ell_of_k_spline, thetaT_ell_of_k_spline);
-  cell_TT_spline.create(ells, cell_TT, "Cell_TT_of_ell");
+  // auto cell_TT = solve_for_cell(log_k_array, thetaT_ell_of_k_spline, thetaT_ell_of_k_spline);
+  // cell_TT_spline.create(ells, cell_TT, "Cell_TT_of_ell");
   
   //=========================================================================
   // TODO: Do the same for polarization...
@@ -56,41 +58,66 @@ void PowerSpectrum::solve(){
 // Generate splines of j_ell(z) needed for LOS integration
 //====================================================
 
-void PowerSpectrum::generate_bessel_function_splines(){
+void PowerSpectrum::generate_bessel_function_splines()
+{
   Utils::StartTiming("besselspline");
   
   // Make storage for the splines
   j_ell_splines = std::vector<Spline>(ells.size());
-    
-  //=============================================================================
-  // TODO: Compute splines for bessel functions j_ell(z)
-  // Choose a suitable range for each ell
-  // NB: you don't want to go larger than z ~ 40000, then the bessel routines
-  // might break down. Use j_ell(z) = Utils::j_ell(ell, z)
-  //=============================================================================
-
-  for(size_t i = 0; i < ells.size(); i++){
+  
+  // Argument for bessel functions
+  const int n_arg = 2000;
+  const double arg_min = 0;
+  const double arg_max = 5000;
+  Vector arg_array = Utils::linspace(arg_min,arg_max,n_arg);
+  Vector j_ell_array(n_arg);
+ 
+  // Loop over the different ells used
+  for(int i = 0; i < ells.size(); i++){
     const int ell = ells[i];
-
-    // ...
-    // ...
-    // ...
-    // ...
-
+    // Loop over the range of argument values
+    for (int i_arg = 0; i_arg < n_arg; i_arg++)
+    {
+      // Store the j_ell values to be used in the spline
+      j_ell_array[i_arg] = Utils::j_ell(ell,arg_array[i_arg]);
+    }
     // Make the j_ell_splines[i] spline
+    std::string splinename("j_ell_spline_"+std::to_string(ell));
+    j_ell_splines[i].create(arg_array,j_ell_array,splinename);
   }
 
   Utils::EndTiming("besselspline");
+  // std::string data_path ("../data_testing/");
+  // std::ofstream fp_bessel_spline (data_path + "test_bessel_spline.txt");
+
+  // fp_bessel_spline W15 "arg";
+  // for (int i = 0; i < ells.size(); i++)
+  // {
+  //   const int ell = ells[i];
+  //   fp_bessel_spline W15 ell;
+  // }
+  // fp_bessel_spline << "\n";
+  // for (int i_arg = 0; i_arg < n_arg; i_arg++)
+  // {
+  //   fp_bessel_spline W15 arg_array[i_arg];
+  //   for (int i = 0; i < ells.size(); i++)
+  //   {
+  //     fp_bessel_spline W15 j_ell_splines[i](arg_array[i_arg]);
+  //   }
+  //   fp_bessel_spline << "\n";
+    
+  // }
+  // fp_bessel_spline.close();
 }
 
 //====================================================
 // Do the line of sight integration for a single
 // source function
 //====================================================
-
 Vector2D PowerSpectrum::line_of_sight_integration_single(
     Vector & k_array, 
-    std::function<double(double,double)> &source_function){
+    std::function<double(double,double)> &source_function)
+{
   Utils::StartTiming("lineofsight");
 
   // Make storage for the results
@@ -117,7 +144,8 @@ Vector2D PowerSpectrum::line_of_sight_integration_single(
 //====================================================
 // Do the line of sight integration
 //====================================================
-void PowerSpectrum::line_of_sight_integration(Vector & k_array){
+void PowerSpectrum::line_of_sight_integration(Vector & k_array)
+{
   const int n_k        = k_array.size();
   const int n          = 100;
   const int nells      = ells.size();

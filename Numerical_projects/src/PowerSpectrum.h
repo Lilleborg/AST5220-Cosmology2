@@ -31,7 +31,14 @@ class PowerSpectrum {
     const int n_k      = 100;
     const double k_min = Constants.k_min;
     const double k_max = Constants.k_max;
-    
+    Vector k_array     = Utils::logspace(log(k_min),log(k_max),n_k);
+
+    // The x vector
+    const int n_x      = 2000;
+    const double x_min = Constants.x_start;
+    const double x_max = 0;
+    Vector x_array     = Utils::linspace(x_min,x_max,n_x);
+
     // The ells's we will compute Theta_ell and Cell for
     Vector ells{ 
         2,    3,    4,    5,    6,    7,    8,    10,   12,   15,   
