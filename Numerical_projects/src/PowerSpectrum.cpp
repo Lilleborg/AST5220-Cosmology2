@@ -57,7 +57,6 @@ void PowerSpectrum::solve()
 //====================================================
 // Generate splines of j_ell(z) needed for LOS integration
 //====================================================
-
 void PowerSpectrum::generate_bessel_function_splines()
 {
   Utils::StartTiming("besselspline");
@@ -110,6 +109,7 @@ void PowerSpectrum::generate_bessel_function_splines()
   // fp_bessel_spline.close();
 }
 
+// int PowerSpectrum::rhs_theta_ell_ode(double x, double k, )
 //====================================================
 // Do the line of sight integration for a single
 // source function
@@ -123,16 +123,25 @@ Vector2D PowerSpectrum::line_of_sight_integration_single(
   // Make storage for the results
   Vector2D result = Vector2D(ells.size(), Vector(k_array.size()));
 
-  for(size_t ik = 0; ik < k_array.size(); ik++){
+  // Set up initial condition for Theta_ell equal zero for x_start
+  Vector Theta_ell_IC{0};
 
-    //=============================================================================
-    // TODO: Implement to solve for the general line of sight integral 
-    // F_ell(k) = Int dx jell(k(eta-eta0)) * S(x,k) for all the ell values for the 
-    // given value of k
-    //=============================================================================
-    // ...
-    // ...
-    // ...
+  for(int ik = 0; ik < k_array.size(); ik++)
+  {
+    const double k = k_array[ik];
+    for (int iell = 0; iell < ells.size(); iell++)
+    {
+      const double ell = ells[iell];
+      ODESolver ODE_theta_ell;
+      ODEFunction dtheta_ell_dx = [&](double x, const double *y, double *dydx)
+      {
+        const double arg = k*(cosmo->eta_of_x_spline(0.0)-cosmo->eta_of_x_spline(x));
+        dydx[0] = source_function(x,k)* j_ell_splines[iell](arg);
+        return GSL_SUCCESS;
+      };
+    }
+    
+    
 
     // Store the result for Source_ell(k) in results[ell][ik]
   }

@@ -74,7 +74,7 @@ class PowerSpectrum {
         Vector & k_array, 
         std::function<double(double,double)> &source_function);
     
-    // Splines of the reusult of the LOS integration
+    // Splines of the result of the LOS integration
     // Theta_ell(k) and ThetaE_ell(k) for polarization
     std::vector<Spline> thetaT_ell_of_k_spline;
     std::vector<Spline> thetaE_ell_of_k_spline;
