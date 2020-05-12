@@ -77,33 +77,35 @@ int main(int argc, char **argv){
  
   // Solve the perturbations
   Perturbations pert(&cosmo, &rec);
-  // pert.info();
-  // pert.solve();
+  pert.info();
+  pert.solve();
   
-  // // Experimented with different values and found these to present the different regimes
-  // Vector k_values = {0.3,0.1,0.013,0.007,0.001,0.0005};
+  Utils::StartTiming("Writing output for perturbations");
+  // Experimented with different values and found these to present the different regimes
+  Vector k_values = {0.3,0.1,0.013,0.007,0.001,0.0005};
   
-  // std::ofstream fp_k_values(data_path + "perturbations_k_values.txt");
-  // fp_k_values << "k_values per Mpc: | k_values: | horizon entry (x):\n";
-  // std::cout << "\nWriting output to " << data_path << " with following k-values per Mpc\n";
-  // for (auto k_value:k_values)
-  // {
-  //   std::cout << k_value << std::endl;
-  //   // Find and write horizon entry
-  //   double horizon_entry_x = Utils::binary_search_for_value(cosmo.eta_of_x_spline,1.0/(k_value/Constants.Mpc),
-  //                                 std::pair(Constants.x_start,Constants.x_end));
-  //   fp_k_values << std::fixed <<  k_value << " | " << 
-  //       std::scientific << k_value/Constants.Mpc << " | " << horizon_entry_x << "\n";
+  std::ofstream fp_k_values(data_path + "perturbations_k_values.txt");
+  fp_k_values << "k_values per Mpc: | k_values: | horizon entry (x):\n";
+  std::cout << "\nWriting output to " << data_path << " with following k-values per Mpc\n";
+  for (auto k_value:k_values)
+  {
+    std::cout << k_value << std::endl;
+    // Find and write horizon entry
+    double horizon_entry_x = Utils::binary_search_for_value(cosmo.eta_of_x_spline,1.0/(k_value/Constants.Mpc),
+                                  std::pair(Constants.x_start,Constants.x_end));
+    fp_k_values << std::fixed <<  k_value << " | " << 
+        std::scientific << k_value/Constants.Mpc << " | " << horizon_entry_x << "\n";
 
-  //   // Configure filename and write output
-  //   std::ostringstream stream_kvales;
-  //   stream_kvales << std::fixed << std::setprecision(5);
-  //   stream_kvales << k_value;
-  //   std::string filename = "perturbations_k" + stream_kvales.str() + ".txt";
-  //   pert.output(k_value/Constants.Mpc, data_path + filename);
-  // }
-  // fp_k_values.close();
-  // std::cout << std::endl;
+    // Configure filename and write output
+    std::ostringstream stream_kvales;
+    stream_kvales << std::fixed << std::setprecision(5);
+    stream_kvales << k_value;
+    std::string filename = "perturbations_k" + stream_kvales.str() + ".txt";
+    pert.output(k_value/Constants.Mpc, data_path + filename);
+  }
+  fp_k_values.close();
+  std::cout << std::endl;
+  Utils::EndTiming("Writing output for perturbations");
   
   //=========================================================================
   // Module IV

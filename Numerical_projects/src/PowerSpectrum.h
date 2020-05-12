@@ -66,17 +66,18 @@ class PowerSpectrum {
     
     // Do LOS integration for all ells and all k's in the given k_array
     // and for all the source functions (temperature, polarization, ...)
-    void line_of_sight_integration(Vector & k_array);
+    // void line_of_sight_integration(Vector & k_array);
   
     // Do the line of sight integration for a single quantity
     // for all ells by providing a source_function(x,k) (can be temp, pol, ...)
-    Vector2D line_of_sight_integration_single(
-        Vector & k_array, 
-        std::function<double(double,double)> &source_function);
+    // Only having a single source function, so only using this method
+    void line_of_sight_integration_single();
+        // Vector & k_array, 
+        // std::function<double(double,double)> &source_function);
     
     // Splines of the result of the LOS integration
     // Theta_ell(k) and ThetaE_ell(k) for polarization
-    Spline2D thetaT_ell_of_k_spline;
+    Spline2D thetaT_ell_of_k_spline2D{"thetaT_ell_of_k_spline2D"};
     // std::vector<Spline> thetaT_ell_of_k_spline;
     // std::vector<Spline> thetaE_ell_of_k_spline;
     

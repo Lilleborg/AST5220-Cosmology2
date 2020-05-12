@@ -23,8 +23,8 @@ void PowerSpectrum::solve()
   //=========================================================================
   // TODO: Choose the range of k's and the resolution to compute Theta_ell(k)
   //=========================================================================
-  Vector k_array;
-  Vector log_k_array = log(k_array);
+  // Vector k_array;
+  // Vector log_k_array = log(k_array);
 
   //=========================================================================
   // TODO: Make splines for j_ell. 
@@ -37,6 +37,7 @@ void PowerSpectrum::solve()
   // Implement line_of_sight_integration
   //=========================================================================
   // line_of_sight_integration(k_array);
+  line_of_sight_integration_single();
 
   //=========================================================================
   // TODO: Integration to get Cell by solving dCell^f/dlogk = Delta(k) * f_ell(k)^2
@@ -112,9 +113,7 @@ void PowerSpectrum::generate_bessel_function_splines()
 // Do the line of sight integration for a single
 // source function
 //====================================================
-Vector2D PowerSpectrum::line_of_sight_integration_single(
-    Vector & k_array, 
-    std::function<double(double,double)> &source_function)
+void PowerSpectrum::line_of_sight_integration_single()
 {
   Utils::StartTiming("lineofsight");
 
@@ -138,7 +137,7 @@ Vector2D PowerSpectrum::line_of_sight_integration_single(
       ODEFunction dtheta_ell_dx = [&](double x, const double *y, double *dydx)
       {
         const double arg = k*(cosmo->eta_of_x_spline(0.0)-cosmo->eta_of_x_spline(x));
-        dydx[0] = source_function(x,k)* j_ell_splines[iell](arg);
+        dydx[0] = pert->get_Source_T(x,k)*j_ell_splines[iell](arg);
         return GSL_SUCCESS;
       };
       // Solve the ODE
@@ -148,7 +147,8 @@ Vector2D PowerSpectrum::line_of_sight_integration_single(
     }
   }
   Utils::EndTiming("lineofsight");
-  return result;
+  
+  thetaT_ell_of_k_spline2D.create(ells,k_array,result,"thetaT_ell_of_k_spline2D");
 }
 
 //====================================================
