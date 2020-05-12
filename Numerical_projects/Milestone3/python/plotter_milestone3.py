@@ -12,11 +12,12 @@ mpl.rc('text', usetex=False)
 
 # Load perturbation data
 k_values, _, horizon_entry = np.loadtxt("../../data/perturbations_k_values.txt",skiprows=1,delimiter="|",unpack=True)
-quantities = ["x_array", "delta_cdm", "delta_b", "v_cdm", "v_b", "Phi", "Psi",\
-    "Pi","Theta0", "Theta1", "Theta2","Source_T","Source_T5","Source_T50","Source_T500"]
+quantities = np.loadtxt('../../data/perturbations_k{:.5f}.txt'.format(k_values[0]),skiprows=1,max_rows=1,dtype=str)
+# ["x_array", "delta_cdm", "delta_b", "v_cdm", "v_b", "Phi", "Psi",\
+#     "Pi","Theta0", "Theta1", "Theta2","Source_T","Source_T5","Source_T50","Source_T500"]
 data = {key: [] for key in quantities}
 for k_value in k_values:
-    loaded_data = np.loadtxt('../../data/perturbations_k{:.5f}.txt'.format(k_value),skiprows=1)
+    loaded_data = np.loadtxt('../../data/perturbations_k{:.5f}.txt'.format(k_value),skiprows=2)
     for i,q in enumerate(quantities):
         data[q].append(loaded_data[:,i])
 
@@ -26,7 +27,7 @@ xstar = round(x_times[0],2)
 xrec = x_times[1]
 xend = x_times[4]
 
-x_array = data["x_array"][0]
+x_array = data["x"][0]
 x_array_ticks = np.append(np.linspace(x_array.min(), x_array.max(), 6), 0)
 x_array_ticks = np.append(np.array(x_array_ticks,dtype=int), xstar)
 all_axes = []
@@ -55,8 +56,8 @@ all_axes.extend(matter_axes)
 theta_fig, theta_axes = plt.subplots(2,1,sharex=True,figsize=(6,9))
 theta0_ax,theta1_ax = theta_axes
 for ik,k in enumerate(k_values):
-    theta0_ax.plot(x_array,4*data["Theta0"][ik],label=r'$k = {:g}$'.format(k)+r'$/\rm{Mpc}$',linewidth=1.3,alpha=0.9)
-    theta1_ax.plot(x_array,-3*data["Theta1"][ik],linewidth=1.3,alpha=0.9)#,label=r'$k = {:g}$'.format(k)+r'$/\rm{Mpc}$')
+    theta0_ax.plot(x_array,4*data["Theta_0"][ik],label=r'$k = {:g}$'.format(k)+r'$/\rm{Mpc}$',linewidth=1.3,alpha=0.9)
+    theta1_ax.plot(x_array,-3*data["Theta_1"][ik],linewidth=1.3,alpha=0.9)#,label=r'$k = {:g}$'.format(k)+r'$/\rm{Mpc}$')
 
 handles, labels = theta0_ax.get_legend_handles_labels()
 theta_legend = theta_fig.legend(handles,labels,bbox_to_anchor=(1.0, 0.5), loc='center left')
@@ -96,8 +97,6 @@ for ax in all_axes:
     ax.set_xticklabels(x_array_ticks, rotation=25)
     for ik in range(len(k_values)):
         ax.axvline(x=horizon_entry[ik],linestyle=':',color='C{:0d}'.format(ik))
-    # Fill in recombination, using xrec and xstar, (Xe<0.5 and peak of visibility)
-    ax.axvspan(xrec,xend,alpha=0.3,color='C8')
 
 # Saving
 print("Saving ../figs/matter_pert.pdf")

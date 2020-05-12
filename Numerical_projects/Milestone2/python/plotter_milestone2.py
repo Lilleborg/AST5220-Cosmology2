@@ -129,7 +129,6 @@ for i, ax in enumerate(all_axes):
     ax.axvline(x=x_Peebles, linestyle='-.', color='C5', label=r'$x_{\rm{Peebles}}$', linewidth=1)
     ax.margins(x=0)
     ax.set_xlabel(r'$x = \ln(a)$')
-    ax.axvspan(xrec,xend,alpha=0.3,color='C8')
 
 # Final tweaking and saving
 # Xe and ne
