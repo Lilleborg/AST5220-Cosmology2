@@ -553,6 +553,10 @@ void Perturbations::compute_source_functions(){
   }
   // Spline the source function
   ST_spline.create(x_array_full, k_array, ST_array_2D, "Source_Temp_x_k");
+  SW_spline.create(x_array_full, k_array, term1, "SW_term");
+  ISW_spline.create(x_array_full, k_array, term2, "ISW_term");
+  Doppler_spline.create(x_array_full, k_array, term3, "Doppler_term");
+  Quadrupole_spline.create(x_array_full, k_array, term4, "Quadrupole_term");
 
   #ifdef _SOURCE_FUNCTION_DEBUGGING
     // Debugging source terms
@@ -706,6 +710,18 @@ double Perturbations::get_Pi(const double x, const double k) const{
 }
 double Perturbations::get_Source_T(const double x, const double k) const{
   return ST_spline(x,k);
+}
+double Perturbations::get_Source_SW(const double x, const double k) const{
+  return SW_spline(x,k);
+}
+double Perturbations::get_Source_ISW(const double x, const double k) const{
+  return ISW_spline(x,k);
+}
+double Perturbations::get_Source_Doppler(const double x, const double k) const{
+  return Doppler_spline(x,k);
+}
+double Perturbations::get_Source_Quad(const double x, const double k) const{
+  return Quadrupole_spline(x,k);
 }
 double Perturbations::get_Theta(const double x, const double k, const int ell) const{
   return vector_of_Theta_splines[ell](x,k);

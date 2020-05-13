@@ -31,12 +31,12 @@ class PowerSpectrum {
     const int n_k      = 2000;
     const double k_min = Constants.k_min;
     const double k_max = Constants.k_max;
-    // Vector k_array     = Utils::logspace(log(k_min),log(k_max),n_k);
-    Vector k_array = Utils::linspace(k_min,k_max,n_k);
+    Vector k_array     = Utils::logspace(log(k_min),log(k_max),n_k);
+    // Vector k_array = Utils::linspace(k_min,k_max,n_k);
     Vector log_k_array = log(k_array);
 
     // The x vector
-    const int n_x      = 1000;
+    const int n_x      = 500;
     const double x_min = Constants.x_start;
     const double x_max = 0;
     Vector x_array     = Utils::linspace(x_min,x_max,n_x);
@@ -47,9 +47,10 @@ class PowerSpectrum {
         20,   25,   30,   40,   50,   60,   70,   80,   90,   100,  
         120,  140,  160,  180,  200,  225,  250,  275,  300,  350,  
         400,  450,  500,  550,  600,  650,  700,  750,  800,  850,  
-        900,  950,  1000, 1050, 1100, 1150, 1200, 1250, 1300, 1350, 
-        1400, 1450, 1500, 1550, 1600, 1650, 1700, 1750, 1800, 1850, 
-        1900, 1950, 2000};
+        900,  950,  1000, 1050, 1100, 1150, 1200};
+        // , 1250, 1300, 1350, 
+        // 1400, 1450, 1500, 1550, 1600, 1650, 1700, 1750, 1800, 1850, 
+        // 1900, 1950, 2000};
    
     //=====================================================================
     // [1] Create bessel function splines needed for the LOS integration
@@ -68,18 +69,20 @@ class PowerSpectrum {
     
     // Do LOS integration for all ells and all k's in the given k_array
     // and for all the source functions (temperature, polarization, ...)
-    // void line_of_sight_integration(Vector & k_array);
+    void line_of_sight_integration();
   
     // Do the line of sight integration for a single quantity
     // for all ells by providing a source_function(x,k) (can be temp, pol, ...)
-    // Only having a single source function, so only using this method
-    void line_of_sight_integration_ST();
-        // Vector & k_array, 
-        // std::function<double(double,double)> &source_function);
+    Vector2D line_of_sight_integration_single(std::function<double(double,double)> &source_function);
     
     // Splines of the result of the LOS integration
     // Theta_ell(k) and ThetaE_ell(k) for polarization
     Spline2D thetaT_ell_of_k_spline2D{"thetaT_ell_of_k_spline2D"};
+    Spline2D thetaSW_ell_of_k_spline2D{"thetaSW_ell_of_k_spline2D"};
+    Spline2D thetaISW_ell_of_k_spline2D{"thetaISW_ell_of_k_spline2D"};
+    Spline2D thetaDoppler_ell_of_k_spline2D{"thetaDoppler_ell_of_k_spline2D"};
+    Spline2D thetaQuad_ell_of_k_spline2D{"thetaQuad_ell_of_k_spline2D"};
+    Spline2D thetag_tilde_ell_of_k_spline2D{"thetag_tilde_ell_of_k_spline2D"};
     // std::vector<Spline> thetaT_ell_of_k_spline;
     // std::vector<Spline> thetaE_ell_of_k_spline;
     
@@ -97,6 +100,11 @@ class PowerSpectrum {
 
     // Splines with the power-spectra
     Spline cell_TT_spline{"cell_TT_spline"};
+    Spline cell_SW_spline{"cell_SW_spline"};
+    Spline cell_ISW_spline{"cell_ISW_spline"};
+    Spline cell_Doppler_spline{"cell_Doppler_spline"};
+    Spline cell_Quad_spline{"cell_Quad_spline"};
+    Spline cell_g_tilde_spline{"cell_g_tilde_spline"};
     Spline cell_TE_spline{"cell_TE_spline"};
     Spline cell_EE_spline{"cell_EE_spline"};
 

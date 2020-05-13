@@ -19,40 +19,38 @@ PowerSpectrum::PowerSpectrum(
 //====================================================
 void PowerSpectrum::solve()
 {
-
   //=========================================================================
-  // TODO: Choose the range of k's and the resolution to compute Theta_ell(k)
-  //=========================================================================
-  // Vector k_array;
-  // Vector log_k_array = log(k_array);
-
-  //=========================================================================
-  // TODO: Make splines for j_ell. 
-  // Implement generate_bessel_function_splines
+  // Make splines for j_ell. 
   //=========================================================================
   generate_bessel_function_splines();
 
   //=========================================================================
-  // TODO: Line of sight integration to get Theta_ell(k)
-  // Implement line_of_sight_integration
+  // Line of sight integration to get Theta_ell(k)
   //=========================================================================
-  // line_of_sight_integration(k_array);
-  line_of_sight_integration_ST();
+  line_of_sight_integration();
 
   //=========================================================================
-  // TODO: Integration to get Cell by solving dCell^f/dlogk = Delta(k) * f_ell(k)^2
-  // Implement solve_for_cell
+  // Integration to get Cell by solving dCell^f/dlogk = Delta(k) * f_ell(k)^2
   //=========================================================================
+  
   Vector cell_TT = solve_for_cell(log_k_array, thetaT_ell_of_k_spline2D, thetaT_ell_of_k_spline2D);
   cell_TT_spline.create(ells, cell_TT, "Cell_TT_of_ell");
   
-  //=========================================================================
-  // TODO: Do the same for polarization...
-  //=========================================================================
-  // ...
-  // ...
-  // ...
-  // ...
+  Vector cell_SW = solve_for_cell(log_k_array, thetaSW_ell_of_k_spline2D, thetaSW_ell_of_k_spline2D);
+  cell_SW_spline.create(ells, cell_SW, "Cell_SW_of_ell");
+  
+  Vector cell_ISW = solve_for_cell(log_k_array, thetaISW_ell_of_k_spline2D, thetaISW_ell_of_k_spline2D);
+  cell_ISW_spline.create(ells, cell_ISW, "Cell_ISW_of_ell");
+  
+  Vector cell_Doppler = solve_for_cell(log_k_array, thetaDoppler_ell_of_k_spline2D, thetaDoppler_ell_of_k_spline2D);
+  cell_Doppler_spline.create(ells, cell_Doppler, "Cell_Doppler_of_ell");
+  
+  Vector cell_Quad = solve_for_cell(log_k_array, thetaQuad_ell_of_k_spline2D, thetaQuad_ell_of_k_spline2D);
+  cell_Quad_spline.create(ells, cell_Quad, "Cell_Quad_of_ell");
+  
+  Vector cell_g_tilde = solve_for_cell(log_k_array, thetag_tilde_ell_of_k_spline2D, thetag_tilde_ell_of_k_spline2D);
+  cell_g_tilde_spline.create(ells, cell_g_tilde, "Cell_g_tilde_of_ell");
+  
 }
 
 //====================================================
@@ -112,7 +110,7 @@ void PowerSpectrum::generate_bessel_function_splines()
   // Do the line of sight integration for a single
   // source function
   //====================================================
-void PowerSpectrum::line_of_sight_integration_ST()
+Vector2D PowerSpectrum::line_of_sight_integration_single(std::function<double(double,double)> &source_function)
 {
   Utils::StartTiming("lineofsight");
 
@@ -129,6 +127,12 @@ void PowerSpectrum::line_of_sight_integration_ST()
   for(int ik = 0; ik < k_array.size(); ik++)
   {
     const double k = k_array[ik];
+    // Progress bar...
+    if( (10*ik) / n_k != (10*ik+10) / n_k )
+    {
+      printf("Progress pert integration: %3d%%, k-value per Mpc: %.3e\n",(100*ik+100)/n_k,k/Constants.Mpc);
+      if(ik == n_k-1) std::cout << std::endl;
+    }
     // Loop over the different ells
     for (int iell = 0; iell < ells.size(); iell++)
     {
@@ -136,7 +140,7 @@ void PowerSpectrum::line_of_sight_integration_ST()
       ODEFunction dtheta_ell_dx = [&](double x, const double *y, double *dydx)
       {
         const double arg = k*(cosmo->eta_of_x_spline(0.0)-cosmo->eta_of_x_spline(x));
-        dydx[0] = pert->get_Source_T(x,k)*j_ell_splines[iell](arg);
+        dydx[0] = source_function(x,k)*j_ell_splines[iell](arg);
         return GSL_SUCCESS;
       };
       // Solve the ODE
@@ -146,37 +150,78 @@ void PowerSpectrum::line_of_sight_integration_ST()
     }
   }
   Utils::EndTiming("lineofsight");
-  
-  thetaT_ell_of_k_spline2D.create(ells,k_array,result,"thetaT_ell_of_k_spline2D");
+  return result;
 }
 
-/*
 // ====================================================
 // Do the line of sight integration
 // ====================================================
-void PowerSpectrum::line_of_sight_integration(Vector & k_array)
+void PowerSpectrum::line_of_sight_integration()
 {
   const int n_k        = k_array.size();
   const int n          = 100;
   const int nells      = ells.size();
-  
-  // Make storage for the splines we are to create
-  thetaT_ell_of_k_spline = std::vector<Spline>(nells);
 
-  //============================================================================
-  // TODO: Solve for Theta_ell(k) and spline the result
-  //============================================================================
-
+  std::cout << "Solving with the full temperature source function\n";
   // Make a function returning the source function
   std::function<double(double,double)> source_function_T = [&](double x, double k){
     return pert->get_Source_T(x,k);
   };
-
   // Do the line of sight integration
-  Vector2D thetaT_ell_of_k = line_of_sight_integration_single(k_array, source_function_T);
+  Vector2D thetaT_ell_of_k = line_of_sight_integration_single(source_function_T);
+  // Create thetaT 2D spline
+  thetaT_ell_of_k_spline2D.create(ells,k_array,thetaT_ell_of_k,"thetaT_ell_of_k_spline2D");
 
+  std::cout << "Solving with the SW source function\n";
+  // Make a function returning the source function
+  std::function<double(double,double)> source_function_SW = [&](double x, double k){
+    return pert->get_Source_SW(x,k);
+  };
+  // Do the line of sight integration
+  Vector2D thetaSW_ell_of_k = line_of_sight_integration_single(source_function_SW);
+  // Create thetaSW 2D spline
+  thetaSW_ell_of_k_spline2D.create(ells,k_array,thetaSW_ell_of_k,"thetaSW_ell_of_k_spline2D");
+
+  std::cout << "Solving with the ISW source function\n";
+  // Make a function returning the source function
+  std::function<double(double,double)> source_function_ISW = [&](double x, double k){
+    return pert->get_Source_ISW(x,k);
+  };
+  // Do the line of sight integration
+  Vector2D thetaISW_ell_of_k = line_of_sight_integration_single(source_function_ISW);
+  // Create thetaISW 2D spline
+  thetaISW_ell_of_k_spline2D.create(ells,k_array,thetaISW_ell_of_k,"thetaISW_ell_of_k_spline2D");
+
+  std::cout << "Solving with the Doppler source function\n";
+  // Make a function returning the source function
+  std::function<double(double,double)> source_function_Doppler = [&](double x, double k){
+    return pert->get_Source_Doppler(x,k);
+  };
+  // Do the line of sight integration
+  Vector2D thetaDoppler_ell_of_k = line_of_sight_integration_single(source_function_Doppler);
+  // Create thetaDoppler 2D spline
+  thetaDoppler_ell_of_k_spline2D.create(ells,k_array,thetaDoppler_ell_of_k,"thetaDoppler_ell_of_k_spline2D");
+
+  std::cout << "Solving with the Quad source function\n";
+  // Make a function returning the source function
+  std::function<double(double,double)> source_function_Quad = [&](double x, double k){
+    return pert->get_Source_Quad(x,k);
+  };
+  // Do the line of sight integration
+  Vector2D thetaQuad_ell_of_k = line_of_sight_integration_single(source_function_Quad);
+  // Create thetaQuad 2D spline
+  thetaQuad_ell_of_k_spline2D.create(ells,k_array,thetaQuad_ell_of_k,"thetaQuad_ell_of_k_spline2D");
+
+  std::cout << "Solving with the g_tilde source function\n";
+  // Make a function returning the source function
+  std::function<double(double,double)> source_function_g_tilde = [&](double x, double k){
+    return rec->g_tilde_of_x(x);
+  };
+  // Do the line of sight integration
+  Vector2D thetag_tilde_ell_of_k = line_of_sight_integration_single(source_function_g_tilde);
+  // Create thetag_tilde 2D spline
+  thetag_tilde_ell_of_k_spline2D.create(ells,k_array,thetag_tilde_ell_of_k,"thetag_tilde_ell_of_k_spline2D");
 }
-*/
 
 //====================================================
 // Compute Cell (could be TT or TE or EE) 
@@ -187,7 +232,8 @@ Vector PowerSpectrum::solve_for_cell(
     Spline2D & f_ell_spline,
     Spline2D & g_ell_spline)
 {
-  const int nells      = ells.size();
+  Utils::StartTiming("C_ell integration");
+  const int nells = ells.size();
   // Storeage for result
   Vector result(nells);
   // Set up initial condition for C_ell equal zero for k_min
@@ -203,6 +249,12 @@ Vector PowerSpectrum::solve_for_cell(
   for (int iell = 0; iell < nells; iell++)
   {
     const double ell = ells[iell];
+    // Progress bar...
+    if( (10*iell) / nells != (10*iell+10) / nells )
+    {
+      printf("Progress Cell integration: %3d%%, ell: %.3e\n",(100*iell+100)/nells,ell);
+      if(iell == nells-1) std::cout << std::endl;
+    }
     // Set up ODE rhs for this ell
     ODEFunction dC_ell_dlogk = [&] (double logk, const double *y, double *dydx)
     {
@@ -215,6 +267,7 @@ Vector PowerSpectrum::solve_for_cell(
     // Extract end result
     result[iell] = ODE_C_ell.get_final_data_by_component(0);
   }
+  Utils::EndTiming("C_ell integration");
   return result;
 }
 
@@ -265,17 +318,27 @@ void PowerSpectrum::output(std::string filename) const{
   // Output in standard units of muK^2
   std::ofstream fp(filename.c_str());
   fp W15 "ell";
-  fp W15 "Cell";
+  fp W15 "C_ell_TT";
+  fp W15 "C_ell_SW";
+  fp W15 "C_ell_ISW";
+  fp W15 "C_ell_Doppler";
+  fp W15 "C_ell_Quad";
+  fp W15 "C_ell_g_tilde";
   fp << "\n";
   const int ellmax = int(ells[ells.size()-1]);
   auto ellvalues = Utils::linspace(2, ellmax, ellmax-1);
   auto print_data = [&] (const double ell) {
     double normfactor  = (ell * (ell+1)) / (2.0 * M_PI) * pow(1e6 * cosmo->get_TCMB(), 2);
-    double normfactorN = (ell * (ell+1)) / (2.0 * M_PI) 
-      * pow(1e6 * cosmo->get_TCMB() *  pow(4.0/11.0, 1.0/3.0), 2);
-    double normfactorL = (ell * (ell+1)) * (ell * (ell+1)) / (2.0 * M_PI);
+    // double normfactorN = (ell * (ell+1)) / (2.0 * M_PI) 
+    //   * pow(1e6 * cosmo->get_TCMB() *  pow(4.0/11.0, 1.0/3.0), 2);
+    // double normfactorL = (ell * (ell+1)) * (ell * (ell+1)) / (2.0 * M_PI);
     fp W15 ell;
-    fp W15 cell_TT_spline( ell ) * normfactor;
+    fp W15 cell_TT_spline(ell) * normfactor;
+    fp W15 cell_SW_spline(ell) * normfactor;
+    fp W15 cell_ISW_spline(ell) * normfactor;
+    fp W15 cell_Doppler_spline(ell) * normfactor;
+    fp W15 cell_Quad_spline(ell) * normfactor;
+    fp W15 cell_g_tilde_spline(ell) * normfactor;
     // if(Constants.polarization){
     //   fp << cell_EE_spline( ell ) * normfactor  << " ";
     //   fp << cell_TE_spline( ell ) * normfactor  << " ";
