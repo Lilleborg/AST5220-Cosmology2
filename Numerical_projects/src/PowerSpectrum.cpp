@@ -37,14 +37,14 @@ void PowerSpectrum::solve()
   // Implement line_of_sight_integration
   //=========================================================================
   // line_of_sight_integration(k_array);
-  line_of_sight_integration_single();
+  line_of_sight_integration_ST();
 
   //=========================================================================
   // TODO: Integration to get Cell by solving dCell^f/dlogk = Delta(k) * f_ell(k)^2
   // Implement solve_for_cell
   //=========================================================================
-  // auto cell_TT = solve_for_cell(log_k_array, thetaT_ell_of_k_spline, thetaT_ell_of_k_spline);
-  // cell_TT_spline.create(ells, cell_TT, "Cell_TT_of_ell");
+  Vector cell_TT = solve_for_cell(log_k_array, thetaT_ell_of_k_spline2D, thetaT_ell_of_k_spline2D);
+  cell_TT_spline.create(ells, cell_TT, "Cell_TT_of_ell");
   
   //=========================================================================
   // TODO: Do the same for polarization...
@@ -66,7 +66,7 @@ void PowerSpectrum::generate_bessel_function_splines()
   j_ell_splines = std::vector<Spline>(ells.size());
   
   // Argument for bessel functions
-  const int n_arg = 2000;
+  const int n_arg = 10000;
   const double arg_min = 0;
   const double arg_max = 5000;
   Vector arg_array = Utils::linspace(arg_min,arg_max,n_arg);
@@ -108,12 +108,11 @@ void PowerSpectrum::generate_bessel_function_splines()
   // fp_bessel_spline.close();
 }
 
-// int PowerSpectrum::rhs_theta_ell_ode(double x, double k, )
 //====================================================
-// Do the line of sight integration for a single
-// source function
-//====================================================
-void PowerSpectrum::line_of_sight_integration_single()
+  // Do the line of sight integration for a single
+  // source function
+  //====================================================
+void PowerSpectrum::line_of_sight_integration_ST()
 {
   Utils::StartTiming("lineofsight");
 
@@ -123,7 +122,7 @@ void PowerSpectrum::line_of_sight_integration_single()
   // Set up initial condition for Theta_ell equal zero for x_start
   Vector Theta_ell_IC{0};
   // Set up ODESolver object to be used for the integration
-  double hstart = 1e-4, abserr = 1e-10, relerr = 1e-10;
+  double hstart = 1e-3, abserr = 1e-10, relerr = 1e-10;
   ODESolver ODE_theta_ell(hstart,abserr,relerr);
 
   // Loop over the different ks
@@ -151,31 +150,33 @@ void PowerSpectrum::line_of_sight_integration_single()
   thetaT_ell_of_k_spline2D.create(ells,k_array,result,"thetaT_ell_of_k_spline2D");
 }
 
-//====================================================
+/*
+// ====================================================
 // Do the line of sight integration
-//====================================================
-// void PowerSpectrum::line_of_sight_integration(Vector & k_array)
-// {
-//   const int n_k        = k_array.size();
-//   const int n          = 100;
-//   const int nells      = ells.size();
+// ====================================================
+void PowerSpectrum::line_of_sight_integration(Vector & k_array)
+{
+  const int n_k        = k_array.size();
+  const int n          = 100;
+  const int nells      = ells.size();
   
-//   // Make storage for the splines we are to create
-//   thetaT_ell_of_k_spline = std::vector<Spline>(nells);
+  // Make storage for the splines we are to create
+  thetaT_ell_of_k_spline = std::vector<Spline>(nells);
 
-//   //============================================================================
-//   // TODO: Solve for Theta_ell(k) and spline the result
-//   //============================================================================
+  //============================================================================
+  // TODO: Solve for Theta_ell(k) and spline the result
+  //============================================================================
 
-//   // Make a function returning the source function
-//   std::function<double(double,double)> source_function_T = [&](double x, double k){
-//     return pert->get_Source_T(x,k);
-//   };
+  // Make a function returning the source function
+  std::function<double(double,double)> source_function_T = [&](double x, double k){
+    return pert->get_Source_T(x,k);
+  };
 
-//   // Do the line of sight integration
-//   Vector2D thetaT_ell_of_k = line_of_sight_integration_single(k_array, source_function_T);
+  // Do the line of sight integration
+  Vector2D thetaT_ell_of_k = line_of_sight_integration_single(k_array, source_function_T);
 
-// }
+}
+*/
 
 //====================================================
 // Compute Cell (could be TT or TE or EE) 
@@ -183,22 +184,37 @@ void PowerSpectrum::line_of_sight_integration_single()
 //====================================================
 Vector PowerSpectrum::solve_for_cell(
     Vector & log_k_array,
-    std::vector<Spline> & f_ell_spline,
-    std::vector<Spline> & g_ell_spline){
+    Spline2D & f_ell_spline,
+    Spline2D & g_ell_spline)
+{
   const int nells      = ells.size();
+  // Storeage for result
+  Vector result(nells);
+  // Set up initial condition for C_ell equal zero for k_min
+  Vector C_ell_IC{0};
+  // Set up ODESolver object to be used for the integration
+  double hstart = 1e-3, abserr = 1e-10, relerr = 1e-10;
+  ODESolver ODE_C_ell(hstart,abserr,relerr);
 
   //============================================================================
   // TODO: Integrate Cell = Int 4 * pi * P(k) f_ell g_ell dk/k
   // or equivalently solve the ODE system dCell/dlogk = 4 * pi * P(k) * f_ell * g_ell
   //============================================================================
-
-  // ...
-  // ...
-  // ...
-  // ...
-
-  Vector result;
-
+  for (int iell = 0; iell < nells; iell++)
+  {
+    const double ell = ells[iell];
+    // Set up ODE rhs for this ell
+    ODEFunction dC_ell_dlogk = [&] (double logk, const double *y, double *dydx)
+    {
+      const double k = exp(logk);
+      dydx[0] = 4*M_PI*primordial_power_spectrum(k)*f_ell_spline(ell,k)*g_ell_spline(ell,k);
+      return GSL_SUCCESS;
+    };
+    // Solve the ODE
+    ODE_C_ell.solve(dC_ell_dlogk,log_k_array,C_ell_IC);
+    // Extract end result
+    result[iell] = ODE_C_ell.get_final_data_by_component(0);
+  }
   return result;
 }
 
@@ -248,6 +264,9 @@ double PowerSpectrum::get_cell_EE(const double ell) const{
 void PowerSpectrum::output(std::string filename) const{
   // Output in standard units of muK^2
   std::ofstream fp(filename.c_str());
+  fp W15 "ell";
+  fp W15 "Cell";
+  fp << "\n";
   const int ellmax = int(ells[ells.size()-1]);
   auto ellvalues = Utils::linspace(2, ellmax, ellmax-1);
   auto print_data = [&] (const double ell) {
@@ -255,12 +274,12 @@ void PowerSpectrum::output(std::string filename) const{
     double normfactorN = (ell * (ell+1)) / (2.0 * M_PI) 
       * pow(1e6 * cosmo->get_TCMB() *  pow(4.0/11.0, 1.0/3.0), 2);
     double normfactorL = (ell * (ell+1)) * (ell * (ell+1)) / (2.0 * M_PI);
-    fp << ell                                 << " ";
-    fp << cell_TT_spline( ell ) * normfactor  << " ";
-    if(Constants.polarization){
-      fp << cell_EE_spline( ell ) * normfactor  << " ";
-      fp << cell_TE_spline( ell ) * normfactor  << " ";
-    }
+    fp W15 ell;
+    fp W15 cell_TT_spline( ell ) * normfactor;
+    // if(Constants.polarization){
+    //   fp << cell_EE_spline( ell ) * normfactor  << " ";
+    //   fp << cell_TE_spline( ell ) * normfactor  << " ";
+    // }
     fp << "\n";
   };
   std::for_each(ellvalues.begin(), ellvalues.end(), print_data);

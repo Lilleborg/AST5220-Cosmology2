@@ -28,13 +28,15 @@ class PowerSpectrum {
     double kpivot_mpc = 0.05;
 
     // The k-values we compute Theta_ell(k) etc. for
-    const int n_k      = 100;
+    const int n_k      = 2000;
     const double k_min = Constants.k_min;
     const double k_max = Constants.k_max;
-    Vector k_array     = Utils::logspace(log(k_min),log(k_max),n_k);
+    // Vector k_array     = Utils::logspace(log(k_min),log(k_max),n_k);
+    Vector k_array = Utils::linspace(k_min,k_max,n_k);
+    Vector log_k_array = log(k_array);
 
     // The x vector
-    const int n_x      = 2000;
+    const int n_x      = 1000;
     const double x_min = Constants.x_start;
     const double x_max = 0;
     Vector x_array     = Utils::linspace(x_min,x_max,n_x);
@@ -71,7 +73,7 @@ class PowerSpectrum {
     // Do the line of sight integration for a single quantity
     // for all ells by providing a source_function(x,k) (can be temp, pol, ...)
     // Only having a single source function, so only using this method
-    void line_of_sight_integration_single();
+    void line_of_sight_integration_ST();
         // Vector & k_array, 
         // std::function<double(double,double)> &source_function);
     
@@ -90,8 +92,8 @@ class PowerSpectrum {
     // For polarization C_TE call with f_ell = theta_ell and g_ell = thetaE_ell
     Vector solve_for_cell(
         Vector & logk_array,
-        std::vector<Spline> & f_ell, 
-        std::vector<Spline> & g_ell);
+        Spline2D & f_ell, 
+        Spline2D & g_ell);
 
     // Splines with the power-spectra
     Spline cell_TT_spline{"cell_TT_spline"};

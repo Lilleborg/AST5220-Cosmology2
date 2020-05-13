@@ -113,7 +113,7 @@ int main(int argc, char **argv){
 
   PowerSpectrum power(&cosmo, &rec, &pert);
   power.solve();
-  // power.output("cells.txt");
+  power.output(data_path + "Cells.txt");
 
   Utils::EndTiming("Everything");
 }
