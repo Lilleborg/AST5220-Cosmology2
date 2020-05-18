@@ -27,6 +27,9 @@ class PowerSpectrum {
     double n_s        = 0.96;
     double kpivot_mpc = 0.05;
 
+    // Bool to determine if all the different terms in the Source function is computed separately
+    bool treat_source_components = false;
+
     // The k-values we compute Theta_ell(k) etc. for
     const int n_k      = 2000;
     const double k_min = Constants.k_min;
@@ -36,10 +39,13 @@ class PowerSpectrum {
     Vector log_k_array = log(k_array);
 
     // The x vector
-    const int n_x      = 500;
+    int n_x      = 50;
     const double x_min = Constants.x_start;
     const double x_max = 0;
-    Vector x_array     = Utils::linspace(x_min,x_max,n_x);
+    Vector x_array_before    = Utils::linspace(x_min,-7.164896429,30);
+    Vector x_array_during     = Utils::linspace(-7.164896429,-6.572335723,100);
+    Vector x_array_after = Utils::linspace(-6.572335723,x_max,30);
+    
 
     // The ells's we will compute Theta_ell and Cell for
     Vector ells{ 
@@ -47,10 +53,9 @@ class PowerSpectrum {
         20,   25,   30,   40,   50,   60,   70,   80,   90,   100,  
         120,  140,  160,  180,  200,  225,  250,  275,  300,  350,  
         400,  450,  500,  550,  600,  650,  700,  750,  800,  850,  
-        900,  950,  1000, 1050, 1100, 1150, 1200};
-        // , 1250, 1300, 1350, 
-        // 1400, 1450, 1500, 1550, 1600, 1650, 1700, 1750, 1800, 1850, 
-        // 1900, 1950, 2000};
+        900,  950,  1000, 1050, 1100, 1150, 1200, 1250, 1300, 1350, 
+        1400, 1450, 1500, 1550, 1600, 1650, 1700, 1750, 1800, 1850, 
+        1900, 1950, 2000};
    
     //=====================================================================
     // [1] Create bessel function splines needed for the LOS integration
@@ -69,7 +74,7 @@ class PowerSpectrum {
     
     // Do LOS integration for all ells and all k's in the given k_array
     // and for all the source functions (temperature, polarization, ...)
-    void line_of_sight_integration();
+    void line_of_sight_integration(bool solve_source_components);
   
     // Do the line of sight integration for a single quantity
     // for all ells by providing a source_function(x,k) (can be temp, pol, ...)
@@ -118,7 +123,7 @@ class PowerSpectrum {
         Perturbations *pert);
     
     // Do all the solving: bessel functions, LOS integration and then compute Cells
-    void solve();
+    void solve(bool solve_source_components = false);
 
     // The dimensionless primordial power-spectrum Delta = 2pi^2/k^3 P(k)
     double primordial_power_spectrum(const double k) const;
