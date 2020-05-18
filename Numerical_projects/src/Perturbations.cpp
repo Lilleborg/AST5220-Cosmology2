@@ -595,6 +595,8 @@ void Perturbations::compute_source_functions(){
       comp_fp << std::setw(15) << "dPsi_dx";
       comp_fp << std::setw(15) << "dPhi_dx";
       
+
+      comp_fp << std::setw(15) << "term3";
       comp_fp << std::setw(15) << "term3_1";
       comp_fp << std::setw(15) << "term3_2";
       comp_fp << std::setw(15) << "term3_3";
@@ -646,6 +648,7 @@ void Perturbations::compute_source_functions(){
             comp_fp << std::setw(15) << term2_1[ix][ik];
             comp_fp << std::setw(15) << term2_2[ix][ik];
             
+            comp_fp << std::setw(15) << term3[ix][ik];
             comp_fp << std::setw(15) << term3_1[ix][ik];
             comp_fp << std::setw(15) << term3_2[ix][ik];
             comp_fp << std::setw(15) << term3_3[ix][ik];
