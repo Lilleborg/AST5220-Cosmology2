@@ -30,6 +30,7 @@ figs = []
 for ik in range(len(k_values)):
     fig,ax = plt.subplots()
     ax.set_title("k: "+str(k_values[ik]))
+    ax.plot(x,data["term3"][ik],label="term3")
     ax.plot(x,data["term3_1"][ik],label="term3_1")
     ax.plot(x,data["term3_2"][ik],label="term3_2")
     ax.plot(x,data["term3_3"][ik],label="term3_3")

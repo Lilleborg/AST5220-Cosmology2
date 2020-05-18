@@ -1,17 +1,23 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.ticker
+import sys
 
 plt.style.use('bmh')
 
-data_path_toy = "../../data_toy/"
-data_path = "../../data/"
+if "toy" in sys.argv[1:]:
+    data_path = "../../data_toy/"
+    figname = str(sys.argv[1]) + "_" + str(sys.argv[2])
+else:
+    data_path = "../../data/"
+    figname = sys.argv[1]
+filename = sys.argv[1] + ".txt"
 
-quantities = np.loadtxt(data_path+"Cells.txt",max_rows=1,dtype=str)
+quantities = np.loadtxt(data_path+filename,skiprows=1,max_rows=1,dtype=str)
 data_toy = {}
 data = {}
-# loaded_data_toy = np.loadtxt(data_path_toy+"Cells.txt",skiprows=1).T
-loaded_data = np.loadtxt(data_path+"Cells.txt",skiprows=1).T
+# loaded_data_toy = np.loadtxt(data_path_toy+filename,skiprows=1).T
+loaded_data = np.loadtxt(data_path+filename,skiprows=2).T
 for i,q in enumerate(quantities):
     # data_toy[q] = loaded_data_toy[i]
     data[q] = loaded_data[i]
@@ -33,7 +39,6 @@ ax.set_title("LambdaCDM cosmology")
 ax.set_yscale("log")
 ax.set_xscale("log")
 ax.legend()
-# fig.savefig("../figs/CMB_powerspectrum.png")
-# fig.savefig("../figs/CMB_powerspectrum.pdf")
+fig.savefig("../figs/" +figname + ".png")
 
 plt.show()
