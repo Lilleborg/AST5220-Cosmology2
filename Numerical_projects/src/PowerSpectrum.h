@@ -42,7 +42,6 @@ class PowerSpectrum {
     int n_x;
     const double x_min = Constants.x_start;
     const double x_max = 0;
-    Vector x_array;
 
     // The ells's we will compute Theta_ell and Cell for
     Vector ells{ 
@@ -71,11 +70,11 @@ class PowerSpectrum {
     
     // Do LOS integration for all ells and all k's in the given k_array
     // and for all the source functions (temperature, polarization, ...)
-    void line_of_sight_integration(bool solve_source_components);
+    void line_of_sight_integration(bool solve_source_components, const Vector x);
   
     // Do the line of sight integration for a single quantity
     // for all ells by providing a source_function(x,k) (can be temp, pol, ...)
-    Vector2D line_of_sight_integration_single(std::function<double(double,double)> &source_function);
+    Vector2D line_of_sight_integration_single(std::function<double(double,double)> &source_function, const Vector x);
     
     // Splines of the result of the LOS integration
     // Theta_ell(k) and ThetaE_ell(k) for polarization

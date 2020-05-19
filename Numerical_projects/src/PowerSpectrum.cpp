@@ -49,7 +49,7 @@ void PowerSpectrum::solve(bool solve_source_components)
   //=========================================================================
   // Line of sight integration to get Theta_ell(k)
   //=========================================================================
-  line_of_sight_integration(solve_source_components);
+  line_of_sight_integration(solve_source_components,x_array);
 
   //=========================================================================
   // Integration to get Cell by solving dCell^f/dlogk = Delta(k) * f_ell(k)^2
@@ -137,7 +137,7 @@ void PowerSpectrum::generate_bessel_function_splines()
   // Do the line of sight integration for a single
   // source function
   //====================================================
-Vector2D PowerSpectrum::line_of_sight_integration_single(std::function<double(double,double)> &source_function)
+Vector2D PowerSpectrum::line_of_sight_integration_single(std::function<double(double,double)> &source_function,Vector x_array)
 {
   Utils::StartTiming("lineofsight");
 
@@ -183,19 +183,15 @@ Vector2D PowerSpectrum::line_of_sight_integration_single(std::function<double(do
 // ====================================================
 // Do the line of sight integration
 // ====================================================
-void PowerSpectrum::line_of_sight_integration(bool solve_source_components)
+void PowerSpectrum::line_of_sight_integration(bool solve_source_components, const Vector x_array)
 {
-  const int n_k        = k_array.size();
-  const int n          = 100;
-  const int nells      = ells.size();
-
   std::cout << "Solving with the full temperature source function\n";
   // Make a function returning the source function
   std::function<double(double,double)> source_function_T = [&](double x, double k){
     return pert->get_Source_T(x,k);
   };
   // Do the line of sight integration
-  Vector2D thetaT_ell_of_k = line_of_sight_integration_single(source_function_T);
+  Vector2D thetaT_ell_of_k = line_of_sight_integration_single(source_function_T,x_array);
   // Create thetaT 2D spline
   thetaT_ell_of_k_spline2D.create(ells,k_array,thetaT_ell_of_k,"thetaT_ell_of_k_spline2D");
 
@@ -207,7 +203,7 @@ void PowerSpectrum::line_of_sight_integration(bool solve_source_components)
       return pert->get_Source_SW(x,k);
     };
     // Do the line of sight integration
-    Vector2D thetaSW_ell_of_k = line_of_sight_integration_single(source_function_SW);
+    Vector2D thetaSW_ell_of_k = line_of_sight_integration_single(source_function_SW,x_array);
     // Create thetaSW 2D spline
     thetaSW_ell_of_k_spline2D.create(ells,k_array,thetaSW_ell_of_k,"thetaSW_ell_of_k_spline2D");
 
@@ -217,7 +213,7 @@ void PowerSpectrum::line_of_sight_integration(bool solve_source_components)
       return pert->get_Source_ISW(x,k);
     };
     // Do the line of sight integration
-    Vector2D thetaISW_ell_of_k = line_of_sight_integration_single(source_function_ISW);
+    Vector2D thetaISW_ell_of_k = line_of_sight_integration_single(source_function_ISW,x_array);
     // Create thetaISW 2D spline
     thetaISW_ell_of_k_spline2D.create(ells,k_array,thetaISW_ell_of_k,"thetaISW_ell_of_k_spline2D");
 
@@ -227,7 +223,7 @@ void PowerSpectrum::line_of_sight_integration(bool solve_source_components)
       return pert->get_Source_Doppler(x,k);
     };
     // Do the line of sight integration
-    Vector2D thetaDoppler_ell_of_k = line_of_sight_integration_single(source_function_Doppler);
+    Vector2D thetaDoppler_ell_of_k = line_of_sight_integration_single(source_function_Doppler,x_array);
     // Create thetaDoppler 2D spline
     thetaDoppler_ell_of_k_spline2D.create(ells,k_array,thetaDoppler_ell_of_k,"thetaDoppler_ell_of_k_spline2D");
 
@@ -237,7 +233,7 @@ void PowerSpectrum::line_of_sight_integration(bool solve_source_components)
       return pert->get_Source_Quad(x,k);
     };
     // Do the line of sight integration
-    Vector2D thetaQuad_ell_of_k = line_of_sight_integration_single(source_function_Quad);
+    Vector2D thetaQuad_ell_of_k = line_of_sight_integration_single(source_function_Quad,x_array);
     // Create thetaQuad 2D spline
     thetaQuad_ell_of_k_spline2D.create(ells,k_array,thetaQuad_ell_of_k,"thetaQuad_ell_of_k_spline2D");
 
@@ -247,7 +243,7 @@ void PowerSpectrum::line_of_sight_integration(bool solve_source_components)
       return rec->g_tilde_of_x(x);
     };
     // Do the line of sight integration
-    Vector2D thetag_tilde_ell_of_k = line_of_sight_integration_single(source_function_g_tilde);
+    Vector2D thetag_tilde_ell_of_k = line_of_sight_integration_single(source_function_g_tilde,x_array);
     // Create thetag_tilde 2D spline
     thetag_tilde_ell_of_k_spline2D.create(ells,k_array,thetag_tilde_ell_of_k,"thetag_tilde_ell_of_k_spline2D");
   }
