@@ -414,8 +414,17 @@ void PowerSpectrum::output(std::string filename) const{
 // Output power spectrum for component
 void PowerSpectrum::output_component_power_spectrum(std::vector<std::string> components, std::string filename) const
 {
+  const double x_eq = cosmo->get_x_equality();
+  const double k_eq = exp(x_eq)*cosmo->H_of_x(x_eq)/Constants.c;
+  const double Mpc     = Constants.Mpc;
+  const double h       = cosmo->get_h();
+  const double h_Mpc_3 = h*h*h/Mpc/Mpc/Mpc;
+  const double pi_squared_2 = 2*M_PI*M_PI;
+  const double prefactor_no_k = h_Mpc_3*pi_squared_2;
+
   std::ofstream fp(filename.c_str());
   std::cout << "Writing output to " << filename << "\n";
+  fp W15 "k_eq" W15 k_eq*Mpc/h << "\n";
   fp W15 "k [Mpc/h],";
   for (int icomp = 0; icomp < components.size(); icomp++)
   {
@@ -427,11 +436,6 @@ void PowerSpectrum::output_component_power_spectrum(std::vector<std::string> com
   }
   fp << "\n";
   
-  const double Mpc     = Constants.Mpc;
-  const double h       = cosmo->get_h();
-  const double h_Mpc_3 = h*h*h/Mpc/Mpc/Mpc;
-  const double pi_squared_2 = 2*M_PI*M_PI;
-  const double prefactor_no_k = h_Mpc_3*pi_squared_2;
   auto print_data = [&] (const double k)
   {
     const double prefactor = prefactor_no_k/k/k/k;

@@ -215,6 +215,26 @@ double BackgroundCosmology::get_TCMB() const{
   return TCMB; 
 }
 
+// Simple loop to find x_equality, when OmegaR drops below 0.5
+double BackgroundCosmology::get_x_equality() const
+{
+  double x_eq = -9999;
+  Vector x_array = Utils::linspace(x_start,x_end,npts);
+  for (int ix = 0; ix < npts; ix++)
+  {
+    if (get_OmegaR(x_array[ix])<0.5)
+    {
+      x_eq = x_array[ix];
+      break;
+    }
+  }
+  if (x_eq == -9999)
+  {
+    std::cout << "Didn't find x equality!\n";
+  }
+  return x_eq;
+}
+
 //====================================================
 // Print out info about the class
 //====================================================
