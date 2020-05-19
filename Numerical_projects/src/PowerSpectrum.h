@@ -39,13 +39,10 @@ class PowerSpectrum {
     Vector log_k_array = log(k_array);
 
     // The x vector
-    int n_x      = 50;
+    int n_x;
     const double x_min = Constants.x_start;
     const double x_max = 0;
-    Vector x_array_before    = Utils::linspace(x_min,-7.164896429,30);
-    Vector x_array_during     = Utils::linspace(-7.164896429,-6.572335723,100);
-    Vector x_array_after = Utils::linspace(-6.572335723,x_max,30);
-    
+    Vector x_array;
 
     // The ells's we will compute Theta_ell and Cell for
     Vector ells{ 
@@ -129,7 +126,10 @@ class PowerSpectrum {
     double primordial_power_spectrum(const double k) const;
 
     // Get P(k,x) for a given x in units of (Mpc)^3
-    double get_matter_power_spectrum(const double x, const double k_mpc) const;
+    double get_component_power_spectrum(const std::string component, const double x, const double k_mpc) const;
+
+    // Gauge invariant density perturbation for "component"
+    double get_invariant_density(const std::string component, const double x, const double k) const;
 
     // Get the quantities we have computed
     double get_cell_TT(const double ell) const;
@@ -138,6 +138,7 @@ class PowerSpectrum {
 
     // Output Cells in units of l(l+1)/2pi (muK)^2
     void output(std::string filename) const;
+    void output_component_power_spectrum(std::vector<std::string> components, std::string filename) const;
 };
 
 #endif

@@ -19,6 +19,28 @@ PowerSpectrum::PowerSpectrum(
 //====================================================
 void PowerSpectrum::solve(bool solve_source_components)
 {
+  // Concatenating x_array from before, during and after recombination to have higher resolution
+  Vector rec_times      = rec->get_time_results();
+  double x_rec_start    = rec_times[2];
+  double x_rec_end      = rec_times[6];
+  Vector x_array_before = Utils::linspace(x_min,x_rec_start,20);
+  Vector x_array_during = Utils::linspace(x_rec_start,x_rec_end,100);
+  Vector x_array_after  = Utils::linspace(x_rec_end,x_max,20);
+  Vector x_array        = x_array_before;
+  // As to not have overlapping points, insert x_array_during without start and end points
+  x_array.insert(x_array.end(),x_array_during.begin()+1,x_array_during.end()-1);
+  x_array.insert(x_array.end(),x_array_after.begin(),x_array_after.end());
+  n_x = x_array.size();
+
+  for (int i = 0; i < n_x-1; i++)
+  {
+    if (x_array[i+1]==x_array[i])
+    {
+      std::cout << "Overlapping x-points\n" << "at " << i << "\n";
+    }
+  }
+  
+
   //=========================================================================
   // Make splines for j_ell. 
   //=========================================================================
@@ -127,11 +149,6 @@ Vector2D PowerSpectrum::line_of_sight_integration_single(std::function<double(do
   // Set up ODESolver object to be used for the integration
   double hstart = 1e-3, abserr = 1e-10, relerr = 1e-10;
   ODESolver ODE_theta_ell(hstart,abserr,relerr);
-
-  Vector x_array = x_array_before;
-  x_array.insert(x_array.end(),x_array_during.begin()+1,x_array_during.end());
-  x_array.insert(x_array.end(),x_array_after.begin()+1,x_array_after.end());
-  n_x = x_array.size();
 
   // Loop over the different ks
   for(int ik = 0; ik < k_array.size(); ik++)
@@ -287,7 +304,6 @@ Vector PowerSpectrum::solve_for_cell(
 //====================================================
 // The primordial power-spectrum
 //====================================================
-
 double PowerSpectrum::primordial_power_spectrum(const double k) const{
   return A_s * pow( Constants.Mpc * k / kpivot_mpc , n_s - 1.0);
 }
@@ -295,19 +311,33 @@ double PowerSpectrum::primordial_power_spectrum(const double k) const{
 //====================================================
 // P(k) in units of (Mpc)^3
 //====================================================
-
-double PowerSpectrum::get_matter_power_spectrum(const double x, const double k_mpc) const{
-  double pofk = 0.0;
-
-  //=============================================================================
-  // TODO: Compute the matter power spectrum
-  //=============================================================================
-
-  // ...
-  // ...
-  // ...
+double PowerSpectrum::get_component_power_spectrum(const std::string component, const double x, const double k) const{
+  
+  const double abs_Delta_comp = std::fabs(get_invariant_density(component,x,k));
+  const double abs_Delta_comp_squared = abs_Delta_comp*abs_Delta_comp;
+  const double pofk = abs_Delta_comp_squared*primordial_power_spectrum(k);
 
   return pofk;
+}
+
+double PowerSpectrum::get_invariant_density(const std::string component, const double x, const double k) const
+{
+  double res = -9999;
+  const double ck = Constants.c*k;
+  if (component.compare("matter") == 0)
+  {
+    const double a       = exp(x);
+    const double H0      = cosmo->get_H0();
+    const double Omega_M = cosmo->get_OmegaCDM()+cosmo->get_OmegaB();
+    const double Delta_M = ck*ck*pert->get_Phi(x,k)/(1.5*Omega_M/a*H0*H0);
+    res = Delta_M;
+  }
+
+  if (res == -9999)
+  {
+    std::cout << "Get invariant density didn't find a viable component!!!\n";
+  }
+  return res;
 }
 
 //====================================================
@@ -367,5 +397,36 @@ void PowerSpectrum::output(std::string filename) const{
     fp << "\n";
   };
   std::for_each(ellvalues.begin(), ellvalues.end(), print_data);
+
+}
+
+// Output power spectrum for component
+void PowerSpectrum::output_component_power_spectrum(std::vector<std::string> components, std::string filename) const
+{
+  std::ofstream fp(filename.c_str());
+  std::cout << "Writing output to " << filename << "\n";
+  fp W15 "k";
+  for (int icomp = 0; icomp < components.size(); icomp++)
+  {
+    fp W15 components[icomp];
+  }
+  fp << "\n";
+  
+  const double Mpc     = Constants.Mpc;
+  const double h       = cosmo->get_h();
+  const double h_Mpc_3 = h*h*h/Mpc/Mpc/Mpc;
+  const double pi_squared_2 = 2*M_PI*M_PI;
+  const double prefactor_no_k = h_Mpc_3*pi_squared_2;
+  auto print_data = [&] (const double k)
+  {
+    const double prefactor = prefactor_no_k/k/k/k;
+    fp W15 k*Mpc/h;
+    for (int icomp = 0; icomp < components.size(); icomp++)
+    {
+      fp W15 get_component_power_spectrum(components[icomp],0,k)*prefactor;
+    }
+    fp << "\n";
+  };
+  std::for_each(k_array.begin(),k_array.end(),print_data);
 }
 
