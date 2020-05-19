@@ -23,11 +23,12 @@ void PowerSpectrum::solve(bool solve_source_components)
   Vector rec_times      = rec->get_time_results();
   double x_rec_start    = rec_times[2];
   double x_rec_end      = rec_times[6];
-  Vector x_array_before = Utils::linspace(x_min,x_rec_start,20);
-  Vector x_array_during = Utils::linspace(x_rec_start,x_rec_end,100);
-  Vector x_array_after  = Utils::linspace(x_rec_end,x_max,20);
+  Vector x_array_before = Utils::linspace(x_min,x_rec_start,15);
+  Vector x_array_during = Utils::linspace(x_rec_start,x_rec_end,172);
+  Vector x_array_after  = Utils::linspace(x_rec_end,x_max,15);
   Vector x_array        = x_array_before;
   // As to not have overlapping points, insert x_array_during without start and end points
+  // x_array_during is so tightly spaced on a small interval that it should not matter
   x_array.insert(x_array.end(),x_array_during.begin()+1,x_array_during.end()-1);
   x_array.insert(x_array.end(),x_array_after.begin(),x_array_after.end());
   n_x = x_array.size();
@@ -57,7 +58,6 @@ void PowerSpectrum::solve(bool solve_source_components)
   
   Vector cell_TT = solve_for_cell(log_k_array, thetaT_ell_of_k_spline2D, thetaT_ell_of_k_spline2D);
   cell_TT_spline.create(ells, cell_TT, "Cell_TT_of_ell");
-  std::cout << solve_source_components << std::endl;
 
   if (solve_source_components)
   {
@@ -157,7 +157,7 @@ Vector2D PowerSpectrum::line_of_sight_integration_single(std::function<double(do
     // Progress bar...
     if( (10*ik) / n_k != (10*ik+10) / n_k )
     {
-      printf("Progress pert integration: %3d%%, k-value per Mpc: %.3e\n",(100*ik+100)/n_k,k/Constants.Mpc);
+      printf("Progress LOS integration: %3d%%, k-value per Mpc: %.3e\n",(100*ik+100)/n_k,k*Constants.Mpc);
       if(ik == n_k-1) std::cout << std::endl;
     }
     // Loop over the different ells
@@ -318,22 +318,41 @@ double PowerSpectrum::get_component_power_spectrum(const std::string component, 
 
 double PowerSpectrum::get_invariant_density(const std::string component, const double x, const double k) const
 {
-  double res = -9999;
   const double ck = Constants.c*k;
+  double delta_comp;
+  double omega_comp;
+  double v_comp;
+
   if (component.compare("matter") == 0)
   {
     const double a       = exp(x);
     const double H0      = cosmo->get_H0();
     const double Omega_M = cosmo->get_OmegaCDM()+cosmo->get_OmegaB();
-    const double Delta_M = ck*ck*pert->get_Phi(x,k)/(1.5*Omega_M/a*H0*H0);
-    res = Delta_M;
+    return ck*ck*pert->get_Phi(x,k)/(1.5*Omega_M/a*H0*H0);;
   }
-
-  if (res == -9999)
+  else if (component.compare("baryon") == 0)
   {
-    std::cout << "Get invariant density didn't find a viable component!!!\n";
+    delta_comp = pert->get_delta_b(x,k);
+    omega_comp = 0;
+    v_comp     = pert->get_v_b(x,k);
   }
-  return res;
+  else if (component.compare("CDM") == 0)
+  {
+    delta_comp = pert->get_delta_cdm(x,k);
+    omega_comp = 0;
+    v_comp     = pert->get_v_cdm(x,k);
+  }
+  else if (component.compare("radiation") == 0)
+  {
+    delta_comp = 4.0*pert->get_Theta(x,k,0);
+    omega_comp = 1.0/3.0;
+    v_comp     = -3*pert->get_Theta(x,k,1);
+  }
+  else
+  {
+    std::cout << "Get invariant density didn't find a viable component!!!\nInput was " + component;
+  }
+  return delta_comp - 3.0*(1+omega_comp)*cosmo->Hp_of_x(x)*v_comp/ck;
 }
 
 //====================================================
@@ -357,7 +376,7 @@ void PowerSpectrum::output(std::string filename) const{
   // Output in standard units of muK^2
   std::ofstream fp(filename.c_str());
   std::cout << "Writing output to " << filename << "\n";
-  fp W15 "n_k" W15 n_k W15 "n_x" W15 n_x W15 "constants.x_end" W15 Constants.x_end W15 "max ell" W15 ells[ells.size()-1] << "\n";
+  fp W15 "n_k" W15 n_k W15 "n_x" W15 n_x W15 "max ell" W15 ells[ells.size()-1] << "\n";
   fp W15 "ell";
   fp W15 "C_ell_TT";
   if (treat_source_components)
@@ -386,10 +405,6 @@ void PowerSpectrum::output(std::string filename) const{
       fp W15 cell_Quad_spline(ell) * normfactor;
       fp W15 cell_g_tilde_spline(ell) * normfactor;
     }
-    // if(Constants.polarization){
-    //   fp << cell_EE_spline( ell ) * normfactor  << " ";
-    //   fp << cell_TE_spline( ell ) * normfactor  << " ";
-    // }
     fp << "\n";
   };
   std::for_each(ellvalues.begin(), ellvalues.end(), print_data);
@@ -401,10 +416,14 @@ void PowerSpectrum::output_component_power_spectrum(std::vector<std::string> com
 {
   std::ofstream fp(filename.c_str());
   std::cout << "Writing output to " << filename << "\n";
-  fp W15 "k";
+  fp W15 "k [Mpc/h],";
   for (int icomp = 0; icomp < components.size(); icomp++)
   {
     fp W15 components[icomp];
+    if (icomp != components.size()-1)
+    {
+      fp << ",";
+    }
   }
   fp << "\n";
   

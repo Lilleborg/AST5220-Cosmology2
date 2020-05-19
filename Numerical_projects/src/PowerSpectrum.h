@@ -35,7 +35,6 @@ class PowerSpectrum {
     const double k_min = Constants.k_min;
     const double k_max = Constants.k_max;
     Vector k_array     = Utils::logspace(log(k_min),log(k_max),n_k);
-    // Vector k_array = Utils::linspace(k_min,k_max,n_k);
     Vector log_k_array = log(k_array);
 
     // The x vector
@@ -84,8 +83,6 @@ class PowerSpectrum {
     Spline2D thetaDoppler_ell_of_k_spline2D{"thetaDoppler_ell_of_k_spline2D"};
     Spline2D thetaQuad_ell_of_k_spline2D{"thetaQuad_ell_of_k_spline2D"};
     Spline2D thetag_tilde_ell_of_k_spline2D{"thetag_tilde_ell_of_k_spline2D"};
-    // std::vector<Spline> thetaT_ell_of_k_spline;
-    // std::vector<Spline> thetaE_ell_of_k_spline;
     
     //=====================================================================
     // [3] Integrate to get power-spectrum
