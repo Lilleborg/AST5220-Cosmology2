@@ -222,7 +222,7 @@ void Perturbations::integrate_perturbations(){
   v_cdm_spline.create(x_array_full,k_array,v_cdm_array_2D,"v_cdm_spline");
   delta_b_spline.create(x_array_full,k_array,delta_b_array_2D,"delta_b_spline");
   v_b_spline.create(x_array_full,k_array,v_b_array_2D,"v_b_spline");
-  dv_b_dx_spline.create(x_array_full,k_array,v_b_array_2D,"dv_b_dx_spline");
+  dv_b_dx_spline.create(x_array_full,k_array,dv_b_dx_spline,"dv_b_dx_spline");
   Phi_spline.create(x_array_full,k_array,Phi_array_2D,"Phi_spline");
   dPhi_dx_spline.create(x_array_full,k_array,dPhi_dx_array_2D,"dPhi_dx_spline");
   Psi_spline.create(x_array_full,k_array,Psi_array_2D,"Psi_spline");
