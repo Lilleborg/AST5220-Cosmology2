@@ -106,14 +106,17 @@ int main(int argc, char **argv){
   fp_k_values.close();
   std::cout << std::endl;
   Utils::EndTiming("Writing output for perturbations");
-  
   //=========================================================================
   // Module IV
   //=========================================================================
 
   PowerSpectrum power(&cosmo, &rec, &pert);
-  power.solve();
-  power.output(data_path + "Cells.txt");
+  power.solve(false);
+  std::string C_ell_filename = "Cells_2000k_rec_resolution.txt";
+  std::string component_PS_filename = "comp_PS_2000k_rec_resolution.txt";
+  std::vector<std::string> component_names{"matter"};
+  power.output(data_path + C_ell_filename);
+  power.output_component_power_spectrum(component_names,data_path + component_PS_filename);
 
   Utils::EndTiming("Everything");
 }
