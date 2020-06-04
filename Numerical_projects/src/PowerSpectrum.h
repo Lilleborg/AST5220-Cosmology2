@@ -138,7 +138,7 @@ class PowerSpectrum {
     void output_component_power_spectrum(std::vector<std::string> components, std::string filename) const;
 
     // Output transfer function and integrand
-    void output_transfer_integrand(std::string filename, Vector ell_values) const;
+    void output_transfer_integrand(std::string filename, std::vector<int> ell_values) const;
 };
 
 #endif

@@ -450,7 +450,7 @@ void PowerSpectrum::output_component_power_spectrum(std::vector<std::string> com
 }
 
 // Output transfer function and integrand
-void PowerSpectrum::output_transfer_integrand(std::string filename, Vector ell_values) const{
+void PowerSpectrum::output_transfer_integrand(std::string filename, std::vector<int> ell_values) const{
   // Output in standard units of muK^2
   std::ofstream fp(filename.c_str());
   std::cout << "Writing output to " << filename << "\n";
@@ -481,7 +481,6 @@ void PowerSpectrum::output_transfer_integrand(std::string filename, Vector ell_v
     fp W15 k;
     for (int iell = 0; iell < ell_values.size(); iell++)
     {
-      std::cout << "ell: " << ell_values[iell];
       fp W15 get_theta_TT(ell_values[iell],k);
     }
     for (int iell = 0; iell < ell_values.size(); iell++)
@@ -492,6 +491,6 @@ void PowerSpectrum::output_transfer_integrand(std::string filename, Vector ell_v
     
     fp << "\n";
   };
-  std::for_each(ell_values.begin(), ell_values.end(), print_data);
+  std::for_each(k_array.begin(), k_array.end(), print_data);
 
 }
