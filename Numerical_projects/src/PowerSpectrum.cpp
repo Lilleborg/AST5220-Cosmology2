@@ -367,7 +367,10 @@ double PowerSpectrum::get_cell_TE(const double ell) const{
 double PowerSpectrum::get_cell_EE(const double ell) const{
   return cell_EE_spline(ell);
 }
-
+double PowerSpectrum::get_theta_TT(const double ell, const double k) const
+{
+  return thetaT_ell_of_k_spline2D(ell,k);
+}
 //====================================================
 // Output the cells to file
 //====================================================
@@ -392,9 +395,6 @@ void PowerSpectrum::output(std::string filename) const{
   auto ellvalues = Utils::linspace(2, ellmax, ellmax-1);
   auto print_data = [&] (const double ell) {
     double normfactor  = (ell * (ell+1)) / (2.0 * M_PI) * pow(1e6 * cosmo->get_TCMB(), 2);
-    // double normfactorN = (ell * (ell+1)) / (2.0 * M_PI) 
-    //   * pow(1e6 * cosmo->get_TCMB() *  pow(4.0/11.0, 1.0/3.0), 2);
-    // double normfactorL = (ell * (ell+1)) * (ell * (ell+1)) / (2.0 * M_PI);
     fp W15 ell;
     fp W15 cell_TT_spline(ell) * normfactor;
     if (treat_source_components)
@@ -449,3 +449,49 @@ void PowerSpectrum::output_component_power_spectrum(std::vector<std::string> com
   std::for_each(k_array.begin(),k_array.end(),print_data);
 }
 
+// Output transfer function and integrand
+void PowerSpectrum::output_transfer_integrand(std::string filename, Vector ell_values) const{
+  // Output in standard units of muK^2
+  std::ofstream fp(filename.c_str());
+  std::cout << "Writing output to " << filename << "\n";
+  fp W15 "n_k" W15 n_k W15 "n_x" W15 n_x W15 "max ell" W15 ells[ells.size()-1] << "\n";
+  fp W15 "ell values:";
+  for (int iell = 0; iell < ell_values.size(); iell++)
+  {
+    fp W15 ell_values[iell];
+  }
+  fp << "\n";
+  
+  fp W15 "k";
+  fp W15 "theta_1";
+  fp W15 "theta_2";
+  fp W15 "theta_3";
+  fp W15 "theta_4";
+  fp W15 "theta_5";
+  fp W15 "theta_6";
+  fp W15 "theta_1^2/k";
+  fp W15 "theta_2^2/k";
+  fp W15 "theta_3^2/k";
+  fp W15 "theta_4^2/k";
+  fp W15 "theta_5^2/k";
+  fp W15 "theta_6^2/k";
+  fp << "\n";
+
+  auto print_data = [&] (const double k) {
+    fp W15 k;
+    for (int iell = 0; iell < ell_values.size(); iell++)
+    {
+      std::cout << "ell: " << ell_values[iell];
+      fp W15 get_theta_TT(ell_values[iell],k);
+    }
+    for (int iell = 0; iell < ell_values.size(); iell++)
+    {
+      double thetaTT = get_theta_TT(ell_values[iell],k);
+      fp W15 thetaTT*thetaTT/k;
+    }
+    
+    fp << "\n";
+  };
+  std::for_each(ell_values.begin(), ell_values.end(), print_data);
+
+}

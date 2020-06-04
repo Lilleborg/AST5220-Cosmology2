@@ -131,10 +131,14 @@ class PowerSpectrum {
     double get_cell_TT(const double ell) const;
     double get_cell_TE(const double ell) const;
     double get_cell_EE(const double ell) const;
+    double get_theta_TT(const double ell, const double k) const;
 
     // Output Cells in units of l(l+1)/2pi (muK)^2
     void output(std::string filename) const;
     void output_component_power_spectrum(std::vector<std::string> components, std::string filename) const;
+
+    // Output transfer function and integrand
+    void output_transfer_integrand(std::string filename, Vector ell_values) const;
 };
 
 #endif

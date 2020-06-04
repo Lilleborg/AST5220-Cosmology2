@@ -118,5 +118,15 @@ int main(int argc, char **argv){
   power.output(data_path + C_ell_filename);
   power.output_component_power_spectrum(component_names,data_path + component_PS_filename);
 
+  // Output integrand and transfer function for ell corresponding with k values from milestone3
+  Vector ell_values(k_values.size());
+  for (int iell = 0; iell < ell_values.size(); iell++)
+  {
+    ell_values[iell] = k_values[iell]*cosmo.eta_of_x_spline(0.0);
+  }
+  std::string transfer_filename = "transfer_integrand.txt";
+  power.output_transfer_integrand(data_path+transfer_filename,ell_values);
+  
+
   Utils::EndTiming("Everything");
 }
