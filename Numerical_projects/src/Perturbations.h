@@ -20,7 +20,7 @@ class Perturbations{
     RecombinationHistory *rec  = nullptr;
    
     // The scales we integrate over
-    const int n_k        = 150; //use only one k-value to begin with   was: 100;
+    const int n_k        = 151;
     const double k_min   = Constants.k_min;
     const double k_max   = Constants.k_max;
     // Set up logarithmic (using base e as for logarithmic scale factor) 
@@ -50,6 +50,10 @@ class Perturbations{
    
     // Splines of source functions (ST for temperature; SE for polarization)
     Spline2D ST_spline{"ST_spline"};
+    Spline2D SW_spline{"SW_spline"};
+    Spline2D ISW_spline{"ISW_spline"};
+    Spline2D Doppler_spline{"Doppler_spline"};
+    Spline2D Quadrupole_spline{"Quadrupole_spline"};
     // Spline2D SE_spline{"SE_spline"};
     
     // Splines of multipole quantities
@@ -131,6 +135,10 @@ class Perturbations{
     // double get_Theta_p(const double x, const double k, const int ell) const;
     // double get_Nu(const double x, const double k, const int ell) const;
     double get_Source_T(const double x, const double k) const;
+    double get_Source_SW(const double x, const double k) const;
+    double get_Source_ISW(const double x, const double k) const;
+    double get_Source_Doppler(const double x, const double k) const;
+    double get_Source_Quad(const double x, const double k) const;
     // double get_Source_E(const double x, const double k) const;
 };
 

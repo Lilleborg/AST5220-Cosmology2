@@ -27,15 +27,16 @@ OPTIONS =
 # OPTIONS += -D_SPLINE_WARNINGS_ON
 
 # Show info about the solution as we integrate
-# OPTIONS = -D_FIDUCIAL_VERBOSE_ODE_SOLVER_TRUE
+# OPTIONS += -D_FIDUCIAL_VERBOSE_ODE_SOLVER_TRUE
+# OPTIONS += -D_SOURCE_FUNCTION_DEBUGGING
 
 # Add OpenMP parallelization
 # OPTIONS += -D_USEOPEMP
 # CC += -Xpreprocessor -fopenmp
 
 # Add bessel function library (otherwise use the GSL one)
-#OPTIONS += -D_COMPLEX_BESSEL
-#LIBS += -lgfortran -lcomplex_bessel
+# OPTIONS += -D_COMPLEX_BESSEL
+# LIBS += -lgfortran -lcomplex_bessel
 #=======================================================
 
 C = -O3 -g $(OPTIONS)
@@ -58,7 +59,7 @@ PowerSpectrum.o         : PowerSpectrum.h BackgroundCosmology.h RecombinationHis
 Examples.o              : Utils.h Spline.h ODESolver.h writeme.h
 writeme.o  				: writeme.h
 
-examples: Examples.o Utils.o Spline.o ODESolver.o writeme.o
+examples: Examples.o Utils.o Spline.o ODESolver.o writeme.o BackgroundCosmology.o
 	${CC} -o $@ $^ $C $(INC) $(LIBS)
 
 cmb: $(OBJS)
@@ -88,3 +89,5 @@ plot2:
 plot3:
 	cd ./../Milestone3/python && python plotter_Milestone3.py
 
+plot4:
+	cd ./../Milestone4/python && python plotter_Milestone4.py $(filename1) $(filename2) $(filename3) $(path)

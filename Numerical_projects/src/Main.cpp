@@ -80,6 +80,7 @@ int main(int argc, char **argv){
   pert.info();
   pert.solve();
   
+  Utils::StartTiming("Writing output for perturbations");
   // Experimented with different values and found these to present the different regimes
   Vector k_values = {0.3,0.1,0.013,0.007,0.001,0.0005};
   
@@ -104,19 +105,24 @@ int main(int argc, char **argv){
   }
   fp_k_values.close();
   std::cout << std::endl;
-  
-  // Remove when module is completed
-  return 0;
-  
+  Utils::EndTiming("Writing output for perturbations");
   //=========================================================================
   // Module IV
   //=========================================================================
 
   PowerSpectrum power(&cosmo, &rec, &pert);
-  power.output("cells.txt");
+  power.solve(false);
+  std::string C_ell_filename = "Cells.txt";
+  std::string component_PS_filename = "comp_PS.txt";
+  std::vector<std::string> component_names{"matter","baryon","CDM","radiation"};
+  power.output(data_path + C_ell_filename);
+  power.output_component_power_spectrum(component_names,data_path + component_PS_filename);
+
+  // Output integrand and transfer function for a few significantly different ells
+  std::vector<int> ell_values{5,200,400,700,900,1200};
+  std::string transfer_filename = "transfer_integrand.txt";
+  power.output_transfer_integrand(data_path+transfer_filename,ell_values);
   
-  // Remove when module is completed
-  return 0;
 
   Utils::EndTiming("Everything");
 }

@@ -24,6 +24,7 @@ xstar = x_times[0]
 xrec = x_times[1]
 xrec_saha = x_times[2]
 x_Peebles = x_times[3]
+xend = x_times[4]
 
 zoomed_xlim = [xstar+xstar*0.1, xstar-xstar*0.1]
 x_array_ticks = np.append(np.linspace(x_array.min(), x_array.max(), 5), 0)

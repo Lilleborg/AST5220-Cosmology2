@@ -27,11 +27,21 @@ class PowerSpectrum {
     double n_s        = 0.96;
     double kpivot_mpc = 0.05;
 
+    // Bool to determine if all the different terms in the Source function is computed separately
+    bool treat_source_components = false;
+
     // The k-values we compute Theta_ell(k) etc. for
-    const int n_k      = 100;
+    const int n_k      = 2000;
     const double k_min = Constants.k_min;
     const double k_max = Constants.k_max;
-    
+    Vector k_array     = Utils::logspace(log(k_min),log(k_max),n_k);
+    Vector log_k_array = log(k_array);
+
+    // The x vector
+    int n_x;
+    const double x_min = Constants.x_start;
+    const double x_max = 0;
+
     // The ells's we will compute Theta_ell and Cell for
     Vector ells{ 
         2,    3,    4,    5,    6,    7,    8,    10,   12,   15,   
@@ -59,18 +69,20 @@ class PowerSpectrum {
     
     // Do LOS integration for all ells and all k's in the given k_array
     // and for all the source functions (temperature, polarization, ...)
-    void line_of_sight_integration(Vector & k_array);
+    void line_of_sight_integration(bool solve_source_components, const Vector x);
   
     // Do the line of sight integration for a single quantity
     // for all ells by providing a source_function(x,k) (can be temp, pol, ...)
-    Vector2D line_of_sight_integration_single(
-        Vector & k_array, 
-        std::function<double(double,double)> &source_function);
+    Vector2D line_of_sight_integration_single(std::function<double(double,double)> &source_function, const Vector x);
     
-    // Splines of the reusult of the LOS integration
+    // Splines of the result of the LOS integration
     // Theta_ell(k) and ThetaE_ell(k) for polarization
-    std::vector<Spline> thetaT_ell_of_k_spline;
-    std::vector<Spline> thetaE_ell_of_k_spline;
+    Spline2D thetaT_ell_of_k_spline2D{"thetaT_ell_of_k_spline2D"};
+    Spline2D thetaSW_ell_of_k_spline2D{"thetaSW_ell_of_k_spline2D"};
+    Spline2D thetaISW_ell_of_k_spline2D{"thetaISW_ell_of_k_spline2D"};
+    Spline2D thetaDoppler_ell_of_k_spline2D{"thetaDoppler_ell_of_k_spline2D"};
+    Spline2D thetaQuad_ell_of_k_spline2D{"thetaQuad_ell_of_k_spline2D"};
+    Spline2D thetag_tilde_ell_of_k_spline2D{"thetag_tilde_ell_of_k_spline2D"};
     
     //=====================================================================
     // [3] Integrate to get power-spectrum
@@ -81,11 +93,16 @@ class PowerSpectrum {
     // For polarization C_TE call with f_ell = theta_ell and g_ell = thetaE_ell
     Vector solve_for_cell(
         Vector & logk_array,
-        std::vector<Spline> & f_ell, 
-        std::vector<Spline> & g_ell);
+        Spline2D & f_ell, 
+        Spline2D & g_ell);
 
     // Splines with the power-spectra
     Spline cell_TT_spline{"cell_TT_spline"};
+    Spline cell_SW_spline{"cell_SW_spline"};
+    Spline cell_ISW_spline{"cell_ISW_spline"};
+    Spline cell_Doppler_spline{"cell_Doppler_spline"};
+    Spline cell_Quad_spline{"cell_Quad_spline"};
+    Spline cell_g_tilde_spline{"cell_g_tilde_spline"};
     Spline cell_TE_spline{"cell_TE_spline"};
     Spline cell_EE_spline{"cell_EE_spline"};
 
@@ -99,21 +116,29 @@ class PowerSpectrum {
         Perturbations *pert);
     
     // Do all the solving: bessel functions, LOS integration and then compute Cells
-    void solve();
+    void solve(bool solve_source_components = false);
 
     // The dimensionless primordial power-spectrum Delta = 2pi^2/k^3 P(k)
     double primordial_power_spectrum(const double k) const;
 
     // Get P(k,x) for a given x in units of (Mpc)^3
-    double get_matter_power_spectrum(const double x, const double k_mpc) const;
+    double get_component_power_spectrum(const std::string component, const double x, const double k_mpc) const;
+
+    // Gauge invariant density perturbation for "component"
+    double get_invariant_density(const std::string component, const double x, const double k) const;
 
     // Get the quantities we have computed
     double get_cell_TT(const double ell) const;
     double get_cell_TE(const double ell) const;
     double get_cell_EE(const double ell) const;
+    double get_theta_TT(const double ell, const double k) const;
 
     // Output Cells in units of l(l+1)/2pi (muK)^2
     void output(std::string filename) const;
+    void output_component_power_spectrum(std::vector<std::string> components, std::string filename) const;
+
+    // Output transfer function and integrand
+    void output_transfer_integrand(std::string filename, std::vector<int> ell_values) const;
 };
 
 #endif

@@ -1,23 +1,55 @@
 #include "Utils.h"
 #include <iomanip>
 #include <fstream>
+#include "BackgroundCosmology.h"
 
 //////////////////////////
 // Testing bessel function
 void testing_bessel_function(){
-Vector x_testing = Utils::linspace(0,1000,10000);
-Vector spherical_bessel(x_testing.size());
-for (int i = 0; i < spherical_bessel.size(); i++)
-{
-    spherical_bessel[i] = Utils::j_ell(4,x_testing[i]);
-}
 
-std::ofstream fp("testing_bessel.txt");
-for (int i = 0; i < x_testing.size(); i++)
+// Background parameters
+double h           = 0.7;
+double OmegaB      = 0.046;
+double OmegaCDM    = 0.224;
+double Neff        = 3.046;
+double TCMB        = 2.7255;
+BackgroundCosmology cosmo(h, OmegaB, OmegaCDM, Neff, TCMB);
+cosmo.solve();
+
+const int npts = 20000;
+const int n_k  = 6;
+const int idx_k = 2;
+Vector x_testing = Utils::linspace(-15,0,npts);
+Vector k_testing = Utils::logspace(log(Constants.k_min),log(Constants.k_max),n_k);
+Vector spherical_bessel(npts);
+
+double k_value = k_testing[5];
+std::cout << "k_value used in example " << k_value << std::endl;
+
+std::ofstream fp("../data_testing/testing_bessel.txt");
+fp << "k-value: " << k_value << "\n";
+fp << std::setw(15) << "x" << std::setw(15) << "arg";
+#define ell_loop int ell = 1; ell < 502; ell+=50
+for (ell_loop)
 {
-    fp << spherical_bessel[i] << " " << x_testing[i] << "\n";
+fp << std::setw(15) << "j_" + std::to_string(ell);
+}
+fp << "\n";
+
+for (int i = 0; i < npts; i++)
+{
+    double x_value = x_testing[i];
+    double arg = k_value * (cosmo.eta_of_x(0.0) - cosmo.eta_of_x(x_value));
+    fp << std::setw(15) << x_value << std::setw(15) << arg;
+    for (ell_loop)
+    {
+        fp << std::setw(15) << Utils::j_ell(ell,arg);
+    }
+    fp << "\n";
+    
 }
 fp.close();
+
 }
 // Testing bessel function
 //////////////////////////
@@ -404,21 +436,24 @@ std::cout << "5^2 = " << func(5) << "\n";
 }
 
 int main(int argc, char **argv){
-std::cout << "\n==============================\n\n";
-example_make_spline_basic();
+// std::cout << "\n==============================\n\n";
+// example_make_spline_basic();
   
-std::cout << "\n==============================\n\n";
-example_make_spline();
+// std::cout << "\n==============================\n\n";
+// example_make_spline();
   
-std::cout << "\n==============================\n\n";
-example_single_ODE();
+// std::cout << "\n==============================\n\n";
+// example_single_ODE();
   
-std::cout << "\n==============================\n\n";
-example_solve_coupled_ODE();
+// std::cout << "\n==============================\n\n";
+// example_solve_coupled_ODE();
   
-std::cout << "\n==============================\n\n";
-example_make_2D_spline();
+// std::cout << "\n==============================\n\n";
+// example_make_2D_spline();
+
+// std::cout << "\n==============================\n\n";
+// other_stuff();
 
 std::cout << "\n==============================\n\n";
-other_stuff();
+testing_bessel_function();
 }

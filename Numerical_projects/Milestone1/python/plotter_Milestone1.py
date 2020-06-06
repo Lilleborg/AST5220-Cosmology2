@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 
+
 def color_each_regime(ax,x_array,redshift=[False]):
     """ 
     Read x-values for equality between the different regimes and color in the
@@ -17,17 +18,25 @@ def color_each_regime(ax,x_array,redshift=[False]):
     # is read each time which is not very efficient, but not so concerned about speed in the plotters.
     # Timed for 100 calls, which is way more than I ever expect to use it, which takes about 1.9 seconds.
     # 18.7 seconds for 1000 calls.
-    x_values = np.loadtxt("../../data/x_values_rad_mat_lambda_eq.txt")
-    idx_rad_mat_eq = np.argmin(np.abs(x_array-x_values[0]))
-    idx_mat_lambda_eq = np.argmin(np.abs(x_array-x_values[1]))
+    x_values_eq = np.loadtxt("../../data/x_values_rad_mat_lambda_eq.txt")
+    x_recomb_times, z_recomb_times = np.loadtxt("../../data/recombination_times.txt",unpack=True,usecols=(1,3))
+    xrec = x_recomb_times[1]
+    zrec = z_recomb_times[1]
+    xend = x_recomb_times[4]
+    zend = z_recomb_times[4]
+    
+    idx_rad_mat_eq = np.argmin(np.abs(x_array-x_values_eq[0]))
+    idx_mat_lambda_eq = np.argmin(np.abs(x_array-x_values_eq[1]))
     if len(redshift) < 2:
-        ax.axvspan(x_array.min(), x_array[idx_rad_mat_eq], alpha=0.2, color='C0')
-        ax.axvspan(x_array[idx_rad_mat_eq], x_array[idx_mat_lambda_eq], alpha=0.2, color='C1')
-        ax.axvspan(x_array[idx_mat_lambda_eq], x_array.max(), alpha=0.2, color='C3')
+        ax.axvspan(x_array.min(), x_values_eq[0], alpha=0.2, color='C0')
+        ax.axvspan(x_values_eq[0], x_values_eq[1], alpha=0.2, color='C1')
+        ax.axvspan(x_values_eq[1], x_array.max(), alpha=0.2, color='C3')
+        ax.axvspan(xrec, xend, alpha=0.2, color='C8')
     else:
         ax.axvspan(redshift.max(), redshift[idx_rad_mat_eq], alpha=0.2, color='C0')
         ax.axvspan(redshift[idx_rad_mat_eq], redshift[idx_mat_lambda_eq], alpha=0.2, color='C1')
         ax.axvspan(redshift[idx_mat_lambda_eq], redshift.min(), alpha=0.2, color='C3')
+        ax.axvspan(zrec, zend, alpha=0.3, color='C8')
 
 if __name__== "__main__":
     # Plot styling
@@ -94,7 +103,7 @@ if __name__== "__main__":
     fig.savefig('./../figs/omegas_of_x.pdf', bbox_inches='tight')
 
     # Plotting Hubble parameter vs x
-    fig, axes = plt.subplots(2, 2)
+    fig, axes = plt.subplots(2, 2,figsize=(12,9))
     axes[0, 0].plot(x_array, H_units, color='C2')
     axes[0, 0].set_ylabel(r'$H(x) \left[\rm{km}\,\rm{s^{-1}}\,\rm{Mpc^{-1}}\right]$')
 
@@ -128,4 +137,4 @@ if __name__== "__main__":
             ax.set_xticks(x_array_ticks)
     print('Saving ./../figs/Hubble_eta_of_x.pdf')
     fig.savefig('./../figs/Hubble_eta_of_x.pdf', bbox_inches='tight')
-    plt.show()
+    

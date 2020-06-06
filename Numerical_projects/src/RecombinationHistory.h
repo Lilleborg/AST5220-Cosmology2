@@ -22,6 +22,11 @@ class RecombinationHistory{
     // The start and end points for recombination arrays (can be modified)
     const double x_start  = Constants.x_start;
     const double x_end    = Constants.x_end;
+
+    // Adhoc method for finding the time of recombination
+    // Using later in following milestones, not perfect but im in a hurry
+    // double x_rec_start;
+    double x_rec_end;
     
     // Numbers of points used to solved for recombination (Xe and ne)
     const int npts_rec_arrays = 1e+5;
@@ -88,10 +93,6 @@ class RecombinationHistory{
     double get_number_density_baryons(double x) const;
     Vector get_time_results() const;
     double Xe_of_x_Saha_approx(double x) const;
-
-    // Adhoc method for finding the time recombination ends
-    // Using later in following milestones, not perfect but im in a hurry
-    double x_rec_end;
 };
 
 #endif

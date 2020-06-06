@@ -159,15 +159,38 @@ namespace Utils{
   }
 
   // Function to get the spherical Bessel function j_n(x)
-  double j_ell(const int n, const double x){
-    if(x==0.0) return n == 0 ? 1.0 : 0.0;
-#ifdef _COMPLEX_BESSEL
-    return sp_bessel::besselJ(n+0.5, x).real() * sqrt(M_PI/(2.0*x));
-#else
-    if(n > 99 && x < 0.2 * n) return 0.0;
-    return gsl_sf_bessel_jl(n, x);
-#endif
-  }
+  double j_ell(const int ell, const double x){
+    if(x==0.0) return ell == 0 ? 1.0 : 0.0;
+
+    // In this regime the function is <~ 1e-6 times the maximum value so safe to put it to zero
+    // to avoid issues with the library functions failing to compute it
+    if(ell >= 10 && x < (1.0 - 2.6/sqrt(ell)) * ell) return 0.0;
+
+  // For 'small' ell GSL fails for the largest arguments so simply put to zero
+  // to avoid issues with this (these large values not very relevant for us anyway)
+    if(ell < 500 && x > 9000) return 0.0; 
+
+    return gsl_sf_bessel_jl(ell, x);
+
+  // ***** Working with the sph_bessel implementation. still doesnt work @@@@@@
+  // #if ((defined(_MSVC_LANG) && _MSVC_LANG >= 201703L) || (__cplusplus >= 201703L))
+  //     // If you have a c++17 compiler you can use this
+    
+  //     // The library fails for the largest arguments so simply put to zero
+  //     // to avoid any issues with this (these large values not very relevant for us anyway)
+  //     if(x > 14000.0) return 0.0;
+    
+  //     return std::sph_bessel(ell, x);
+  // #else
+  //     // Otherwise lets use GSL 
+   
+  //     // For 'small' ell GSL fails for the largest arguments so simply put to zero
+  //     // to avoid issues with this (these large values not very relevant for us anyway)
+  //     if(ell < 500 && x > 9000) return 0.0; 
+
+  //     return gsl_sf_bessel_jl(ell, x);
+  // #endif
+    }
 
 
   
