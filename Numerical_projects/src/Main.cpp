@@ -118,19 +118,8 @@ int main(int argc, char **argv){
   power.output(data_path + C_ell_filename);
   power.output_component_power_spectrum(component_names,data_path + component_PS_filename);
 
-  // Output integrand and transfer function for ell corresponding with k values from milestone3
-  std::vector<int> ell_values(k_values.size());
-  for (int iell = 0; iell < ell_values.size(); iell++)
-  {
-    ell_values[iell] = (int)round(k_values[iell]/Constants.Mpc*cosmo.eta_of_x_spline(0.0));
-    if (ell_values[iell]>2000)
-    {
-      ell_values[iell] = 2000;
-      std::cout << "Forced max ell used for integrand and transfer function!\n";
-    }
-    
-    std::cout << ell_values[iell] << "\n";
-  }
+  // Output integrand and transfer function for a few significantly different ells
+  std::vector<int> ell_values{5,200,400,700,900,1200};
   std::string transfer_filename = "transfer_integrand.txt";
   power.output_transfer_integrand(data_path+transfer_filename,ell_values);
   

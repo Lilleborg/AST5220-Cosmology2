@@ -90,4 +90,4 @@ plot3:
 	cd ./../Milestone3/python && python plotter_Milestone3.py
 
 plot4:
-	cd ./../Milestone4/python && python plotter_Milestone4.py $(filename1) $(filename2) $(path)
+	cd ./../Milestone4/python && python plotter_Milestone4.py $(filename1) $(filename2) $(filename3) $(path)
