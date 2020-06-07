@@ -27,7 +27,7 @@ for i,q in enumerate(quantities):
     data[q] = loaded_data[i]
 
 ell = data["ell"]
-fig, ax = plt.subplots(figsize=(9,6))
+fig, ax = plt.subplots(figsize=(6,4.5))
 for i,q in enumerate(quantities[1:]):
     ax.plot(ell, data[q],label=q)
 ax.set_title(r"CMB power spectrum, $C_\ell$")
@@ -47,7 +47,7 @@ for i,q in enumerate(quantities):
     data[q] = loaded_data[i]
 
 k = data[quantities[0]]
-fig, ax = plt.subplots(2,1,figsize=(9,12),sharex=True)
+fig, ax = plt.subplots(2,1,figsize=(6,9),sharex=True)
 for i,q in enumerate(quantities[1:]):
     if q == "radiation":
         ax[1].plot(k, data[q],label=q)
@@ -79,7 +79,7 @@ for i,q in enumerate(quantities):
 k = data[quantities[0]]
 Mpc = 3.08567758e22
 k_Mpc = k*Mpc
-fig, ax = plt.subplots(2,1,figsize=(9,12),sharex=True)
+fig, ax = plt.subplots(2,1,figsize=(6,9),sharex=True)
 for i,q in enumerate(quantities[1:]):
     if "/k" not in q:
         ell = ell_values[i]
@@ -95,7 +95,7 @@ title = fig.suptitle("Transfer Functions")
 print("Saving " + "../figs/"+figname_integrand+"_transfer.pdf")
 fig.savefig("../figs/"+figname_integrand+"_transfer.pdf",bbox_extra_artists=(legend,title),bbox_inches='tight')
 
-fig, ax = plt.subplots(2,1,figsize=(9,12),sharex=True)
+fig, ax = plt.subplots(2,1,figsize=(6,9),sharex=True)
 for i,q in enumerate(quantities[1:]):
     if "/k" in q:
         ell = ell_values[i-len(ell_values)]
