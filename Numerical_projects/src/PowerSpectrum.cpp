@@ -425,7 +425,7 @@ void PowerSpectrum::output_component_power_spectrum(std::vector<std::string> com
   std::ofstream fp(filename.c_str());
   std::cout << "Writing output to " << filename << "\n";
   fp W15 "k_eq" W15 k_eq*Mpc/h << "\n";
-  fp W15 "k [Mpc/h],";
+  fp W15 "k [h/Mpc],";
   for (int icomp = 0; icomp < components.size(); icomp++)
   {
     fp W15 components[icomp];

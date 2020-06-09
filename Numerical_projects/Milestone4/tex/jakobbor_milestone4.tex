@@ -253,7 +253,7 @@ The results are again splined over the angular scales $\ell$, giving us good sol
 
 \subsection{Solving the Matter Power Spectrum}
 \label{subsec:Method/solving matter power spectrum}
-Solving the matter power spectrum is trivial compared to the full CMB power spectrum. Using \cref{eq: Component matter spectrum,eq: invariant delta,eq: invariant matter delta} we already have splines for all the required quantities, so we simply implement methods for evaluating all these equations. We compute the full matter power spectrum, along with the components where $i$ is baryons, \rCDM and radiation respectively. For radiation this is not particularly relevant, but we compute it anyway as it is only a few simple lines of code to add. The density and velocity of the radiation perturbations are defined through the multipoles as $\delta_\gamma = 4\Theta_0$ and $v_\gamma = -3\Theta_1$.
+Solving the matter power spectrum is trivial compared to the full CMB power spectrum. Using \cref{eq: Component matter spectrum,eq: invariant delta,eq: invariant matter delta} we already have splines for all the required quantities, so we simply implement methods for evaluating all these equations. We compute the full matter power spectrum, along with the components where $i$ is baryons, \rCDM and radiation respectively. For radiation this is not particularly relevant, but we compute it anyway as it is only a few simple lines of code to add. The density and velocity of the radiation perturbations are defined through the multipoles as $\delta_\gamma = 4\Theta_0$ and $v_\gamma = -3\Theta_1$. As we don't have much to say about the radiation component, this is left out of our results in \cref{sec:Results}, but included in \cref{Asec: Radiation component} for completeness.
 
 \subsubsection{Equality Scale}
 \label{subsubsec:Method/Equality Scale}
@@ -269,37 +269,98 @@ The equality scale is found easily numerically by implementing a method looping 
 % |_|  \_\___||___/\__,_|_|\__|___/
 \section{Results}
 \label{sec:Results}
-Now for the entire project we have two different run times, dependent on if we only want the proper solution using the full temperature source function or all the other terms as well. For the temperature source function alone all the computation are done in $\sim \SI{72}{s}$. Computing the multipoles are by far the most time consuming part of the calculations, and if we want the 5 additional power spectrums it takes about $\SI{50}{s}$ more for each term. Then the computations for the entire project is done in about $5$ to $6$ minutes.
+Now for the entire project we have two different run times, dependent on if we only want the proper solution using the full temperature source function or all the other terms as well. For the temperature source function alone all the computation are done in $\sim \SI{72}{s}$. Computing the multipoles are by far the most time consuming part of the calculations, and if we want the 5 additional power spectrums it takes about $\SI{50}{s}$ more for each term. Then the computations for the entire project is done in about $5$ to $6$ minutes. We have not implemented any parallel processing in this code, as we had trouble installing and getting open MP to run, but this is of course the first optimization that should be done to further improve the precision and speed of the code.
 
 \subsection{Transfer Function and Integrand}
 \label{subsec:Results/Transfer and integrand}
-?? Test of source and bessel functions ?? Compare to integrand figure in callin ??
+\Cref{fig: transfer} displays the resulting multipoles we obtain from \cref{eq: LOS ODE} through the line of sight integration method, for a few significantly different angular scales in our interval. Here we clearly see the oscillatory and dampening effect from the Bessel functions, as the transfer functions look like damped harmonic oscillators. Let the argument to the function be $z = \left(k\eta_0-k\eta(x)\right)$, the transfer function being zero for $z<\ell$, peaking at $z\sim\ell$ and oscillating at $z>\ell$ before being damped. It's not simple to understand the source function from this plot, and that will be discussed further in \cref{subsubsec:Results/CMB power spectrum terms}.
+\begin{figure}[ht!]
+  \centering
+  \includegraphics[scale=0.5]{../figs/transfer_integrand_transfer.pdf}
+  \caption{The transfer function $\Theta_\ell$ obtained from line of sight integration in \cref{eq: LOS ODE} for a few significantly different angular scales. The upper panel shows the unscaled results clearly displaying the large scales. While the lower panel is scaled in a similar way as we will scale the CMB power spectrum, weighted by essentially the square of the angular scale $\ell(\ell+1)$.}
+  \label{fig: transfer}
+\end{figure}
 
-\subsection{The reproduced CMB Power Spectrum}
+The integrand $\Theta_\ell^2(k)/k$ from \cref{eq: C_ell} are shown in \cref{fig: integrand}. As we essentially see the square of the transfer function, we see much of the same trends, with only positive values, with the larger scales even more dominant as we also divide by the wavenumber. Here we better see how the different scales will affect the power spectrum in the end, and which wavenumbers contributes to the different angular scales. As $k\sim\frac{\ell}{\eta_0}$ this is not so surprising, we see that the larger scales, low $\ell$, have a contribution on small $k$, and vice versa. Here we have not used the same $\ell$ or normalization, but we see similar results as is presented by Callin in figure 4 \citep{Calin}.
+\begin{figure}[ht!]
+  \centering
+  \includegraphics[scale=0.5]{../figs/transfer_integrand_integrand.pdf}
+  \caption{The integrand $\Theta_\ell^2/k$ from \cref{eq: C_ell} for a few significantly different angular scales. The upper panel shows the unscaled results clearly displaying the large scales. While the lower panel is scaled in a similar way as we will scale the CMB power spectrum, weighted by essentially the square of the angular scale $\ell(\ell+1)$.}
+  \label{fig: integrand}
+\end{figure}
+
+\newpage
+\subsection{Reproducing the CMB Power Spectrum}
 \label{subsec:Results/CMB power spectrum}
 
 \subsubsection{The Constituent CMB Terms}
 \label{subsubsec:Results/CMB power spectrum terms}
-?? MODULAR SOLVER WITH DIFFERENT SOURCE FUNCTIONS ?? 
+As discussed in \cref{subsubsec:Theory/LOS int} we compute the power spectrum obtained from using only the different constituent terms of the full temperature source function in the line of sight integral. This helps us understand the different terms, as well as give us a physical insight in how the different terms and scales contribute. Note that the figure also displays the result from using only the visibility function as the source function, which is a term not actually in the source function by it self, but is only used as a benchmark for our code. This should be a flat spectrum ebbing off at smaller scales, which it indeed does in our result. Using this representation during debugging helped tremendously in backtracking through the code to find which terms where off or implemented wrong.
+\begin{figure}[ht!]
+  \centering
+  \includegraphics[scale=0.5]{../figs/Cells_components.pdf}
+  \caption{Shown are the resulting $C_\ell$ using only the individual terms in the source function in the line of sight integration as discussed in \cref{subsubsec:Theory/LOS int}. Note that the full temperature source function is not included here, which is the sum of all the different terms shown except for the \rm{g\_tilde} contribution which is mainly for debugging and benchmarking purposes.}
+  \label{fig: Constituent Cell}
+\end{figure}
+
+Here we see that the different terms described in \cref{subsubsec:Theory/LOS int} behaves as expected. The Sachs Wolfe effect being the main contributor for most scales. The integrated Sachs Wolfe effect contributing much for the largest scales, while the smaller scales contributing many orders of magnitude less, corresponding to the late and early ISW as discussed. The doppler term, which is not weighted by the exponential of the optical depth, contributes more than ISW for all scales except for the largest. This is as expected, as discussed the ISW contributes most on these large scales, while the peculiar velocity of the smaller scales are much higher than for the larger scales at times of recombination, which is where the doppler term is evaluated because of the weighting by the visibility function. We also see how minor the quadrupolar correction term is, being more or less negligible at large scales, but actually larger than the ISW on the smallest scales.
+
+\subsubsection{The Final Power Spectrum}
+\label{subsubsec:Results/Final power spectrum}
+The main result, the CMB power spectrum, is shown in \cref{fig: Cell}. Everything we have learned about the different terms, and established throughout these milestones, are now funneled into one single plot.
+\begin{figure}[ht!]
+  \centering
+  \includegraphics[scale=0.5]{../figs/Cells.pdf}
+  \caption{The final reproduced CMB power spectrum, conventionally normalized by $\frac{\ell(\ell+1)}{2\pi}\left(10^6T_{\rm CMB,0}\right)^2$, so we see $C_\ell\frac{\ell(\ell+1)}{2\pi}$ in units of $\si{\micro\kelvin^2}$. This helps better visualize the features of the spectrum, as it generally drops as $\ell^{-2}$. Here we see the large scale plateau, the acoustic peak and oscillations and the dampening tail for smaller scales.}
+  \label{fig: Cell}
+\end{figure}
+Reading the plot from large scales to small, we see the plateau on the largest scales, with the late ISW effect contributing to the increase on the very largest scales in $\ell \lesssim 10$. As discussed in \cite{milestone3} and in \cref{subsubsec:Theory/LOS int,subsubsec:Results/CMB power spectrum terms} this is due to the dark energy dominated regime, where the accelerated expansion halts the growing modes and thus the derivatives of the gravitational potentials are large as we saw in \cite{milestone3}. Increasing the dark energy density parameter would cause the dark energy to dominate earlier, and we would have a larger late ISW effect.
+
+Moving on we have the first peak, called the acoustic peak. This is a remnant from the tight coupled regime between baryons and photons in the early perturbations. The baryon-photon fluid traveling as one in the tight coupled regime, before the photons decouple leaving the baryons behind. The baryons are then affected by the gravity of dark matter perturbations, and the baryons affecting the dark matter. The result is a high peak at the $\ell\sim 200$ scale.
+
+On the smaller scales we see how the power spectrum starts to oscillate, called acoustic oscillations, and eventually being exponentially suppressed. Looking at the monopole oscillations from \cite{milestone3} we can understand the oscillations, but using the effective monopole which is just a small correction to the monopole oscillations we looked at in milestone 3. As discussed in \cite{milestone3} the equation for the monopole can be characterized as a driven harmonic oscillator. The peaks in the $C_\ell$ corresponds to scales for which the effective monopole oscillations have a maximum or minimum at the time of recombination, or at the LSS. The troughs in the power spectrum corresponds to scales where the effective monopole is zero at LSS. The photon perturbations characterized by the driven harmonic oscillator equation can be thought of as a simple mass less ball on a spring in a gravitational field, oscillating up and down in a driven motion. If we only had photon perturbations, these oscillations would have been even around the zero point. But as the baryon and photons are heavily coupled, and the baryons having mass in the gravitational field, we can instead think of the oscillator as a ball on a spring, but with mass. The oscillations being due to the balance between gravity and radiation pressure, adding the baryons with mass enhances the compression modes, but not so much the rarification. Thus we get an uneven oscillation, every compression being enhanced, which corresponds to the odd numbered peaks in the power spectrum. This we can clearly see in \cref{fig: Cell}, where the first and third peak being larger than the second and fourth and so on. For higher number peaks this is harder to make out, as the exponential suppression of the power spectrum kicks in. This gives us another insight into determining the cosmological parameters. Measuring the relative height of the even and odd numbered peaks we can infer restrictions on the baryon density parameter.
+
+Last we see the exponential suppression on the smallest scales. This effect is due to photon diffusion, caused by the photons moving in a so called random walk motion through the photon-baryon fluid due to the photons scattering on the free electrons. The average distance the photons travel between each scattering is called the mean free path, $\lambda_{\rm{mfp}}$, being dependent on the free electron density. Following the central limit theorem, after $n$ scatterings the photons would have moved on average a distance $\lambda_D \sim \sqrt{n}\lambda_{\rm{mfp}} \sim \frac{1}{\sqrt{n_e\sigma_T H}}$. For perturbations on scales smaller than this distance, the over- and underdensities are able to mix dampening the oscillations. This effect is especially prominent for scales for which the finite thickness of the LSS is not negligible relative perturbation size. This is called diffusion dampening, or silk dampening, exponentially suppressing the anisotropies on scales $\ell\gtrsim 500$. This effect is also dependent on the baryon density parameter because of the scattering, as well as the helium fraction and the number of relativistic particles in our Universe. The latter being determined by the number of massless neutrinos.
 
 \subsection{The Matter Power Spectrum}
 \label{subsec:Results/Matter power spectrum}
+The matter power spectrum is shown in \cref{fig: matter power spectrum}. Here we see how the two components overlap each other, as the baryons densities are mostly determined by the gravitational field enforced by the dominant dark matter. For large scales perturbations, we see how the late horizon entry and hence being affected by little causal physics, results in a more or less unprocessed perturbations. We then see a scale dependence consistent with initial perturbations being set up by a gaussian random field, where we expect more perturbations of <<medium>> scale and less of the super-horizon scales, resulting in the spectrum proportional to $k^{n_s}$, where the spectral index $n_s$ is close to unity, being determined by the length of the inflationary period. 
 
-\section{Conclusion}
-\label{sec:Conclusion}
-%\pagebreak
+\begin{table}[ht!]
+  \centering
+  \begin{tabular}{l|l|l}
+                & Inside    & Outside \\ \hline
+  Radiation era & $\log(a)$ & $a^2$   \\ \hline
+  Matter era    & $a$       & $a$    
+  \end{tabular}
+  \caption{The scale factor dependence for growing matter modes in the radiation and matter dominated eras, inside and outside horizon. These dependencies limits the growth of perturbations on smaller scales, resulting in the peak and the Meszaros suppression observed in \cref{fig: matter power spectrum}.}
+  \label{tab: growing modes}
+\end{table}
+
+Going to smaller scales we hit the peak in the spectrum, at the equality scale $k_{\rm{eq}}$ described in \cref{eq: k_eq}. This is the scale corresponding to perturbations entering the horizon at the matter-radiation equality. The matter perturbations grows differently with time in the matter and radiation era, and also when being outside and inside the horizon, following the proportionalities listed in \cref{tab: growing modes}. This table shows the evolution of the invariant density in \cref{eq: invariant delta}. Following the scale factor dependence, or in other words time evolution, we see that modes entering the horizon in the radiation dominated era, before $a_{\rm{eq}}$, will grow slowly until the matter dominated regime, only $\propto \log(a)$. These scales are therefore suppressed relative to the scales entering after $a_{\rm{eq}}$, which grows undisturbed as $a^2$ in the radiation era and $a$ in the matter era. This suppression of the smaller scales is called the Meszaros suppression, and is consistent with our results as we see in \cref{fig: matter power spectrum}. For these smaller scales we also se some of the baryonic acoustic oscillations as we saw in the CMB power spectrum. Interestingly these oscillations are also protruding in the \rCDM component, again showing that the additional gravitational effect of adding baryons propagates through the coupled system of the Boltzmann-Einstein equations affecting both the photons, as we have seen, and the dark matter perturbations.
+\begin{figure}[ht!]
+  \centering
+  \includegraphics[scale=0.5]{../figs/comp_PS_matteronly.pdf}
+  \caption{The matter power spectrum, with the components baryons and \rCDM overplotted and the equality scaled marked in as the vertical dotted line. For larger scales the spectrum goes as $k^{n_s}\sim k^1$, while small scales being suppressed by the Meszaros effect going as $k^{n_s-4}$, being suppressed by $k^{-4}$ relative to the larger scales entering after matter-radiation equality.}
+  \label{fig: matter power spectrum}
+\end{figure}
+\vspace{0.5cm}
+\noindent
+\section*{Acknowledgments}
+The author would like to thank Hans A. Winther for an exciting and interesting course, with an inspiring project and lectures throughout this abnormal semester, and quick and helpful debugging assistance. Thanks to my fellow students for several hours of discussions during the different milestones.
+\vspace{0.5cm}
+
 \bibliographystyle{plainnat}
 \bibliography{ref_milestone4}
 
 \clearpage
 \begin{appendices}
   \appendix
-  \section{Testing Against Toy Cosmology}
+\section{Testing Against Toy Cosmology}
   \label{Asec:Testing toy}
   As a test of our results we are given a CMB power spectrum and a matter power spectrum using a toy-cosmology in the project description using the parameters $\Omega_{b0} = 0.05$, $\Omega_{\rm CDM 0} = 0.45$, $\Omega_{\Lambda 0} = 0.5$ and $h=0.7$. Polarization, neutrions, reionization and helium not included, as in our fiducial cosmology.
   
-  The CMB results are shown in \cref{fig: Cell toy}. Here we see that the shape of the spectrum is identical to the one we are presented in the project description, while the amplitude is harder to compare based on the limits on the axis and the logarithmic plot. The amplitude of our result seem a bit higher than the test case, and the reason for this is still unknown, but as the shape match to such an extend we are satisfied with the result.
-  ?? Maybe due to $\Omega_R \neq 0$ ?? 
+  The CMB results are shown in \cref{fig: Cell toy}. Here we see that the shape of the spectrum is identical to the one we are presented in the project description. The amplitude of our result seem a bit higher than the test case, but as the shape match to such an extend we are satisfied.
   \begin{figure}[ht!]
     \centering
     \includegraphics[scale=0.5]{../figs/Cells_toy.pdf}
@@ -307,13 +368,23 @@ Now for the entire project we have two different run times, dependent on if we o
     \label{fig: Cell toy}
   \end{figure}
 
-  The matter results are shown in \cref{fig: Matter toy}, the upper panel displaying the interesting results as the matter power spectrum and the matter components overplotted. Again the shape of the spectrum is identical to the test case, with the peak being at approximately the exact same place, while the amplitude is a bit higher. 
+  The matter results are shown in \cref{fig: Matter toy} displaying the matter power spectrum with the matter components overplotted. Again the shape of the spectrum is identical to the test case, with the peak being at approximately the exact same place, while the amplitude is a bit higher.
   \begin{figure}[ht!]
     \centering
-    \includegraphics[scale=0.5]{../figs/comp_PS_toy.pdf}
-    \caption{Resulting matter power spectrum using the toy-cosmology for testing against figure in project description. Upper panel showing the matter power spectrum, with the spectrum from the components baryons and \rCDM overplotted and the equality scale marked in as the dotted vertical line.}
+    \includegraphics[scale=0.5]{../figs/comp_PS_matteronly_toy.pdf}
+    \caption{Resulting matter power spectrum using the toy-cosmology for testing against figure in project description. Displayed are the matter power spectrum, with the spectrum from the components baryons and \rCDM overplotted and the equality scale marked in as the dotted vertical line.}
     \label{fig: Matter toy}
   \end{figure}
+  The reason for the higher amplitude in both cases are not certain, but it may be due to the way we calculate and introduce the different density parameters. In our code we give the baryon and \rCDM density parameters as input, but the radiation parameter is calculated using a predefined equation \citep{milestone1}, and finally the parameter for the cosmological constant is calculated from the others. This way we are actually not using the exact same parameters as for the test case, but $\Omega_{\Lambda,0} = 0.49995$ and $\Omega_{R,0} = \num{5.05e-5}$, which may cause the discrepancy. We have not pursued this further, as forcing $\Omega_{R,0}=0$ in our code gave very weird results. Another explanation, as we see the inflationary plateau being higher than the test case and we know that this is mostly determined by the initial conditions, is that in some way our initial conditions from milestone 3 or the rescaling done with the primordial power spectrum hides some error or bug.
+\section{The Matter Power Spectrum Components with Radiation}
+\label{Asec: Radiation component}
+The matter power spectrum with components, including the (for us) irrelevant radiation spectrum. We have little to say about this component, but as we computed it and breifly discussed it in \cref{subsubsec:Theory/Matter power spectrum} we include the figure here.
+\begin{figure}[ht!]
+  \centering
+  \includegraphics[scale=0.5]{../figs/comp_PS.pdf}
+  \caption{The matter power spectrum components including the radiation power spectrum in the lower panel. The upper panel showing the matter components overplotted the total matter power spectrum, with the equality scale marked as the vertical dotted line.}
+  \label{fig: radiation component power spectrum}
+\end{figure}
 
 \end{appendices}
 
